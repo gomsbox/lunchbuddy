@@ -421,13 +421,16 @@ function api_setResponse(token, roomId, status) {
     const me = auth_(token);
     if (!me) return err_('AUTH');
     if (!memberRole_(roomId, me.userId)) return err_('NOT_MEMBER');
-    if (status !== 'going' && status !== 'not-going') return err_('잘못된 응답 값입니다.');
+    if (status !== 'going' && status !== 'not-going' && status !== 'clear') return err_('잘못된 응답 값입니다.');
     return withLock_(function () {
       const today = todayStr_();
       const idx = findRowIndex_('Responses', function (r) {
         return dateStr_(r[0]) === today && String(r[1]) === String(roomId) && String(r[2]) === me.userId;
       });
-      if (idx > 0) {
+      if (status === 'clear') {
+        // 응답 취소 → 미응답 상태로 복귀 (REQ-05)
+        if (idx > 0) sheet_('Responses').deleteRow(idx);
+      } else if (idx > 0) {
         sheet_('Responses').getRange(idx, 4, 1, 2).setValues([[status, nowIso_()]]);
       } else {
         sheet_('Responses').appendRow([today, String(roomId), me.userId, status, nowIso_()]);
