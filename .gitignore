@@ -1,0 +1,8 @@
+# 사용하지 않는 기존 React 프로토타입 (신규 개발은 lunchbuddy-gas)
+lunchbuddy/
+
+# OS / 편집기
+Thumbs.db
+Desktop.ini
+.DS_Store
+.claude/

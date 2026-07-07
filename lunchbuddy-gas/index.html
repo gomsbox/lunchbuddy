@@ -1,0 +1,1013 @@
+<style>
+  :root {
+    --green: #22a45d;
+    --green-dark: #1b8a4d;
+    --green-bg: #e7f6ee;
+    --gray: #6b7280;
+    --gray-bg: #eef0f3;
+    --yellow-bg: #fff7dc;
+    --yellow: #b8860b;
+    --red: #d9534f;
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --text: #1f2937;
+    --line: #e5e7eb;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    font-size: 15px; line-height: 1.5;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; }
+  .screen { display: none; padding: 16px 16px 90px; }
+  .screen.active { display: block; }
+  .screen.no-tab { padding-bottom: 24px; }
+
+  .card { background: var(--card); border-radius: var(--radius); padding: 18px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .title { font-size: 22px; font-weight: 800; }
+  .sub { color: var(--gray); font-size: 13px; }
+  .section-label { font-size: 13px; font-weight: 700; color: var(--gray); margin: 18px 4px 8px; }
+
+  .header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .header .grow { flex: 1; min-width: 0; }
+  .header .room-name { font-size: 18px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .icon-btn {
+    border: none; background: var(--card); width: 38px; height: 38px; border-radius: 12px;
+    font-size: 17px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,.08); flex: none;
+  }
+  .icon-btn:active { transform: scale(.95); }
+
+  .btn {
+    display: block; width: 100%; border: none; border-radius: 14px; padding: 14px;
+    font-size: 16px; font-weight: 700; cursor: pointer; text-align: center;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .btn-green { background: var(--green); color: #fff; }
+  .btn-gray { background: var(--gray-bg); color: var(--text); }
+  .btn-outline { background: #fff; color: var(--green); border: 1.5px solid var(--green); }
+  .btn-danger { background: #fdecec; color: var(--red); }
+  .btn-sm { width: auto; display: inline-block; padding: 8px 14px; font-size: 13px; border-radius: 10px; }
+  .btn + .btn { margin-top: 10px; }
+
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--gray); }
+  .field input {
+    width: 100%; padding: 13px; border: 1.5px solid var(--line); border-radius: 12px;
+    font-size: 15px; background: #fff;
+  }
+  .field input:focus { outline: none; border-color: var(--green); }
+  .hint { font-size: 12px; color: var(--gray); margin-top: 4px; }
+  .form-error { color: var(--red); font-size: 13px; margin: 8px 0; min-height: 18px; }
+
+  /* 참여 버튼 (REQ-05) */
+  .resp-btn { border: 2px solid transparent; }
+  .resp-btn.going { background: var(--green-bg); color: var(--green-dark); }
+  .resp-btn.going.on { background: var(--green); color: #fff; }
+  .resp-btn.notgoing { background: var(--gray-bg); color: var(--gray); }
+  .resp-btn.notgoing.on { background: #4b5563; color: #fff; }
+
+  /* 현황 그룹 (REQ-06) */
+  .group { margin-bottom: 12px; }
+  .group-head { display: flex; align-items: center; gap: 6px; font-weight: 800; margin-bottom: 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { background: var(--gray-bg); border-radius: 999px; padding: 5px 12px; font-size: 13px; }
+  .chip.me { font-weight: 800; }
+  .chip.g { background: var(--green-bg); color: var(--green-dark); }
+  .chip.n { background: var(--gray-bg); color: var(--gray); }
+  .chip.y { background: var(--yellow-bg); color: var(--yellow); }
+  .empty-note { color: var(--gray); font-size: 13px; }
+  .refresh-line { text-align: center; color: var(--gray); font-size: 12px; margin-top: 4px; }
+
+  /* 하단 탭 바 */
+  .tabbar {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px; background: #fff; border-top: 1px solid var(--line);
+    display: flex; z-index: 50;
+  }
+  .tabbar button {
+    flex: 1; border: none; background: none; padding: 10px 0 max(10px, env(safe-area-inset-bottom));
+    font-size: 12px; color: var(--gray); cursor: pointer; font-weight: 600;
+  }
+  .tabbar button .ico { display: block; font-size: 19px; margin-bottom: 2px; }
+  .tabbar button.on { color: var(--green); }
+
+  /* 방 목록 */
+  .room-card { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .room-card .info { flex: 1; min-width: 0; }
+  .room-card .name { font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .badge { font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 6px; flex: none; }
+  .badge.host { background: var(--green-bg); color: var(--green-dark); }
+  .badge.cohost { background: #e8eefb; color: #3b5bdb; }
+  .fab {
+    position: fixed; right: calc(50% - 240px + 16px); bottom: 24px; width: 56px; height: 56px;
+    border-radius: 50%; border: none; background: var(--green); color: #fff; font-size: 28px;
+    cursor: pointer; box-shadow: 0 4px 12px rgba(34,164,93,.4); z-index: 40;
+  }
+  @media (max-width: 500px) { .fab { right: 16px; } }
+
+  /* 채팅 (REQ-13) */
+  .chat-list { display: flex; flex-direction: column; gap: 10px; min-height: 200px; padding-bottom: 8px; }
+  .msg { max-width: 78%; }
+  .msg .meta { font-size: 11px; color: var(--gray); margin-bottom: 2px; }
+  .msg .bubble { padding: 9px 13px; border-radius: 14px; font-size: 14px; word-break: break-word; white-space: pre-wrap; }
+  .msg.other { align-self: flex-start; }
+  .msg.other .bubble { background: #fff; border: 1px solid var(--line); border-top-left-radius: 4px; }
+  .msg.mine { align-self: flex-end; text-align: right; }
+  .msg.mine .bubble { background: var(--green); color: #fff; border-top-right-radius: 4px; text-align: left; }
+  .chat-input-bar {
+    position: fixed; bottom: 49px; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px; background: #fff; border-top: 1px solid var(--line);
+    display: flex; gap: 8px; padding: 8px 12px; z-index: 45;
+  }
+  .chat-input-bar input { flex: 1; border: 1.5px solid var(--line); border-radius: 999px; padding: 10px 16px; font-size: 14px; }
+  .chat-input-bar input:focus { outline: none; border-color: var(--green); }
+  .chat-input-bar button { border: none; background: var(--green); color: #fff; border-radius: 999px; padding: 0 18px; font-weight: 700; cursor: pointer; }
+
+  /* 달력 (REQ-08) */
+  .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .cal-nav .month { font-weight: 800; font-size: 16px; }
+  .cal-nav button { border: none; background: var(--gray-bg); border-radius: 10px; padding: 6px 12px; cursor: pointer; font-size: 13px; }
+  .cal-nav button:disabled { opacity: .35; cursor: default; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-dow { text-align: center; font-size: 11px; color: var(--gray); font-weight: 700; padding: 4px 0; }
+  .cal-cell {
+    aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; font-size: 13px; cursor: default; border: 1.5px solid transparent;
+  }
+  .cal-cell.dim { color: #c3c8d0; }
+  .cal-cell.has { background: var(--green-bg); color: var(--green-dark); font-weight: 700; cursor: pointer; }
+  .cal-cell.today { border-color: var(--green); }
+  .cal-cell.sel { background: var(--green); color: #fff; }
+  .cal-cell .cnt { font-size: 10px; line-height: 1; margin-top: 2px; }
+  .day-detail { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
+
+  /* 설정 */
+  .set-row { display: flex; align-items: center; gap: 10px; padding: 13px 2px; border-bottom: 1px solid var(--line); }
+  .set-row:last-child { border-bottom: none; }
+  .set-row .grow { flex: 1; }
+  .member-row { display: flex; align-items: center; gap: 8px; padding: 10px 2px; border-bottom: 1px solid var(--line); }
+  .member-row:last-child { border-bottom: none; }
+  .member-row .nm { flex: 1; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mini-btn { border: none; border-radius: 8px; padding: 6px 10px; font-size: 12px; font-weight: 700; cursor: pointer; background: var(--gray-bg); color: var(--text); flex: none; }
+  .mini-btn.danger { background: #fdecec; color: var(--red); }
+  .mini-btn.blue { background: #e8eefb; color: #3b5bdb; }
+
+  /* 모달 & 토스트 */
+  .modal-back {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 100;
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-back.open { display: flex; }
+  .modal { background: #fff; border-radius: 18px; padding: 20px; width: 100%; max-width: 380px; }
+  #toast {
+    position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+    background: rgba(31,41,55,.92); color: #fff; padding: 10px 18px; border-radius: 999px;
+    font-size: 13px; z-index: 200; display: none; max-width: 90%; text-align: center;
+  }
+  .center { text-align: center; }
+  .mt8 { margin-top: 8px; } .mt16 { margin-top: 16px; }
+  .link-btn { background: none; border: none; color: var(--green); font-weight: 700; cursor: pointer; font-size: 14px; }
+  .logo { font-size: 34px; }
+</style>
+
+<div class="wrap">
+
+  <!-- 로딩 -->
+  <div class="screen no-tab active" id="sc-loading">
+    <div class="card center" style="margin-top:40vh;">
+      <div class="logo">🍱</div>
+      <div class="sub mt8">런치버디 불러오는 중...</div>
+    </div>
+  </div>
+
+  <!-- 로그인 / 회원가입 (REQ-01·02) -->
+  <div class="screen no-tab" id="sc-auth">
+    <div class="center" style="margin: 48px 0 24px;">
+      <div class="logo">🍱</div>
+      <div class="title">런치버디</div>
+      <div class="sub">오늘 같이 식당 가요</div>
+    </div>
+    <div id="invite-notice" class="card center" style="display:none; background: var(--green-bg); box-shadow:none;">
+      <b>초대 링크로 접속했어요!</b><br><span class="sub">로그인하거나 가입하면 자동으로 방에 참여됩니다.</span>
+    </div>
+
+    <div class="card" id="login-form">
+      <div class="field">
+        <label>아이디</label>
+        <input type="text" id="login-id" autocomplete="username" placeholder="아이디 입력">
+      </div>
+      <div class="field">
+        <label>비밀번호</label>
+        <input type="password" id="login-pw" autocomplete="current-password" placeholder="비밀번호 입력">
+      </div>
+      <div class="form-error" id="login-error"></div>
+      <button class="btn btn-green" id="btn-login" onclick="doLogin()">로그인</button>
+      <div class="center mt16">
+        <span class="sub">아직 계정이 없나요?</span>
+        <button class="link-btn" onclick="switchAuth('signup')">회원가입</button>
+      </div>
+    </div>
+
+    <div class="card" id="signup-form" style="display:none;">
+      <div class="field">
+        <label>아이디</label>
+        <input type="text" id="signup-id" autocomplete="username" placeholder="4~20자 영문 소문자·숫자">
+        <div class="hint">가입 후 닉네임은 아이디로 시작하며 설정에서 바꿀 수 있어요.</div>
+      </div>
+      <div class="field">
+        <label>비밀번호</label>
+        <input type="password" id="signup-pw" autocomplete="new-password" placeholder="8자 이상, 영문+숫자">
+      </div>
+      <div class="field">
+        <label>비밀번호 확인</label>
+        <input type="password" id="signup-pw2" autocomplete="new-password" placeholder="비밀번호 다시 입력">
+      </div>
+      <div class="form-error" id="signup-error"></div>
+      <button class="btn btn-green" id="btn-signup" onclick="doSignup()">가입하고 시작하기</button>
+      <div class="center mt16">
+        <span class="sub">이미 계정이 있나요?</span>
+        <button class="link-btn" onclick="switchAuth('login')">로그인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 초대 링크 만료 (REQ-04) -->
+  <div class="screen no-tab" id="sc-expired">
+    <div class="card center" style="margin-top:30vh;">
+      <div style="font-size:34px;">⏰</div>
+      <div class="title mt8" style="font-size:18px;">초대 링크가 만료되었습니다</div>
+      <div class="sub mt8">방 호스트에게 새 초대 링크를 요청해주세요.</div>
+      <button class="btn btn-green mt16" onclick="loadRooms()">확인</button>
+    </div>
+  </div>
+
+  <!-- 방 목록 (SCR-02) -->
+  <div class="screen no-tab" id="sc-rooms">
+    <div class="header">
+      <div class="grow">
+        <div class="title">🍱 런치버디</div>
+        <div class="sub" id="rooms-greet"></div>
+      </div>
+      <button class="icon-btn" title="설정" onclick="openSettings(false)">⚙️</button>
+    </div>
+    <div id="rooms-body"></div>
+    <button class="btn btn-outline mt8" onclick="openJoinCode()">🔑 방 코드로 참여</button>
+    <button class="fab" title="새 방 만들기" onclick="openCreateRoom()">＋</button>
+  </div>
+
+  <!-- 방 내부 (SCR-04·05·07) -->
+  <div class="screen" id="sc-room">
+    <div class="header">
+      <button class="icon-btn" onclick="backToRooms()">←</button>
+      <div class="grow">
+        <div class="room-name" id="room-title">방</div>
+        <div class="sub" id="room-date"></div>
+      </div>
+      <button class="icon-btn" title="새로고침" onclick="refreshTab()">⟳</button>
+      <button class="icon-btn" title="설정" onclick="openSettings(true)">⚙️</button>
+    </div>
+
+    <!-- 오늘 탭 (REQ-05·06) -->
+    <div id="tab-today">
+      <div class="card">
+        <div style="font-weight:800; margin-bottom:12px;">안녕하세요, <span id="today-my-name"></span>님 👋<br>오늘 점심, 어떻게 하세요?</div>
+        <button class="btn resp-btn going" id="btn-going" onclick="setResp('going')">🟢 오늘 같이 가요</button>
+        <button class="btn resp-btn notgoing" id="btn-notgoing" onclick="setResp('not-going')">⚫ 오늘은 안 가요</button>
+      </div>
+      <div class="card">
+        <div class="group">
+          <div class="group-head">🟢 같이 가요 (<span id="cnt-going">0</span>명)</div>
+          <div class="chips" id="chips-going"></div>
+        </div>
+        <div class="group">
+          <div class="group-head">⚫ 안 가요 (<span id="cnt-notgoing">0</span>명)</div>
+          <div class="chips" id="chips-notgoing"></div>
+        </div>
+        <div id="unresp-wrap">
+          <button class="btn btn-gray" id="btn-unresp" onclick="toggleUnresp()"></button>
+          <div class="chips mt8" id="chips-unresp" style="display:none;"></div>
+        </div>
+      </div>
+      <button class="btn btn-outline" onclick="copyInvite()">🔗 초대 링크 복사 (7일 유효)</button>
+      <button class="btn btn-outline" id="btn-roomcode" onclick="copyRoomCode()">🔑 방 코드: ------</button>
+      <div class="refresh-line" id="today-updated"></div>
+    </div>
+
+    <!-- 채팅 탭 (REQ-13) -->
+    <div id="tab-chat" style="display:none;">
+      <div class="chat-list" id="chat-list"></div>
+      <div style="height:56px;"></div>
+    </div>
+
+    <!-- 히스토리 탭 (REQ-08) -->
+    <div id="tab-history" style="display:none;">
+      <div class="card">
+        <div class="cal-nav">
+          <button id="cal-prev" onclick="moveMonth(-1)">◀ 이전 달</button>
+          <div class="month" id="cal-month"></div>
+          <button id="cal-next" onclick="moveMonth(1)">다음 달 ▶</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="sub center mt8">최근 30일 기록만 보관됩니다.</div>
+        <div class="day-detail" id="day-detail" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- 채팅 입력 바 -->
+    <div class="chat-input-bar" id="chat-input-bar" style="display:none;">
+      <input type="text" id="chat-input" maxlength="300" placeholder="메시지 입력 (최대 300자)"
+             onkeydown="if(event.key==='Enter'){sendMsg();}">
+      <button onclick="sendMsg()">전송</button>
+    </div>
+
+    <!-- 하단 탭 바 -->
+    <div class="tabbar">
+      <button id="tabbtn-today" onclick="setTab('today')"><span class="ico">🍱</span>오늘</button>
+      <button id="tabbtn-chat" onclick="setTab('chat')"><span class="ico">💬</span>채팅</button>
+      <button id="tabbtn-history" onclick="setTab('history')"><span class="ico">📅</span>히스토리</button>
+    </div>
+  </div>
+
+  <!-- 설정 (SCR-06) -->
+  <div class="screen no-tab" id="sc-settings">
+    <div class="header">
+      <button class="icon-btn" onclick="closeSettings()">←</button>
+      <div class="grow"><div class="title" style="font-size:18px;">설정</div></div>
+    </div>
+
+    <!-- 방 관리 (호스트·공동 호스트 전용, REQ-10·11) -->
+    <div id="set-room-section" style="display:none;">
+      <div class="section-label">방 관리 · <span id="set-room-name"></span></div>
+      <div class="card">
+        <div class="set-row">
+          <div class="grow"><b>방 이름 변경</b></div>
+          <button class="mini-btn" onclick="doRenameRoom()">변경</button>
+        </div>
+        <div class="set-row">
+          <div class="grow"><b>초대 링크 재생성</b><div class="sub">기존 링크는 즉시 무효화됩니다</div></div>
+          <button class="mini-btn" onclick="doRegenInvite()">재생성</button>
+        </div>
+      </div>
+      <div class="section-label">멤버 관리</div>
+      <div class="card" id="set-members">불러오는 중...</div>
+      <div id="set-danger" style="display:none;">
+        <div class="section-label">위험 구역</div>
+        <button class="btn btn-danger" onclick="doDeleteRoom()">🗑 방 삭제 (호스트 전용)</button>
+      </div>
+    </div>
+
+    <!-- 개인 설정 (REQ-09) -->
+    <div class="section-label">개인 설정</div>
+    <div class="card">
+      <div class="field">
+        <label>닉네임 (2~10자 한글/영문/숫자)</label>
+        <input type="text" id="set-nickname" maxlength="10">
+      </div>
+      <button class="btn btn-gray" onclick="saveNickname()">닉네임 저장</button>
+    </div>
+    <div class="card">
+      <div class="field"><label>현재 비밀번호</label><input type="password" id="pw-cur" autocomplete="current-password"></div>
+      <div class="field"><label>새 비밀번호 (8자 이상, 영문+숫자)</label><input type="password" id="pw-new" autocomplete="new-password"></div>
+      <div class="field"><label>새 비밀번호 확인</label><input type="password" id="pw-new2" autocomplete="new-password"></div>
+      <div class="form-error" id="pw-error"></div>
+      <button class="btn btn-gray" onclick="changePw()">비밀번호 변경</button>
+    </div>
+    <div class="card">
+      <!-- REQ-12: 알림 메뉴 자리 (준비 중) -->
+      <div class="set-row" style="cursor:pointer;" onclick="toast('🔔 알림 기능은 준비 중이에요. 조금만 기다려주세요!')">
+        <div class="grow"><b>알림 설정</b><div class="sub">준비 중인 기능입니다</div></div>
+        <span class="sub">›</span>
+      </div>
+    </div>
+    <button class="btn btn-gray" onclick="doLogout(true)">로그아웃</button>
+  </div>
+
+</div>
+
+<!-- 방 코드 참여 모달 (REQ-04 방법 2) -->
+<div class="modal-back" id="modal-join">
+  <div class="modal">
+    <div class="title" style="font-size:18px; margin-bottom:12px;">🔑 방 코드로 참여</div>
+    <div class="field">
+      <label>방 코드 (6자리)</label>
+      <input type="text" id="join-code" maxlength="6" placeholder="예: AB3D7K"
+             style="text-transform:uppercase; letter-spacing:4px; text-align:center; font-size:20px; font-weight:800;"
+             onkeydown="if(event.key==='Enter'){doJoinCode();}">
+      <div class="hint">방 멤버에게 코드를 받아 입력하세요. 방 코드는 만료되지 않아요.</div>
+    </div>
+    <div class="form-error" id="join-error"></div>
+    <button class="btn btn-green" id="btn-join" onclick="doJoinCode()">참여하기</button>
+    <button class="btn btn-gray" onclick="closeJoinCode()">취소</button>
+  </div>
+</div>
+
+<!-- 방 만들기 모달 (REQ-03) -->
+<div class="modal-back" id="modal-create">
+  <div class="modal">
+    <div class="title" style="font-size:18px; margin-bottom:12px;">새 점심방 만들기</div>
+    <div class="field">
+      <label>방 이름 (2~20자)</label>
+      <input type="text" id="create-room-name" maxlength="20">
+    </div>
+    <div class="form-error" id="create-error"></div>
+    <button class="btn btn-green" id="btn-create" onclick="doCreateRoom()">방 만들기</button>
+    <button class="btn btn-gray" onclick="closeCreateRoom()">취소</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  /* ==================== 상태 ==================== */
+  var INVITE = '<?= inviteToken ?>';
+  var state = {
+    token: localStorage.getItem('lb_token') || '',
+    me: null,
+    roomId: null,
+    myRole: '',
+    tab: 'today',
+    pendingInvite: INVITE || '',
+    inviteUrl: '',
+    roomCode: '',
+    unrespOpen: false,        // 미응답 펼침 — 세션 내 유지 (REQ-06)
+    histEntries: {},
+    histToday: '',
+    histCutoff: '',
+    histMonth: null,          // 표시 중인 달 (Date, 1일 기준)
+    histSelected: null,
+    timer: null,
+  };
+
+  /* ==================== 공통 ==================== */
+  function call(fn) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    return new Promise(function (resolve) {
+      var runner = google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(function (e) { resolve({ ok: false, error: '서버 연결에 실패했습니다: ' + e.message }); });
+      runner[fn].apply(runner, args);
+    });
+  }
+  function api(fn) {
+    var args = Array.prototype.slice.call(arguments);
+    return call.apply(null, args).then(function (r) {
+      if (!r.ok && r.error === 'AUTH') {
+        toast('세션이 만료되었습니다. 다시 로그인해주세요.');
+        doLogout(false);
+      }
+      return r;
+    });
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  var toastTimer = null;
+  function toast(msg) {
+    var el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.display = 'block';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.style.display = 'none'; }, 2600);
+  }
+  function show(id) {
+    stopPolling();
+    var screens = document.querySelectorAll('.screen');
+    for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+  function stopPolling() { if (state.timer) { clearInterval(state.timer); state.timer = null; } }
+  function nowHM() {
+    var d = new Date();
+    return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+  }
+  function copyText(t) {
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = t; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); toast('초대 링크가 복사되었습니다 🔗'); }
+      catch (e) { prompt('아래 링크를 직접 복사해주세요', t); }
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t)
+        .then(function () { toast('초대 링크가 복사되었습니다 🔗'); })
+        .catch(fallback);
+    } else fallback();
+  }
+
+  /* ==================== 초기화 ==================== */
+  function init() {
+    if (state.token) {
+      call('api_getMe', state.token).then(function (r) {
+        if (r.ok) { state.me = r.data.user; afterLogin(); }
+        else { localStorage.removeItem('lb_token'); state.token = ''; showAuth(); }
+      });
+    } else showAuth();
+  }
+  function showAuth() {
+    document.getElementById('invite-notice').style.display = state.pendingInvite ? 'block' : 'none';
+    show('sc-auth');
+  }
+  function afterLogin() {
+    if (state.pendingInvite) {
+      var inv = state.pendingInvite;
+      state.pendingInvite = '';
+      api('api_joinByInvite', state.token, inv).then(function (r) {
+        if (r.ok) {
+          toast(r.data.already ? '이미 참여 중인 방이에요!' : '방에 참여했습니다 🎉');
+          enterRoom(r.data.roomId);
+        } else if (r.error === 'EXPIRED') {
+          show('sc-expired');
+        } else {
+          toast(r.error); loadRooms();
+        }
+      });
+    } else loadRooms();
+  }
+
+  /* ==================== 로그인 / 회원가입 ==================== */
+  function switchAuth(mode) {
+    document.getElementById('login-form').style.display = mode === 'login' ? 'block' : 'none';
+    document.getElementById('signup-form').style.display = mode === 'signup' ? 'block' : 'none';
+    document.getElementById('login-error').textContent = '';
+    document.getElementById('signup-error').textContent = '';
+  }
+  function doLogin() {
+    var id = document.getElementById('login-id').value.trim();
+    var pw = document.getElementById('login-pw').value;
+    var errEl = document.getElementById('login-error');
+    if (!id || !pw) { errEl.textContent = '아이디와 비밀번호를 입력해주세요.'; return; }
+    var btn = document.getElementById('btn-login');
+    btn.disabled = true; errEl.textContent = '';
+    call('api_login', id, pw).then(function (r) {
+      btn.disabled = false;
+      if (!r.ok) { errEl.textContent = r.error; return; }
+      state.token = r.data.token; state.me = r.data.user;
+      localStorage.setItem('lb_token', state.token);
+      afterLogin();
+    });
+  }
+  function doSignup() {
+    var id = document.getElementById('signup-id').value.trim();
+    var pw = document.getElementById('signup-pw').value;
+    var pw2 = document.getElementById('signup-pw2').value;
+    var errEl = document.getElementById('signup-error');
+    errEl.textContent = '';
+    if (!/^[a-z0-9]{4,20}$/.test(id)) { errEl.textContent = '아이디는 4~20자의 영문 소문자와 숫자만 사용할 수 있습니다.'; return; }
+    if (!/^(?=.*[A-Za-z])(?=.*[0-9]).{8,}$/.test(pw)) { errEl.textContent = '비밀번호는 8자 이상이며 영문과 숫자를 모두 포함해야 합니다.'; return; }
+    if (pw !== pw2) { errEl.textContent = '비밀번호가 일치하지 않습니다.'; return; }
+    var btn = document.getElementById('btn-signup');
+    btn.disabled = true;
+    call('api_signup', id, pw).then(function (r) {
+      btn.disabled = false;
+      if (!r.ok) { errEl.textContent = r.error; return; }
+      state.token = r.data.token; state.me = r.data.user;
+      localStorage.setItem('lb_token', state.token);
+      toast('가입 완료! 환영합니다 🎉');
+      afterLogin();
+    });
+  }
+  function doLogout(callServer) {
+    if (callServer && state.token) call('api_logout', state.token);
+    localStorage.removeItem('lb_token');
+    state.token = ''; state.me = null; state.roomId = null; state.pendingInvite = '';
+    showAuth();
+  }
+
+  /* ==================== 방 목록 (REQ-03) ==================== */
+  function loadRooms() {
+    show('sc-rooms');
+    document.getElementById('rooms-greet').textContent = state.me ? state.me.nickname + '님, 오늘 점심 어때요?' : '';
+    document.getElementById('rooms-body').innerHTML = '<div class="sub center mt16">불러오는 중...</div>';
+    api('api_getMyRooms', state.token).then(function (r) {
+      if (!r.ok) { document.getElementById('rooms-body').innerHTML = '<div class="sub center">' + esc(r.error) + '</div>'; return; }
+      renderRooms(r.data);
+    });
+  }
+  function renderRooms(data) {
+    var html = '';
+    function cards(list) {
+      return list.map(function (rm) {
+        var badge = rm.role === 'host' ? '<span class="badge host">호스트</span>'
+                  : rm.role === 'co-host' ? '<span class="badge cohost">공동호스트</span>' : '';
+        return '<div class="card room-card" onclick="enterRoom(\'' + esc(rm.roomId) + '\')">' +
+          '<div class="info"><div class="name">🍱 ' + esc(rm.roomName) + '</div>' +
+          '<div class="sub">오늘 ' + rm.goingCount + '명 같이 가요 · 멤버 ' + rm.memberCount + '명</div></div>' +
+          badge + '<span class="sub">›</span></div>';
+      }).join('');
+    }
+    if (data.hostRooms.length) html += '<div class="section-label">내가 만든 방</div>' + cards(data.hostRooms);
+    if (data.otherRooms.length) html += '<div class="section-label">참여 중인 방</div>' + cards(data.otherRooms);
+    if (!data.hostRooms.length && !data.otherRooms.length) {
+      html = '<div class="card center" style="padding:36px 18px;">' +
+        '<div style="font-size:30px;">🥢</div>' +
+        '<b class="mt8" style="display:block;">아직 참여 중인 방이 없어요</b>' +
+        '<div class="sub mt8">오른쪽 아래 + 버튼으로 점심방을 만들거나,<br>동료에게 받은 초대 링크 또는 방 코드로 참여해보세요.</div></div>';
+    }
+    document.getElementById('rooms-body').innerHTML = html;
+  }
+  function openCreateRoom() {
+    document.getElementById('create-room-name').value = (state.me ? state.me.nickname : '') + '의 점심방';
+    document.getElementById('create-error').textContent = '';
+    document.getElementById('modal-create').classList.add('open');
+  }
+  function closeCreateRoom() { document.getElementById('modal-create').classList.remove('open'); }
+  function doCreateRoom() {
+    var name = document.getElementById('create-room-name').value.trim();
+    var errEl = document.getElementById('create-error');
+    if (name.length < 2 || name.length > 20) { errEl.textContent = '방 이름은 2~20자로 입력해주세요.'; return; }
+    var btn = document.getElementById('btn-create');
+    btn.disabled = true;
+    api('api_createRoom', state.token, name).then(function (r) {
+      btn.disabled = false;
+      if (!r.ok) { errEl.textContent = r.error; return; }
+      closeCreateRoom();
+      toast('방이 만들어졌어요! 초대 링크를 공유해보세요 🎉');
+      enterRoom(r.data.roomId);
+    });
+  }
+
+  /* ==================== 방 코드 참여 (REQ-04 방법 2) ==================== */
+  function openJoinCode() {
+    document.getElementById('join-code').value = '';
+    document.getElementById('join-error').textContent = '';
+    document.getElementById('modal-join').classList.add('open');
+    document.getElementById('join-code').focus();
+  }
+  function closeJoinCode() { document.getElementById('modal-join').classList.remove('open'); }
+  function doJoinCode() {
+    var code = document.getElementById('join-code').value.trim().toUpperCase();
+    var errEl = document.getElementById('join-error');
+    if (!/^[A-Z0-9]{6}$/.test(code)) { errEl.textContent = '방 코드는 6자리 영문·숫자입니다.'; return; }
+    var btn = document.getElementById('btn-join');
+    btn.disabled = true; errEl.textContent = '';
+    api('api_joinByCode', state.token, code).then(function (r) {
+      btn.disabled = false;
+      if (!r.ok) { errEl.textContent = r.error; return; }
+      closeJoinCode();
+      toast(r.data.already ? '이미 참여 중인 방이에요!' : '방에 참여했습니다 🎉');
+      enterRoom(r.data.roomId);
+    });
+  }
+
+  /* ==================== 방 내부 ==================== */
+  function enterRoom(roomId) {
+    state.roomId = roomId;
+    state.unrespOpen = false;
+    state.histMonth = null;
+    state.histSelected = null;
+    show('sc-room');
+    setTab('today');
+  }
+  function backToRooms() { state.roomId = null; loadRooms(); }
+
+  function setTab(tab) {
+    state.tab = tab;
+    stopPolling();
+    ['today', 'chat', 'history'].forEach(function (t) {
+      document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
+      document.getElementById('tabbtn-' + t).classList.toggle('on', t === tab);
+    });
+    document.getElementById('chat-input-bar').style.display = tab === 'chat' ? 'flex' : 'none';
+    if (tab === 'today') {
+      loadToday();
+      state.timer = setInterval(function () { if (!document.hidden) loadToday(true); }, 30000);  // 30초 폴링 (REQ-06)
+    } else if (tab === 'chat') {
+      loadChat(true);
+      state.timer = setInterval(function () { if (!document.hidden) loadChat(false); }, 15000);  // 15초 폴링 (REQ-13)
+    } else {
+      loadHistory();
+    }
+  }
+  function refreshTab() {
+    if (state.tab === 'today') loadToday();
+    else if (state.tab === 'chat') loadChat(true);
+    else loadHistory();
+    toast('새로고침했어요 ⟳');
+  }
+
+  /* ==================== 오늘 탭 (REQ-05·06) ==================== */
+  var DOW = ['일', '월', '화', '수', '목', '금', '토'];
+  function loadToday(silent) {
+    api('api_getRoomToday', state.token, state.roomId).then(function (r) {
+      if (!r.ok) {
+        if (r.error === 'NOT_MEMBER') { toast('더 이상 이 방의 멤버가 아닙니다.'); loadRooms(); }
+        else if (!silent) toast(r.error);
+        return;
+      }
+      renderToday(r.data);
+    });
+  }
+  function renderToday(d) {
+    state.myRole = d.myRole;
+    state.inviteUrl = d.inviteUrl;
+    state.roomCode = d.roomCode || '';
+    document.getElementById('btn-roomcode').textContent = '🔑 방 코드: ' + (state.roomCode || '------') + ' (탭하여 복사)';
+    document.getElementById('room-title').textContent = '🍱 ' + d.roomName;
+    var dt = new Date(d.date + 'T00:00:00');
+    document.getElementById('room-date').textContent =
+      dt.getFullYear() + '년 ' + (dt.getMonth() + 1) + '월 ' + dt.getDate() + '일 (' + DOW[dt.getDay()] + ')';
+    document.getElementById('today-my-name').textContent = state.me.nickname;
+
+    document.getElementById('btn-going').classList.toggle('on', d.myStatus === 'going');
+    document.getElementById('btn-notgoing').classList.toggle('on', d.myStatus === 'not-going');
+
+    function chips(list, cls) {
+      if (!list.length) return '<span class="empty-note">아직 없어요</span>';
+      return list.map(function (m) {
+        var me = m.userId === d.myUserId ? ' me' : '';
+        return '<span class="chip ' + cls + me + '">' + esc(m.nickname) + '</span>';
+      }).join('');
+    }
+    document.getElementById('cnt-going').textContent = d.going.length;
+    document.getElementById('cnt-notgoing').textContent = d.notGoing.length;
+    document.getElementById('chips-going').innerHTML = chips(d.going, 'g');
+    document.getElementById('chips-notgoing').innerHTML = chips(d.notGoing, 'n');
+
+    // 미응답: 기본 숨김, 0명이면 버튼 자체 숨김 (REQ-06)
+    var wrap = document.getElementById('unresp-wrap');
+    if (!d.noResponse.length) {
+      wrap.style.display = 'none';
+    } else {
+      wrap.style.display = 'block';
+      document.getElementById('btn-unresp').textContent =
+        (state.unrespOpen ? '▲ 미응답자 접기' : '▼ 미응답자 확인하기') + ' (' + d.noResponse.length + '명)';
+      var box = document.getElementById('chips-unresp');
+      box.style.display = state.unrespOpen ? 'flex' : 'none';
+      box.innerHTML = chips(d.noResponse, 'y');
+    }
+    document.getElementById('today-updated').textContent = '마지막 갱신: ' + nowHM();
+  }
+  function toggleUnresp() { state.unrespOpen = !state.unrespOpen; loadToday(true); }
+  function setResp(status) {
+    document.getElementById('btn-going').disabled = true;
+    document.getElementById('btn-notgoing').disabled = true;
+    api('api_setResponse', state.token, state.roomId, status).then(function (r) {
+      document.getElementById('btn-going').disabled = false;
+      document.getElementById('btn-notgoing').disabled = false;
+      if (!r.ok) { toast(r.error); return; }
+      toast(status === 'going' ? '오늘 같이 가요! 🟢' : '오늘은 패스! ⚫');
+      loadToday(true);
+    });
+  }
+  function copyInvite() {
+    if (state.inviteUrl) copyText(state.inviteUrl);
+    else toast('초대 링크를 불러오는 중이에요. 잠시 후 다시 시도해주세요.');
+  }
+  function copyRoomCode() {
+    if (state.roomCode) copyText(state.roomCode);
+    else toast('방 코드를 불러오는 중이에요. 잠시 후 다시 시도해주세요.');
+  }
+
+  /* ==================== 채팅 탭 (REQ-13) ==================== */
+  function loadChat(scrollBottom) {
+    api('api_getMessages', state.token, state.roomId).then(function (r) {
+      if (!r.ok) { if (r.error === 'NOT_MEMBER') { toast('더 이상 이 방의 멤버가 아닙니다.'); loadRooms(); } return; }
+      renderChat(r.data, scrollBottom);
+    });
+  }
+  function fmtMsgTime(iso) {
+    var today = new Date();
+    var tStr = today.getFullYear() + '-' + ('0' + (today.getMonth() + 1)).slice(-2) + '-' + ('0' + today.getDate()).slice(-2);
+    var datePart = String(iso).slice(0, 10);
+    var timePart = String(iso).slice(11, 16);
+    if (datePart === tStr) return timePart;
+    return (Number(datePart.slice(5, 7))) + '/' + (Number(datePart.slice(8, 10))) + ' ' + timePart;
+  }
+  function renderChat(d, scrollBottom) {
+    var list = document.getElementById('chat-list');
+    if (!d.messages.length) {
+      list.innerHTML = '<div class="card center sub" style="box-shadow:none;">아직 메시지가 없어요.<br>첫 메시지를 보내보세요! 💬</div>';
+      return;
+    }
+    list.innerHTML = d.messages.map(function (m) {
+      var mine = m.userId === d.myUserId;
+      var meta = mine ? fmtMsgTime(m.sentAt) : esc(m.nickname) + ' · ' + fmtMsgTime(m.sentAt);
+      return '<div class="msg ' + (mine ? 'mine' : 'other') + '">' +
+        '<div class="meta">' + meta + '</div>' +
+        '<div class="bubble">' + esc(m.text) + '</div></div>';
+    }).join('');
+    if (scrollBottom) window.scrollTo(0, document.body.scrollHeight);
+  }
+  var sending = false;
+  function sendMsg() {
+    if (sending) return;
+    var input = document.getElementById('chat-input');
+    var text = input.value.trim();
+    if (!text) return;
+    if (text.length > 300) { toast('메시지는 300자 이내로 입력해주세요.'); return; }
+    sending = true;
+    api('api_sendMessage', state.token, state.roomId, text).then(function (r) {
+      sending = false;
+      if (!r.ok) { toast(r.error); return; }
+      input.value = '';
+      loadChat(true);
+    });
+  }
+
+  /* ==================== 히스토리 탭 (REQ-08) ==================== */
+  function loadHistory() {
+    document.getElementById('cal-grid').innerHTML = '<div class="sub" style="grid-column:1/-1; text-align:center; padding:20px 0;">불러오는 중...</div>';
+    api('api_getHistory', state.token, state.roomId).then(function (r) {
+      if (!r.ok) { if (r.error === 'NOT_MEMBER') { toast('더 이상 이 방의 멤버가 아닙니다.'); loadRooms(); } return; }
+      state.histEntries = r.data.entries;
+      state.histToday = r.data.today;
+      state.histCutoff = r.data.cutoff;
+      if (!state.histMonth) {
+        var t = new Date(r.data.today + 'T00:00:00');
+        state.histMonth = new Date(t.getFullYear(), t.getMonth(), 1);
+      }
+      renderCalendar();
+    });
+  }
+  function ymd(d) {
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+  }
+  function moveMonth(delta) {
+    state.histMonth = new Date(state.histMonth.getFullYear(), state.histMonth.getMonth() + delta, 1);
+    state.histSelected = null;
+    renderCalendar();
+  }
+  function renderCalendar() {
+    var m = state.histMonth;
+    document.getElementById('cal-month').textContent = m.getFullYear() + '년 ' + (m.getMonth() + 1) + '월';
+
+    // 이동 범위: 30일 보관 구간이 걸친 달까지만
+    var cutoffD = new Date(state.histCutoff + 'T00:00:00');
+    var todayD = new Date(state.histToday + 'T00:00:00');
+    document.getElementById('cal-prev').disabled =
+      (m.getFullYear() === cutoffD.getFullYear() && m.getMonth() === cutoffD.getMonth()) || m <= cutoffD;
+    document.getElementById('cal-next').disabled =
+      (m.getFullYear() === todayD.getFullYear() && m.getMonth() === todayD.getMonth());
+
+    var html = DOW.map(function (d) { return '<div class="cal-dow">' + d + '</div>'; }).join('');
+    var first = new Date(m.getFullYear(), m.getMonth(), 1);
+    var last = new Date(m.getFullYear(), m.getMonth() + 1, 0);
+    for (var i = 0; i < first.getDay(); i++) html += '<div class="cal-cell"></div>';
+    for (var day = 1; day <= last.getDate(); day++) {
+      var d = new Date(m.getFullYear(), m.getMonth(), day);
+      var key = ymd(d);
+      var entry = state.histEntries[key];
+      var inRange = key >= state.histCutoff && key <= state.histToday;
+      var cls = 'cal-cell';
+      if (!inRange) cls += ' dim';
+      if (entry) cls += ' has';
+      if (key === state.histToday) cls += ' today';
+      if (key === state.histSelected) cls += ' sel';
+      var cnt = entry ? '<span class="cnt">🟢' + entry.going.length + '</span>' : '';
+      var onclick = entry ? ' onclick="selectDay(\'' + key + '\')"' : '';
+      html += '<div class="' + cls + '"' + onclick + '>' + day + cnt + '</div>';
+    }
+    document.getElementById('cal-grid').innerHTML = html;
+    renderDayDetail();
+  }
+  function selectDay(key) {
+    state.histSelected = state.histSelected === key ? null : key;
+    renderCalendar();
+  }
+  function renderDayDetail() {
+    var box = document.getElementById('day-detail');
+    var key = state.histSelected;
+    if (!key || !state.histEntries[key]) { box.style.display = 'none'; return; }
+    var e = state.histEntries[key];
+    var d = new Date(key + 'T00:00:00');
+    box.style.display = 'block';
+    box.innerHTML =
+      '<b>' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일 (' + DOW[d.getDay()] + ')' +
+      (key === state.histToday ? ' · 오늘' : '') + '</b>' +
+      '<div class="mt8"><span class="sub">🟢 같이 가요 (' + e.going.length + '명)</span><div class="chips mt8">' +
+      (e.going.length ? e.going.map(function (n) { return '<span class="chip g">' + esc(n) + '</span>'; }).join('') : '<span class="empty-note">없음</span>') +
+      '</div></div>' +
+      '<div class="mt8"><span class="sub">⚫ 안 가요 (' + e.notGoing.length + '명)</span><div class="chips mt8">' +
+      (e.notGoing.length ? e.notGoing.map(function (n) { return '<span class="chip n">' + esc(n) + '</span>'; }).join('') : '<span class="empty-note">없음</span>') +
+      '</div></div>';
+  }
+
+  /* ==================== 설정 (REQ-09·10·11·12) ==================== */
+  var settingsFromRoom = false;
+  function openSettings(fromRoom) {
+    settingsFromRoom = fromRoom;
+    show('sc-settings');
+    document.getElementById('set-nickname').value = state.me.nickname;
+    document.getElementById('pw-cur').value = '';
+    document.getElementById('pw-new').value = '';
+    document.getElementById('pw-new2').value = '';
+    document.getElementById('pw-error').textContent = '';
+
+    var roomSection = document.getElementById('set-room-section');
+    var isManager = fromRoom && (state.myRole === 'host' || state.myRole === 'co-host');
+    roomSection.style.display = isManager ? 'block' : 'none';
+    if (isManager) {
+      document.getElementById('set-room-name').textContent = document.getElementById('room-title').textContent.replace('🍱 ', '');
+      document.getElementById('set-danger').style.display = state.myRole === 'host' ? 'block' : 'none';
+      loadMembersUI();
+    }
+  }
+  function closeSettings() {
+    if (settingsFromRoom && state.roomId) { show('sc-room'); setTab(state.tab); }
+    else loadRooms();
+  }
+
+  function saveNickname() {
+    var nick = document.getElementById('set-nickname').value.trim();
+    api('api_updateNickname', state.token, nick).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      state.me.nickname = r.data.nickname;
+      toast('닉네임이 변경되었습니다 ✅');
+    });
+  }
+  function changePw() {
+    var cur = document.getElementById('pw-cur').value;
+    var nw = document.getElementById('pw-new').value;
+    var nw2 = document.getElementById('pw-new2').value;
+    var errEl = document.getElementById('pw-error');
+    errEl.textContent = '';
+    if (!cur || !nw) { errEl.textContent = '현재 비밀번호와 새 비밀번호를 입력해주세요.'; return; }
+    if (nw !== nw2) { errEl.textContent = '새 비밀번호가 일치하지 않습니다.'; return; }
+    api('api_changePassword', state.token, cur, nw).then(function (r) {
+      if (!r.ok) { errEl.textContent = r.error; return; }
+      document.getElementById('pw-cur').value = '';
+      document.getElementById('pw-new').value = '';
+      document.getElementById('pw-new2').value = '';
+      toast('비밀번호가 변경되었습니다 ✅');
+    });
+  }
+
+  function loadMembersUI() {
+    var box = document.getElementById('set-members');
+    box.innerHTML = '<span class="sub">불러오는 중...</span>';
+    api('api_getMembers', state.token, state.roomId).then(function (r) {
+      if (!r.ok) { box.innerHTML = '<span class="sub">' + esc(r.error) + '</span>'; return; }
+      var myRole = r.data.myRole;
+      box.innerHTML = r.data.members.map(function (m) {
+        var badge = m.role === 'host' ? '<span class="badge host">호스트</span>'
+                  : m.role === 'co-host' ? '<span class="badge cohost">공동호스트</span>' : '';
+        var actions = '';
+        if (m.userId !== r.data.myUserId && m.role !== 'host') {
+          if (myRole === 'host') {
+            actions += m.role === 'co-host'
+              ? '<button class="mini-btn" onclick="doSetRole(\'' + esc(m.userId) + '\',\'member\')">공동호스트 해제</button>'
+              : '<button class="mini-btn blue" onclick="doSetRole(\'' + esc(m.userId) + '\',\'co-host\')">공동호스트 지정</button>';
+          }
+          if (myRole === 'host' || (myRole === 'co-host' && m.role === 'member')) {
+            actions += '<button class="mini-btn danger" onclick="doKick(\'' + esc(m.userId) + '\',\'' + esc(m.nickname) + '\')">내보내기</button>';
+          }
+        }
+        return '<div class="member-row"><span class="nm">' + esc(m.nickname) + '</span>' + badge + actions + '</div>';
+      }).join('');
+    });
+  }
+  function doSetRole(userId, role) {
+    api('api_setRole', state.token, state.roomId, userId, role).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      toast(role === 'co-host' ? '공동 호스트로 지정했습니다 ✅' : '공동 호스트를 해제했습니다.');
+      loadMembersUI();
+    });
+  }
+  function doKick(userId, nickname) {
+    if (!confirm(nickname + '님을 방에서 내보낼까요?\n(초대 링크로 다시 참여할 수 있습니다)')) return;
+    api('api_kickMember', state.token, state.roomId, userId).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      toast(nickname + '님을 내보냈습니다.');
+      loadMembersUI();
+    });
+  }
+  function doRenameRoom() {
+    var cur = document.getElementById('set-room-name').textContent;
+    var name = prompt('새 방 이름을 입력해주세요 (2~20자)', cur);
+    if (name === null) return;
+    api('api_renameRoom', state.token, state.roomId, name.trim()).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      document.getElementById('set-room-name').textContent = r.data.roomName;
+      document.getElementById('room-title').textContent = '🍱 ' + r.data.roomName;
+      toast('방 이름이 변경되었습니다 ✅');
+    });
+  }
+  function doRegenInvite() {
+    if (!confirm('초대 링크를 재생성할까요?\n기존 링크는 즉시 사용할 수 없게 됩니다.')) return;
+    api('api_regenerateInvite', state.token, state.roomId).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      state.inviteUrl = r.data.inviteUrl;
+      copyText(r.data.inviteUrl);
+    });
+  }
+  function doDeleteRoom() {
+    var roomName = document.getElementById('set-room-name').textContent;
+    if (!confirm('정말 "' + roomName + '" 방을 삭제할까요?\n멤버·참여기록·채팅이 모두 삭제되며 되돌릴 수 없습니다.')) return;
+    api('api_deleteRoom', state.token, state.roomId).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      toast('방이 삭제되었습니다.');
+      state.roomId = null;
+      loadRooms();
+    });
+  }
+
+  init();
+</script>
