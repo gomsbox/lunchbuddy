@@ -1,3 +1,13 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>런치버디 🍱</title>
+  <meta name="description" content="오늘 같이 식당 가요 — 사내 식당 점심 멤버 확인 서비스">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍱</text></svg>">
+</head>
+<body>
 <style>
   :root {
     --green: #22a45d;
@@ -422,8 +432,12 @@
 <div id="toast"></div>
 
 <script>
+  /* ==================== 설정 ==================== */
+  // ★ 앱스크립트 웹 앱 URL(/exec로 끝나는 주소)을 여기에 입력하세요 ★
+  var API_URL = 'PASTE_YOUR_APPS_SCRIPT_EXEC_URL';
+
   /* ==================== 상태 ==================== */
-  var INVITE = '<?= inviteToken ?>';
+  var INVITE = new URLSearchParams(location.search).get('invite') || '';
   var state = {
     token: localStorage.getItem('lb_token') || '',
     me: null,
@@ -445,12 +459,14 @@
   /* ==================== 공통 ==================== */
   function call(fn) {
     var args = Array.prototype.slice.call(arguments, 1);
-    return new Promise(function (resolve) {
-      var runner = google.script.run
-        .withSuccessHandler(resolve)
-        .withFailureHandler(function (e) { resolve({ ok: false, error: '서버 연결에 실패했습니다: ' + e.message }); });
-      runner[fn].apply(runner, args);
-    });
+    // 앱스크립트 JSON API 호출 — text/plain으로 보내야 CORS 사전요청(preflight) 없이 동작
+    return fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ fn: fn, args: args }),
+    })
+      .then(function (r) { return r.json(); })
+      .catch(function (e) { return { ok: false, error: '서버 연결에 실패했습니다: ' + e.message }; });
   }
   function api(fn) {
     var args = Array.prototype.slice.call(arguments);
@@ -504,6 +520,11 @@
 
   /* ==================== 초기화 ==================== */
   function init() {
+    if (API_URL.indexOf('/exec') === -1) {
+      document.querySelector('#sc-loading .sub').textContent =
+        '⚠️ 설정 필요: docs/index.html의 API_URL에 앱스크립트 웹 앱 주소(/exec)를 입력해주세요.';
+      return;
+    }
     if (state.token) {
       call('api_getMe', state.token).then(function (r) {
         if (r.ok) { state.me = r.data.user; afterLogin(); }
@@ -1011,3 +1032,5 @@
 
   init();
 </script>
+</body>
+</html>

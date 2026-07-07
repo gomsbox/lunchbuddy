@@ -1,13 +1,20 @@
 /************************************************************
- * 🍱 런치버디 (LunchBuddy) — 백엔드
- * 요구사항 명세서 v1.1 기준 / Google Apps Script (컨테이너 바인딩)
+ * 🍱 런치버디 (LunchBuddy) — 백엔드 (JSON API)
+ * 요구사항 명세서 v1.3 기준 / Google Apps Script (컨테이너 바인딩)
+ *
+ * 구조: 프론트엔드는 GitHub Pages(docs/index.html)에서 서빙,
+ *       이 스크립트는 fetch(POST)로 호출되는 JSON API 서버.
  *
  * 사용법:
  *  1) 구글 시트 생성 → 확장 프로그램 > Apps Script
- *  2) 이 파일(Code.gs)과 index.html 붙여넣기
+ *  2) 이 파일(Code.gs) 붙여넣기 (HTML 파일 불필요)
  *  3) setup() 1회 실행 (시트 생성 + 자정 트리거 등록)
  *  4) 배포 > 새 배포 > 웹 앱 (실행: 나 / 액세스: 모든 사용자)
+ *  5) 발급된 /exec URL을 docs/index.html의 API_URL에 입력
  ************************************************************/
+
+/** 프론트엔드(GitHub Pages) 주소 — 초대 링크가 이 주소로 생성됨 */
+const FRONTEND_URL = 'https://gomsbox.github.io/lunchbuddy/';
 
 const SHEETS = {
   Users:     ['userId', 'loginId', 'passwordHash', 'salt', 'nickname', 'createdAt'],
@@ -55,14 +62,45 @@ function setup() {
   Logger.log('설정 완료: 시트 7개 + 자정 트리거 등록됨');
 }
 
-/* ==================== 웹앱 진입점 ==================== */
+/* ==================== 웹앱 진입점 (JSON API) ==================== */
 
-function doGet(e) {
-  const t = HtmlService.createTemplateFromFile('index');
-  t.inviteToken = (e && e.parameter && e.parameter.invite) ? String(e.parameter.invite) : '';
-  return t.evaluate()
-    .setTitle('런치버디 🍱')
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1');
+/** exec URL로 직접 접속한 경우 프론트엔드로 안내 */
+function doGet() {
+  return HtmlService.createHtmlOutput(
+    '<div style="font-family:sans-serif; text-align:center; padding:60px 20px;">' +
+    '<h2>🍱 런치버디</h2><p>서비스 주소로 이동해주세요.</p>' +
+    '<p><a href="' + FRONTEND_URL + '" target="_top" rel="noopener">' + FRONTEND_URL + '</a></p></div>'
+  ).setTitle('런치버디 🍱');
+}
+
+/**
+ * JSON API 라우터 — 프론트엔드가 fetch(POST, text/plain)로 호출
+ * 요청: { fn: 'api_함수명', args: [인자...] } / 응답: { ok, data | error }
+ */
+function doPost(e) {
+  let res;
+  try {
+    const API = {
+      api_signup: api_signup, api_login: api_login, api_logout: api_logout, api_getMe: api_getMe,
+      api_getMyRooms: api_getMyRooms, api_createRoom: api_createRoom,
+      api_joinByInvite: api_joinByInvite, api_joinByCode: api_joinByCode,
+      api_getRoomToday: api_getRoomToday, api_setResponse: api_setResponse,
+      api_getMessages: api_getMessages, api_sendMessage: api_sendMessage,
+      api_getHistory: api_getHistory,
+      api_updateNickname: api_updateNickname, api_changePassword: api_changePassword,
+      api_getMembers: api_getMembers, api_renameRoom: api_renameRoom,
+      api_regenerateInvite: api_regenerateInvite, api_setRole: api_setRole,
+      api_kickMember: api_kickMember, api_deleteRoom: api_deleteRoom,
+    };
+    const req = JSON.parse(e.postData.contents);
+    const fn = String(req.fn || '');
+    const args = Array.isArray(req.args) ? req.args : [];
+    res = API[fn] ? API[fn].apply(null, args) : err_('알 수 없는 요청입니다: ' + fn);
+  } catch (ex) {
+    res = err_('요청 처리에 실패했습니다: ' + ex.message);
+  }
+  return ContentService.createTextOutput(JSON.stringify(res))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 /* ==================== 공통 헬퍼 ==================== */
@@ -372,7 +410,7 @@ function api_getRoomToday(token, roomId) {
       going: going,
       notGoing: notGoing,
       noResponse: noResponse,
-      inviteUrl: ScriptApp.getService().getUrl() + '?invite=' + room.inviteToken,
+      inviteUrl: FRONTEND_URL + '?invite=' + room.inviteToken,
       roomCode: room.roomCode,
     });
   } catch (e) { return err_('처리 중 오류가 발생했습니다: ' + e.message); }
@@ -561,7 +599,7 @@ function api_regenerateInvite(token, roomId) {
       if (idx < 0) return err_('방을 찾을 수 없습니다.');
       const newToken = uuid_();
       sheet_('Rooms').getRange(idx, 4, 1, 2).setValues([[newToken, addDaysIso_(INVITE_DAYS)]]);
-      return ok_({ inviteUrl: ScriptApp.getService().getUrl() + '?invite=' + newToken });
+      return ok_({ inviteUrl: FRONTEND_URL + '?invite=' + newToken });
     });
   } catch (e) { return err_('처리 중 오류가 발생했습니다: ' + e.message); }
 }

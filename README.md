@@ -14,17 +14,23 @@
 - 📅 월간(최근 30일) 참여 히스토리 달력
 - 👑 호스트·공동 호스트 방 관리 (멤버 관리, 방 삭제는 호스트 전용)
 
-## 저장소 구성
+## 서비스 주소
+
+**https://gomsbox.github.io/lunchbuddy/** (GitHub Pages)
+
+## 구조 및 저장소 구성
+
+프론트엔드는 GitHub Pages가 서빙하고, 백엔드는 구글 앱스크립트 JSON API가 처리하며, 데이터는 구글 시트에 저장됩니다.
 
 | 경로 | 내용 |
 |------|------|
-| [`lunchbuddy-gas/`](lunchbuddy-gas/) | 앱스크립트 소스 (Code.gs, index.html) 및 **배포 가이드** |
-| [`점심먹자_요구사항명세서.md`](점심먹자_요구사항명세서.md) | 요구사항 명세서 v1.2 (개발 기준 문서) |
+| [`docs/index.html`](docs/index.html) | **프론트엔드** (서비스 화면 전체 — GitHub Pages가 서빙) |
+| [`lunchbuddy-gas/`](lunchbuddy-gas/) | **백엔드** 앱스크립트 소스 (Code.gs) 및 **배포 가이드** |
+| [`점심먹자_요구사항명세서.md`](점심먹자_요구사항명세서.md) | 요구사항 명세서 v1.3 (개발 기준 문서) |
 | [`점심먹자_기획서_v2.md`](점심먹자_기획서_v2.md) | 서비스 기획서 v2.0 |
 | [`점심먹자_기획서.md`](점심먹자_기획서.md) | 서비스 기획서 v1.0 (초기 버전) |
 
 ## 배포 방법
 
-[lunchbuddy-gas/README.md](lunchbuddy-gas/README.md)의 가이드를 따라 구글 시트 + 앱스크립트에 배포합니다. (약 10분 소요)
-
-> 이 저장소는 코드 버전 관리용이며, 실제 서비스는 구글 앱스크립트 웹앱으로 배포됩니다.
+[lunchbuddy-gas/README.md](lunchbuddy-gas/README.md)의 가이드를 따릅니다. (약 10분 소요)
+프론트 수정은 push만 하면 자동 반영되고, 백엔드 수정은 앱스크립트 재배포가 필요합니다.
