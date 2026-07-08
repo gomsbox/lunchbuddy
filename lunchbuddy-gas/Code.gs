@@ -62,8 +62,8 @@ function setup() {
     if (fn === 'dailyReset' || fn === 'sendScheduledNotifications') ScriptApp.deleteTrigger(t);
   });
   ScriptApp.newTrigger('dailyReset').timeBased().everyDays(1).atHour(0).create();
-  ScriptApp.newTrigger('sendScheduledNotifications').timeBased().everyMinutes(15).create();
-  Logger.log('설정 완료: 시트 7개 + 자정 초기화 트리거 + 알림 발송 트리거(15분 간격) 등록됨');
+  ScriptApp.newTrigger('sendScheduledNotifications').timeBased().everyMinutes(5).create();
+  Logger.log('설정 완료: 시트 7개 + 자정 초기화 트리거 + 알림 발송 트리거(5분 간격) 등록됨');
 }
 
 /* ==================== 웹앱 진입점 (JSON API) ==================== */
