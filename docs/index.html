@@ -188,6 +188,20 @@
   .mt8 { margin-top: 8px; } .mt16 { margin-top: 16px; }
   .link-btn { background: none; border: none; color: var(--green); font-weight: 700; cursor: pointer; font-size: 14px; }
   .logo { font-size: 34px; }
+
+  /* 온보딩 (사용 방법 안내) */
+  .onb { max-width: 400px; text-align: center; padding: 26px 22px 20px; }
+  .onb-icon { font-size: 52px; line-height: 1; margin-bottom: 14px; }
+  .onb-title { font-size: 20px; font-weight: 800; margin-bottom: 10px; }
+  .onb-body { color: #4b5563; font-size: 15px; line-height: 1.65; text-align: left; }
+  .onb-body b { color: var(--text); }
+  .onb-body .ex { display: block; background: var(--gray-bg); border-radius: 10px; padding: 8px 12px; margin-top: 10px; font-size: 13px; color: #555; }
+  .onb-dots { display: flex; justify-content: center; gap: 6px; margin: 18px 0 14px; }
+  .onb-dots i { width: 7px; height: 7px; border-radius: 50%; background: #d1d5db; transition: .2s; }
+  .onb-dots i.on { background: var(--green); width: 20px; border-radius: 999px; }
+  .onb-nav { display: flex; gap: 8px; }
+  .onb-nav .btn { margin-top: 0; }
+  .onb-skip { margin-top: 12px; color: var(--gray); font-size: 13px; background: none; border: none; cursor: pointer; }
 </style>
 
 <div class="wrap">
@@ -415,6 +429,12 @@
       </div>
       <button class="btn btn-gray" onclick="saveEmail()">이메일 저장</button>
     </div>
+    <div class="card">
+      <div class="set-row" style="cursor:pointer;" onclick="openOnboarding()">
+        <div class="grow"><b>📖 사용 방법 보기</b><div class="sub">런치버디 이용 안내를 다시 봅니다</div></div>
+        <span class="sub">›</span>
+      </div>
+    </div>
     <button class="btn btn-gray" onclick="doLogout(true)">로그아웃</button>
   </div>
 
@@ -451,6 +471,21 @@
   </div>
 </div>
 
+<!-- 온보딩 (사용 방법 안내) -->
+<div class="modal-back" id="onboarding">
+  <div class="modal onb">
+    <div class="onb-icon" id="onb-icon"></div>
+    <div class="onb-title" id="onb-title"></div>
+    <div class="onb-body" id="onb-body"></div>
+    <div class="onb-dots" id="onb-dots"></div>
+    <div class="onb-nav">
+      <button class="btn btn-gray" id="onb-prev" onclick="onbPrev()">이전</button>
+      <button class="btn btn-green" id="onb-next" onclick="onbNext()">다음</button>
+    </div>
+    <button class="onb-skip" id="onb-skip" onclick="closeOnboarding()">건너뛰기</button>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -476,6 +511,7 @@
     histMonth: null,          // 표시 중인 달 (Date, 1일 기준)
     histSelected: null,
     timer: null,
+    onbIndex: 0,              // 온보딩 현재 단계
   };
 
   /* ==================== 공통 ==================== */
@@ -573,6 +609,81 @@
         }
       });
     } else loadRooms();
+    maybeShowOnboarding();
+  }
+
+  /* ==================== 온보딩 (사용 방법 안내) ==================== */
+  var ONB_STEPS = [
+    {
+      icon: '🍱',
+      title: '런치버디에 오신 걸 환영해요!',
+      body: '오늘 점심 사내 식당에 <b>같이 갈 사람</b>을 매일 간편하게 확인하는 서비스예요.<br>잠깐이면 되는 사용법, 함께 볼까요?',
+    },
+    {
+      icon: '🔗',
+      title: '초대 링크 · 방 코드로 참여',
+      body: '동료에게 받은 방법으로 방에 들어갈 수 있어요.' +
+        '<span class="ex">🔗 <b>초대 링크</b>를 누르면 로그인 후 자동으로 방에 참여돼요 (링크는 7일간 유효)</span>' +
+        '<span class="ex">🔑 <b>방 코드</b>는 방 목록의 “방 코드로 참여”에 6자리 코드를 입력하면 돼요 (만료 없음)</span>',
+    },
+    {
+      icon: '➕',
+      title: '내 방 만들고 초대하기',
+      body: '방 목록의 <b>＋ 버튼</b>으로 점심방을 직접 만들 수 있어요. 방을 만들면 내가 호스트가 돼요.' +
+        '<span class="ex">방 안의 <b>🔗 초대 링크 복사</b> · <b>🔑 방 코드</b>를 동료에게 공유해 초대하세요</span>',
+    },
+    {
+      icon: '🟢',
+      title: '오늘 참여 / 불참 선택',
+      body: '매일 <b>“오늘 같이 가요”</b> 또는 <b>“오늘은 안 가요”</b>를 눌러 의사를 알려주세요.' +
+        '<span class="ex">마음이 바뀌면 명단에서 <b>내 이름(✕)을 탭</b>하거나 같은 버튼을 다시 눌러 취소할 수 있어요 (미응답으로 돌아감)</span>',
+    },
+    {
+      icon: '💬',
+      title: '방 채팅',
+      body: '방 화면 안의 <b>“오늘의 채팅”</b>에서 메뉴나 약속을 가볍게 나눠보세요.' +
+        '<span class="ex">채팅은 <b>매일 자정에 초기화</b>돼서 그날의 대화만 남아요</span>',
+    },
+    {
+      icon: '🔔',
+      title: '점심 알림 메일 (선택)',
+      body: '<b>설정 > 알림 수신 이메일</b>에 주소를 등록하면, 호스트가 정한 시각에 “오늘 점심 같이 가요?” 알림 메일을 받아요.' +
+        '<span class="ex">이메일은 <b>선택</b>이며 알림 목적으로만 쓰여요. 설정에서 비우면 즉시 삭제돼요</span>',
+    },
+    {
+      icon: '🎉',
+      title: '준비 끝났어요!',
+      body: '이제 방을 만들거나 초대받은 방에 참여해보세요.' +
+        '<span class="ex">이 안내는 언제든 <b>설정 > 📖 사용 방법 보기</b>에서 다시 볼 수 있어요</span>',
+    },
+  ];
+  function maybeShowOnboarding() {
+    if (!localStorage.getItem('lb_onboarded_v1')) openOnboarding();
+  }
+  function openOnboarding() {
+    state.onbIndex = 0;
+    renderOnb();
+    document.getElementById('onboarding').classList.add('open');
+  }
+  function closeOnboarding() {
+    localStorage.setItem('lb_onboarded_v1', '1');
+    document.getElementById('onboarding').classList.remove('open');
+  }
+  function onbPrev() { if (state.onbIndex > 0) { state.onbIndex--; renderOnb(); } }
+  function onbNext() {
+    if (state.onbIndex < ONB_STEPS.length - 1) { state.onbIndex++; renderOnb(); }
+    else closeOnboarding();
+  }
+  function renderOnb() {
+    var i = state.onbIndex, s = ONB_STEPS[i], last = i === ONB_STEPS.length - 1;
+    document.getElementById('onb-icon').textContent = s.icon;
+    document.getElementById('onb-title').textContent = s.title;
+    document.getElementById('onb-body').innerHTML = s.body;
+    document.getElementById('onb-dots').innerHTML =
+      ONB_STEPS.map(function (_, k) { return '<i class="' + (k === i ? 'on' : '') + '"></i>'; }).join('');
+    document.getElementById('onb-prev').style.display = i === 0 ? 'none' : 'block';
+    document.getElementById('onb-next').textContent = last ? '시작하기' : '다음';
+    document.getElementById('onb-skip').style.display = last ? 'none' : 'block';
   }
 
   /* ==================== 로그인 / 회원가입 ==================== */
