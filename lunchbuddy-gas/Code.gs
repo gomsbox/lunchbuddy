@@ -462,8 +462,12 @@ function api_getMessages(token, roomId) {
     if (!me) return err_('AUTH');
     if (!memberRole_(roomId, me.userId)) return err_('NOT_MEMBER');
     const nicks = nickMap_();
-    const all = rows_('Messages').filter(function (r) { return String(r[1]) === String(roomId); });
-    const recent = all.slice(-CHAT_FETCH_LIMIT); // 최근 100개 (REQ-13)
+    const today = todayStr_();
+    // 오늘 메시지만 표시 — 트리거 지연·실패 시에도 어제 채팅이 보이지 않도록 날짜로 필터 (REQ-13)
+    const all = rows_('Messages').filter(function (r) {
+      return String(r[1]) === String(roomId) && dateStr_(r[4]) === today;
+    });
+    const recent = all.slice(-CHAT_FETCH_LIMIT); // 최근 100개
     return ok_({
       messages: recent.map(function (r) {
         return {
@@ -767,12 +771,14 @@ function dailyReset() {
       deleteRowsWhere_('Responses', function (r) { return dateStr_(r[0]) < today; });
     }
 
-    // 2) 30일 경과 데이터 삭제 (히스토리·채팅)
+    // 2) 채팅은 매일 리셋 — 오늘 이전 메시지 전체 삭제 (REQ-13)
+    deleteRowsWhere_('Messages', function (r) { return dateStr_(r[4]) < today; });
+
+    // 3) 30일 경과 히스토리 삭제
     const cutoff = addDaysDateStr_(-RETENTION_DAYS);
     deleteRowsWhere_('History', function (r) { return dateStr_(r[0]) < cutoff; });
-    deleteRowsWhere_('Messages', function (r) { return dateStr_(r[4]) < cutoff; });
 
-    // 3) 만료 세션 정리
+    // 4) 만료 세션 정리
     const now = new Date();
     deleteRowsWhere_('Sessions', function (r) { return new Date(String(r[2])) < now; });
   });
