@@ -837,8 +837,11 @@ function sendScheduledNotifications() {
           '<div style="font-family:sans-serif;max-width:480px;margin:0 auto;">' +
           '<h2>🍱 오늘 점심, 같이 가요?</h2>' +
           '<p><b>' + escHtml_(roomName) + '</b> 방의 오늘 점심 참여 여부를 응답해주세요.</p>' +
-          '<p><a href="' + FRONTEND_URL + '" style="display:inline-block;background:#22a45d;color:#fff;' +
-          'padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:bold;">지금 응답하기</a></p>' +
+          '<p><a href="' + FRONTEND_URL + '" target="_blank" rel="noopener" style="display:inline-block;background:#22a45d;color:#fff;' +
+          'padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:bold;">런치버디 열기</a></p>' +
+          '<p style="color:#555;font-size:13px;margin-top:16px;">버튼이 열리지 않거나 로그인이 안 되면, 아래 주소를 복사해 ' +
+          '<b>크롬·사파리 등 브라우저에 직접 붙여넣어</b> 접속해주세요:</p>' +
+          '<p style="font-size:13px;"><a href="' + FRONTEND_URL + '">' + FRONTEND_URL + '</a></p>' +
           '<p style="color:#888;font-size:12px;margin-top:24px;">이 메일은 런치버디 알림 수신을 위해 등록한 주소로 발송되었습니다. ' +
           '수신을 원치 않으시면 앱 설정에서 이메일을 삭제하세요.</p></div>',
       });
