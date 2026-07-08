@@ -518,14 +518,30 @@
   /* ==================== 공통 ==================== */
   function call(fn) {
     var args = Array.prototype.slice.call(arguments, 1);
+    var payload = JSON.stringify({ fn: fn, args: args });
     // 앱스크립트 JSON API 호출 — text/plain으로 보내야 CORS 사전요청(preflight) 없이 동작
-    return fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ fn: fn, args: args }),
-    })
-      .then(function (r) { return r.json(); })
-      .catch(function (e) { return { ok: false, error: '서버 연결에 실패했습니다: ' + e.message }; });
+    // 일시적 연결 실패·서버 혼잡에 대비해 최대 3회(0.8초 → 1.6초 간격) 자동 재시도
+    function attempt(n) {
+      var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 20000) : null; // 20초 무응답 시 중단 후 재시도
+      return fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: payload,
+        signal: ctrl ? ctrl.signal : undefined,
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (r) { if (timer) clearTimeout(timer); return r; })
+        .catch(function (e) {
+          if (timer) clearTimeout(timer);
+          if (n < 2) {
+            return new Promise(function (res) { setTimeout(res, 800 * (n + 1)); })
+              .then(function () { return attempt(n + 1); });
+          }
+          return { ok: false, error: '서버 연결이 원활하지 않습니다. 잠시 후 다시 시도해주세요.' };
+        });
+    }
+    return attempt(0);
   }
   function api(fn) {
     var args = Array.prototype.slice.call(arguments);
