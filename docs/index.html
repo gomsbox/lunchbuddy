@@ -164,6 +164,14 @@
   .mini-btn.danger { background: #fdecec; color: var(--red); }
   .mini-btn.blue { background: #e8eefb; color: #3b5bdb; }
 
+  /* 토글 스위치 */
+  .switch { position: relative; display: inline-block; width: 46px; height: 26px; flex: none; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch .slider { position: absolute; inset: 0; background: #cbd0d8; border-radius: 999px; transition: .2s; cursor: pointer; }
+  .switch .slider::before { content: ''; position: absolute; height: 20px; width: 20px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; }
+  .switch input:checked + .slider { background: var(--green); }
+  .switch input:checked + .slider::before { transform: translateX(20px); }
+
   /* 모달 & 토스트 */
   .modal-back {
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 100;
@@ -233,6 +241,11 @@
       <div class="field">
         <label>비밀번호 확인</label>
         <input type="password" id="signup-pw2" autocomplete="new-password" placeholder="비밀번호 다시 입력">
+      </div>
+      <div class="field">
+        <label>이메일 <span style="color:var(--gray);font-weight:400;">(선택 · 알림 수신용)</span></label>
+        <input type="email" id="signup-email" autocomplete="email" placeholder="비워두어도 가입할 수 있어요">
+        <div class="hint">점심 알림 메일을 받고 싶을 때만 입력하세요. 알림 발송 목적으로만 사용하며, 언제든 설정에서 삭제할 수 있어요.</div>
       </div>
       <div class="form-error" id="signup-error"></div>
       <button class="btn btn-green" id="btn-signup" onclick="doSignup()">가입하고 시작하기</button>
@@ -356,6 +369,19 @@
           <button class="mini-btn" onclick="doRegenInvite()">재생성</button>
         </div>
       </div>
+      <div class="section-label">알림 설정 (이메일)</div>
+      <div class="card">
+        <div class="set-row">
+          <div class="grow"><b>점심 알림 메일 발송</b><div class="sub">멤버 중 이메일 등록자에게 발송</div></div>
+          <label class="switch"><input type="checkbox" id="notify-enabled" onchange="onNotifyToggle()"><span class="slider"></span></label>
+        </div>
+        <div id="notify-time-row" class="set-row" style="display:none;">
+          <div class="grow"><b>발송 시각</b><div class="sub" id="notify-recipients"></div></div>
+          <input type="time" id="notify-time" value="10:30" style="width:auto;padding:8px;border:1.5px solid var(--line);border-radius:10px;">
+        </div>
+        <button class="btn btn-gray" style="margin-top:12px;" onclick="saveNotify()">알림 설정 저장</button>
+        <div class="hint" style="margin-top:10px;">평일(월~금)에만 발송되며, 설정한 시각 전후로 발송됩니다. 이메일은 알림 발송 목적으로만 사용됩니다.</div>
+      </div>
       <div class="section-label">멤버 관리</div>
       <div class="card" id="set-members">불러오는 중...</div>
       <div id="set-danger" style="display:none;">
@@ -381,11 +407,13 @@
       <button class="btn btn-gray" onclick="changePw()">비밀번호 변경</button>
     </div>
     <div class="card">
-      <!-- REQ-12: 알림 메뉴 자리 (준비 중) -->
-      <div class="set-row" style="cursor:pointer;" onclick="toast('🔔 알림 기능은 준비 중이에요. 조금만 기다려주세요!')">
-        <div class="grow"><b>알림 설정</b><div class="sub">준비 중인 기능입니다</div></div>
-        <span class="sub">›</span>
+      <!-- REQ-14: 알림 수신 이메일 (선택) -->
+      <div class="field">
+        <label>알림 수신 이메일 <span style="color:var(--gray);font-weight:400;">(선택)</span></label>
+        <input type="email" id="set-email" autocomplete="email" placeholder="예: me@daekyo.co.kr (비우면 알림 안 받음)">
+        <div class="hint">점심 알림 메일을 받을 주소예요. <b>알림 발송 목적으로만 사용</b>하며, 비워서 저장하면 즉시 삭제됩니다.</div>
       </div>
+      <button class="btn btn-gray" onclick="saveEmail()">이메일 저장</button>
     </div>
     <button class="btn btn-gray" onclick="doLogout(true)">로그아웃</button>
   </div>
@@ -573,14 +601,16 @@
     var id = document.getElementById('signup-id').value.trim();
     var pw = document.getElementById('signup-pw').value;
     var pw2 = document.getElementById('signup-pw2').value;
+    var email = document.getElementById('signup-email').value.trim();
     var errEl = document.getElementById('signup-error');
     errEl.textContent = '';
     if (!/^[a-z0-9]{4,20}$/.test(id)) { errEl.textContent = '아이디는 4~20자의 영문 소문자와 숫자만 사용할 수 있습니다.'; return; }
     if (!/^(?=.*[A-Za-z])(?=.*[0-9]).{8,}$/.test(pw)) { errEl.textContent = '비밀번호는 8자 이상이며 영문과 숫자를 모두 포함해야 합니다.'; return; }
     if (pw !== pw2) { errEl.textContent = '비밀번호가 일치하지 않습니다.'; return; }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = '이메일 형식이 올바르지 않습니다. (선택 항목이므로 비워둘 수 있습니다)'; return; }
     var btn = document.getElementById('btn-signup');
     btn.disabled = true;
-    call('api_signup', id, pw).then(function (r) {
+    call('api_signup', id, pw, email).then(function (r) {
       btn.disabled = false;
       if (!r.ok) { errEl.textContent = r.error; return; }
       state.token = r.data.token; state.me = r.data.user;
@@ -928,6 +958,7 @@
     settingsFromRoom = fromRoom;
     show('sc-settings');
     document.getElementById('set-nickname').value = state.me.nickname;
+    document.getElementById('set-email').value = state.me.email || '';
     document.getElementById('pw-cur').value = '';
     document.getElementById('pw-new').value = '';
     document.getElementById('pw-new2').value = '';
@@ -940,6 +971,7 @@
       document.getElementById('set-room-name').textContent = document.getElementById('room-title').textContent.replace('🍱 ', '');
       document.getElementById('set-danger').style.display = state.myRole === 'host' ? 'block' : 'none';
       loadMembersUI();
+      loadNotifyUI();
     }
   }
   function closeSettings() {
@@ -953,6 +985,38 @@
       if (!r.ok) { toast(r.error); return; }
       state.me.nickname = r.data.nickname;
       toast('닉네임이 변경되었습니다 ✅');
+    });
+  }
+  function saveEmail() {
+    var email = document.getElementById('set-email').value.trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast('이메일 형식이 올바르지 않습니다.'); return; }
+    api('api_updateEmail', state.token, email).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      state.me.email = r.data.email;
+      toast(r.data.email ? '알림 이메일이 저장되었습니다 ✅' : '이메일이 삭제되었습니다.');
+    });
+  }
+
+  /* 호스트 알림 설정 (REQ-14) */
+  function loadNotifyUI() {
+    api('api_getRoomSettings', state.token, state.roomId).then(function (r) {
+      if (!r.ok) return;
+      document.getElementById('notify-enabled').checked = r.data.notifyEnabled;
+      document.getElementById('notify-time').value = r.data.notifyTime || '10:30';
+      document.getElementById('notify-recipients').textContent = '현재 이메일 등록 멤버 ' + r.data.recipientCount + '명';
+      onNotifyToggle();
+    });
+  }
+  function onNotifyToggle() {
+    var on = document.getElementById('notify-enabled').checked;
+    document.getElementById('notify-time-row').style.display = on ? 'flex' : 'none';
+  }
+  function saveNotify() {
+    var enabled = document.getElementById('notify-enabled').checked;
+    var time = document.getElementById('notify-time').value;
+    api('api_setNotify', state.token, state.roomId, enabled, time).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      toast(enabled ? '알림이 설정되었습니다 (매일 ' + r.data.notifyTime + ') ✅' : '알림 발송을 껐습니다.');
     });
   }
   function changePw() {

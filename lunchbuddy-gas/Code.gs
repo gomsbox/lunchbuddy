@@ -17,9 +17,9 @@
 const FRONTEND_URL = 'https://gomsbox.github.io/lunchbuddy/';
 
 const SHEETS = {
-  Users:     ['userId', 'loginId', 'passwordHash', 'salt', 'nickname', 'createdAt'],
+  Users:     ['userId', 'loginId', 'passwordHash', 'salt', 'nickname', 'createdAt', 'email'],
   Sessions:  ['token', 'userId', 'expiresAt'],
-  Rooms:     ['roomId', 'roomName', 'hostUserId', 'inviteToken', 'inviteExpiresAt', 'createdAt', 'roomCode'],
+  Rooms:     ['roomId', 'roomName', 'hostUserId', 'inviteToken', 'inviteExpiresAt', 'createdAt', 'roomCode', 'notifyEnabled', 'notifyTime', 'lastNotifiedDate'],
   Members:   ['roomId', 'userId', 'role', 'joinedAt'],
   Responses: ['date', 'roomId', 'userId', 'status', 'updatedAt'],
   History:   ['date', 'roomId', 'goingNames', 'notGoingNames'],
@@ -30,6 +30,8 @@ const SESSION_DAYS = 30;      // REQ-02 세션 유효기간
 const INVITE_DAYS = 7;        // REQ-04 초대 링크 만료
 const RETENTION_DAYS = 30;    // NFR-06 히스토리·채팅 보관 기간
 const CHAT_FETCH_LIMIT = 100; // REQ-13 채팅 조회 범위
+const NOTIFY_DEFAULT_TIME = '10:30'; // REQ-14 알림 기본 발송 시각
+const NOTIFY_WINDOW_MIN = 60;        // 발송 시각 이후 이 시간(분) 내에만 발송 (트리거 지연 대비)
 
 /* ==================== 초기 설정 ==================== */
 
@@ -54,12 +56,14 @@ function setup() {
   if (first && !SHEETS[first.getName()] && ss.getSheets().length > Object.keys(SHEETS).length) {
     ss.deleteSheet(first);
   }
-  // 자정 트리거 재등록 (REQ-07)
+  // 트리거 재등록 — 자정 초기화(REQ-07) + 알림 발송 체크(REQ-14)
   ScriptApp.getProjectTriggers().forEach(function (t) {
-    if (t.getHandlerFunction() === 'dailyReset') ScriptApp.deleteTrigger(t);
+    const fn = t.getHandlerFunction();
+    if (fn === 'dailyReset' || fn === 'sendScheduledNotifications') ScriptApp.deleteTrigger(t);
   });
   ScriptApp.newTrigger('dailyReset').timeBased().everyDays(1).atHour(0).create();
-  Logger.log('설정 완료: 시트 7개 + 자정 트리거 등록됨');
+  ScriptApp.newTrigger('sendScheduledNotifications').timeBased().everyMinutes(15).create();
+  Logger.log('설정 완료: 시트 7개 + 자정 초기화 트리거 + 알림 발송 트리거(15분 간격) 등록됨');
 }
 
 /* ==================== 웹앱 진입점 (JSON API) ==================== */
@@ -88,9 +92,11 @@ function doPost(e) {
       api_getMessages: api_getMessages, api_sendMessage: api_sendMessage,
       api_getHistory: api_getHistory,
       api_updateNickname: api_updateNickname, api_changePassword: api_changePassword,
+      api_updateEmail: api_updateEmail,
       api_getMembers: api_getMembers, api_renameRoom: api_renameRoom,
       api_regenerateInvite: api_regenerateInvite, api_setRole: api_setRole,
       api_kickMember: api_kickMember, api_deleteRoom: api_deleteRoom,
+      api_getRoomSettings: api_getRoomSettings, api_setNotify: api_setNotify,
     };
     const req = JSON.parse(e.postData.contents);
     const fn = String(req.fn || '');
@@ -183,7 +189,13 @@ function findRoom_(roomId) {
     roomId: String(r[0]), roomName: String(r[1]), hostUserId: String(r[2]),
     inviteToken: String(r[3]), inviteExpiresAt: String(r[4]), createdAt: String(r[5]),
     roomCode: String(r[6]),
+    notifyEnabled: String(r[7]) === 'true', notifyTime: String(r[8] || NOTIFY_DEFAULT_TIME),
   };
+}
+
+/** 이메일 형식 검증 (선택 입력) */
+function validEmail_(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || ''));
 }
 
 /** 영구 방 코드 생성 — 6자리, 혼동 문자(I/L/O/0/1) 제외, 유니크 보장 (REQ-04) */
@@ -222,23 +234,25 @@ function auth_(token) {
   if (new Date(String(s[2])) < new Date()) return null;
   const u = rows_('Users').find(function (r) { return String(r[0]) === String(s[1]); });
   if (!u) return null;
-  return { userId: String(u[0]), loginId: String(u[1]), nickname: String(u[4]) };
+  return { userId: String(u[0]), loginId: String(u[1]), nickname: String(u[4]), email: String(u[6] || '') };
 }
 
-function api_signup(loginId, password) {
+function api_signup(loginId, password, email) {
   try {
     loginId = String(loginId || '').trim().toLowerCase();
+    email = String(email || '').trim();
     if (!/^[a-z0-9]{4,20}$/.test(loginId)) return err_('아이디는 4~20자의 영문 소문자와 숫자만 사용할 수 있습니다.');
     if (!/^(?=.*[A-Za-z])(?=.*[0-9]).{8,}$/.test(String(password || ''))) return err_('비밀번호는 8자 이상이며 영문과 숫자를 모두 포함해야 합니다.');
+    if (email && !validEmail_(email)) return err_('이메일 형식이 올바르지 않습니다. (선택 항목이므로 비워둘 수 있습니다)');
     return withLock_(function () {
       const dup = rows_('Users').some(function (r) { return String(r[1]).toLowerCase() === loginId; });
       if (dup) return err_('이미 사용 중인 아이디입니다.');
       const userId = uuid_();
       const salt = uuid_();
-      // 닉네임 기본값 = 아이디 (REQ-01)
-      sheet_('Users').appendRow([userId, loginId, hash_(password, salt), salt, loginId, nowIso_()]);
+      // 닉네임 기본값 = 아이디 (REQ-01), 이메일은 선택 (REQ-14)
+      sheet_('Users').appendRow([userId, loginId, hash_(password, salt), salt, loginId, nowIso_(), email]);
       const token = createSession_(userId);
-      return ok_({ token: token, user: { userId: userId, loginId: loginId, nickname: loginId } });
+      return ok_({ token: token, user: { userId: userId, loginId: loginId, nickname: loginId, email: email } });
     });
   } catch (e) { return err_('처리 중 오류가 발생했습니다: ' + e.message); }
 }
@@ -265,7 +279,7 @@ function api_login(loginId, password) {
 
     cache.remove('fail_' + loginId);
     const token = createSession_(String(u[0]));
-    return ok_({ token: token, user: { userId: String(u[0]), loginId: loginId, nickname: String(u[4]) } });
+    return ok_({ token: token, user: { userId: String(u[0]), loginId: loginId, nickname: String(u[4]), email: String(u[6] || '') } });
   } catch (e) { return err_('처리 중 오류가 발생했습니다: ' + e.message); }
 }
 
@@ -546,6 +560,22 @@ function api_changePassword(token, currentPw, newPw) {
   } catch (e) { return err_('처리 중 오류가 발생했습니다: ' + e.message); }
 }
 
+/** 알림 수신 이메일 등록/변경/삭제 — 선택 항목 (REQ-14). 빈 값 전달 시 삭제 */
+function api_updateEmail(token, email) {
+  try {
+    const me = auth_(token);
+    if (!me) return err_('AUTH');
+    email = String(email || '').trim();
+    if (email && !validEmail_(email)) return err_('이메일 형식이 올바르지 않습니다.');
+    return withLock_(function () {
+      const idx = findRowIndex_('Users', function (r) { return String(r[0]) === me.userId; });
+      if (idx < 0) return err_('사용자를 찾을 수 없습니다.');
+      sheet_('Users').getRange(idx, 7).setValue(email);
+      return ok_({ email: email });
+    });
+  } catch (e) { return err_('처리 중 오류가 발생했습니다: ' + e.message); }
+}
+
 /* ==================== REQ-10·11 방 관리 / 공동 호스트 ==================== */
 
 function requireManager_(roomId, userId) {
@@ -587,6 +617,47 @@ function api_renameRoom(token, roomId, roomName) {
       if (idx < 0) return err_('방을 찾을 수 없습니다.');
       sheet_('Rooms').getRange(idx, 2).setValue(roomName);
       return ok_({ roomName: roomName });
+    });
+  } catch (e) { return err_('처리 중 오류가 발생했습니다: ' + e.message); }
+}
+
+/** 호스트 알림 설정 조회 (REQ-14) */
+function api_getRoomSettings(token, roomId) {
+  try {
+    const me = auth_(token);
+    if (!me) return err_('AUTH');
+    if (!requireManager_(roomId, me.userId)) return err_('권한이 없습니다.');
+    const room = findRoom_(roomId);
+    if (!room) return err_('방을 찾을 수 없습니다.');
+    // 이메일을 등록한 멤버 수 (발송 대상) 안내용
+    const emailUsers = {};
+    rows_('Users').forEach(function (r) { if (String(r[6] || '')) emailUsers[String(r[0])] = true; });
+    const recipientCount = rows_('Members').filter(function (r) {
+      return String(r[0]) === String(roomId) && emailUsers[String(r[1])];
+    }).length;
+    return ok_({
+      notifyEnabled: room.notifyEnabled,
+      notifyTime: room.notifyTime,
+      recipientCount: recipientCount,
+    });
+  } catch (e) { return err_('처리 중 오류가 발생했습니다: ' + e.message); }
+}
+
+/** 호스트 알림 설정 저장 — 발송 여부 + 발송 시각 (REQ-14) */
+function api_setNotify(token, roomId, enabled, time) {
+  try {
+    const me = auth_(token);
+    if (!me) return err_('AUTH');
+    if (!requireManager_(roomId, me.userId)) return err_('권한이 없습니다.');
+    enabled = enabled === true || enabled === 'true';
+    time = String(time || '').trim();
+    if (enabled && !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return err_('발송 시각 형식이 올바르지 않습니다 (예: 10:30).');
+    return withLock_(function () {
+      const idx = findRowIndex_('Rooms', function (r) { return String(r[0]) === String(roomId); });
+      if (idx < 0) return err_('방을 찾을 수 없습니다.');
+      // notifyEnabled(8열), notifyTime(9열) — 설정 변경 시 오늘 발송 기록은 건드리지 않음
+      sheet_('Rooms').getRange(idx, 8, 1, 2).setValues([[enabled ? 'true' : 'false', enabled ? time : (time || NOTIFY_DEFAULT_TIME)]]);
+      return ok_({ notifyEnabled: enabled, notifyTime: time || NOTIFY_DEFAULT_TIME });
     });
   } catch (e) { return err_('처리 중 오류가 발생했습니다: ' + e.message); }
 }
@@ -704,6 +775,76 @@ function dailyReset() {
     // 3) 만료 세션 정리
     const now = new Date();
     deleteRowsWhere_('Sessions', function (r) { return new Date(String(r[2])) < now; });
+  });
+}
+
+/* ==================== REQ-14 알림 이메일 발송 (15분 간격 트리거) ==================== */
+
+/**
+ * 호스트가 설정한 시각에 방 멤버 중 이메일 등록자에게 "오늘 점심 응답하세요" 메일 발송.
+ * - 월~금만 발송 (주말 제외)
+ * - 발송 시각 ~ +60분 창 안에서 하루 1회만 (lastNotifiedDate로 중복 방지)
+ * - 수신자 이메일은 BCC로 발송해 서로에게 노출되지 않음 (개인정보 보호)
+ */
+function sendScheduledNotifications() {
+  const now = new Date();
+  const dow = now.getDay();
+  if (dow === 0 || dow === 6) return; // 주말 발송 없음
+
+  const today = todayStr_();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+
+  // 이메일 등록 사용자 맵
+  const emailOf = {};
+  rows_('Users').forEach(function (r) { if (String(r[6] || '')) emailOf[String(r[0])] = String(r[6]); });
+
+  const rooms = rows_('Rooms');
+  const selfEmail = Session.getEffectiveUser().getEmail();
+
+  rooms.forEach(function (room, i) {
+    if (String(room[7]) !== 'true') return;                 // notifyEnabled
+    if (dateStr_(room[9]) === today) return;                // 오늘 이미 발송함
+    const time = String(room[8] || NOTIFY_DEFAULT_TIME);
+    const m = time.match(/^([01]\d|2[0-3]):([0-5]\d)$/);
+    if (!m) return;
+    const targetMin = Number(m[1]) * 60 + Number(m[2]);
+    if (nowMin < targetMin || nowMin >= targetMin + NOTIFY_WINDOW_MIN) return; // 발송 창 밖
+
+    const roomId = String(room[0]);
+    const roomName = String(room[1]);
+    const recipients = rows_('Members')
+      .filter(function (r) { return String(r[0]) === roomId && emailOf[String(r[1])]; })
+      .map(function (r) { return emailOf[String(r[1])]; });
+
+    // 발송 여부와 무관하게 오늘 처리한 것으로 기록 (매 15분 재시도 방지)
+    withLock_(function () {
+      sheet_('Rooms').getRange(i + 2, 10).setValue(today);
+    });
+    if (!recipients.length) return;
+
+    try {
+      MailApp.sendEmail({
+        to: selfEmail,
+        bcc: recipients.join(','),
+        subject: '🍱 [런치버디] ' + roomName + ' 오늘 점심 같이 가요?',
+        htmlBody:
+          '<div style="font-family:sans-serif;max-width:480px;margin:0 auto;">' +
+          '<h2>🍱 오늘 점심, 같이 가요?</h2>' +
+          '<p><b>' + escHtml_(roomName) + '</b> 방의 오늘 점심 참여 여부를 응답해주세요.</p>' +
+          '<p><a href="' + FRONTEND_URL + '" style="display:inline-block;background:#22a45d;color:#fff;' +
+          'padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:bold;">지금 응답하기</a></p>' +
+          '<p style="color:#888;font-size:12px;margin-top:24px;">이 메일은 런치버디 알림 수신을 위해 등록한 주소로 발송되었습니다. ' +
+          '수신을 원치 않으시면 앱 설정에서 이메일을 삭제하세요.</p></div>',
+      });
+    } catch (mailErr) {
+      Logger.log('알림 발송 실패 (' + roomName + '): ' + mailErr.message);
+    }
+  });
+}
+
+function escHtml_(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
   });
 }
 
