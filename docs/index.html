@@ -840,36 +840,34 @@
       document.getElementById('tabbtn-' + t).classList.toggle('on', t === tab);
     });
     if (tab === 'today') {
-      loadToday();
-      loadChat(true);
-      // 통합 폴링: 채팅 15초, 현황은 두 번에 한 번(30초) 갱신 (REQ-06·13)
-      var tick = 0;
+      loadHome(true);
+      // 통합 폴링: 현황+채팅을 API 1회로 함께 갱신 — 15초 간격 (REQ-06·13, 성능 최적화)
       state.timer = setInterval(function () {
         if (document.hidden) return;
-        tick++;
-        loadChat(false);
-        if (tick % 2 === 0) loadToday(true);
+        loadHome(false, true);
       }, 15000);
     } else {
       loadHistory();
     }
   }
   function refreshTab() {
-    if (state.tab === 'today') { loadToday(); loadChat(true); }
+    if (state.tab === 'today') loadHome(true);
     else loadHistory();
     toast('새로고침했어요 ⟳');
   }
 
-  /* ==================== 오늘 탭 (REQ-05·06) ==================== */
+  /* ==================== 오늘 탭 (REQ-05·06·13) ==================== */
   var DOW = ['일', '월', '화', '수', '목', '금', '토'];
-  function loadToday(silent) {
-    api('api_getRoomToday', state.token, state.roomId).then(function (r) {
+  /** 현황 + 채팅 통합 조회 (api_getRoomHome 1회 호출) */
+  function loadHome(scrollChat, silent) {
+    api('api_getRoomHome', state.token, state.roomId).then(function (r) {
       if (!r.ok) {
         if (r.error === 'NOT_MEMBER') { toast('더 이상 이 방의 멤버가 아닙니다.'); loadRooms(); }
         else if (!silent) toast(r.error);
         return;
       }
       renderToday(r.data);
+      renderChat({ messages: r.data.messages, myUserId: r.data.myUserId }, scrollChat);
     });
   }
   function renderToday(d) {
@@ -918,12 +916,12 @@
     }
     document.getElementById('today-updated').textContent = '마지막 갱신: ' + nowHM();
   }
-  function toggleUnresp() { state.unrespOpen = !state.unrespOpen; loadToday(true); }
+  function toggleUnresp() { state.unrespOpen = !state.unrespOpen; loadHome(false, true); }
   function clearResp() {
     api('api_setResponse', state.token, state.roomId, 'clear').then(function (r) {
       if (!r.ok) { toast(r.error); return; }
       toast('선택을 취소했어요. 아직 선택 안 한 상태예요.');
-      loadToday(true);
+      loadHome(false, true);
     });
   }
   function setResp(status) {
@@ -935,7 +933,7 @@
       document.getElementById('btn-notgoing').disabled = false;
       if (!r.ok) { toast(r.error); return; }
       toast(status === 'going' ? '오늘 같이 가요! 🟢' : '오늘은 패스! ⚫');
-      loadToday(true);
+      loadHome(false, true);
     });
   }
   function copyInvite() {
@@ -947,13 +945,7 @@
     else toast('방 코드를 불러오는 중이에요. 잠시 후 다시 시도해주세요.');
   }
 
-  /* ==================== 채팅 탭 (REQ-13) ==================== */
-  function loadChat(scrollBottom) {
-    api('api_getMessages', state.token, state.roomId).then(function (r) {
-      if (!r.ok) { if (r.error === 'NOT_MEMBER') { toast('더 이상 이 방의 멤버가 아닙니다.'); loadRooms(); } return; }
-      renderChat(r.data, scrollBottom);
-    });
-  }
+  /* ==================== 채팅 (REQ-13) — 조회는 loadHome에 통합 ==================== */
   function fmtMsgTime(iso) {
     var today = new Date();
     var tStr = today.getFullYear() + '-' + ('0' + (today.getMonth() + 1)).slice(-2) + '-' + ('0' + today.getDate()).slice(-2);
@@ -989,7 +981,7 @@
       sending = false;
       if (!r.ok) { toast(r.error); return; }
       input.value = '';
-      loadChat(true);
+      loadHome(true, true);
     });
   }
 

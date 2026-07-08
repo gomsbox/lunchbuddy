@@ -88,7 +88,7 @@ function doPost(e) {
       api_signup: api_signup, api_login: api_login, api_logout: api_logout, api_getMe: api_getMe,
       api_getMyRooms: api_getMyRooms, api_createRoom: api_createRoom,
       api_joinByInvite: api_joinByInvite, api_joinByCode: api_joinByCode,
-      api_getRoomToday: api_getRoomToday, api_setResponse: api_setResponse,
+      api_getRoomToday: api_getRoomToday, api_getRoomHome: api_getRoomHome, api_setResponse: api_setResponse,
       api_getMessages: api_getMessages, api_sendMessage: api_sendMessage,
       api_getHistory: api_getHistory,
       api_updateNickname: api_updateNickname, api_changePassword: api_changePassword,
@@ -226,15 +226,30 @@ function createSession_(userId) {
   return token;
 }
 
-/** 세션 토큰 검증 → 사용자 반환 (실패 시 null) */
+/**
+ * 세션 토큰 검증 → 사용자 반환 (실패 시 null)
+ * 성능: 결과를 5분간 캐시해 매 호출마다 Sessions/Users 시트 전체를 읽지 않음.
+ * 캐시는 로그아웃·닉네임/이메일 변경 시 무효화된다.
+ */
 function auth_(token) {
   if (!token) return null;
+  const cache = CacheService.getScriptCache();
+  const hit = cache.get('sess_' + token);
+  if (hit) {
+    try { return JSON.parse(hit); } catch (e) { /* 캐시 손상 시 아래에서 재조회 */ }
+  }
   const s = rows_('Sessions').find(function (r) { return String(r[0]) === String(token); });
   if (!s) return null;
   if (new Date(String(s[2])) < new Date()) return null;
   const u = rows_('Users').find(function (r) { return String(r[0]) === String(s[1]); });
   if (!u) return null;
-  return { userId: String(u[0]), loginId: String(u[1]), nickname: String(u[4]), email: String(u[6] || '') };
+  const user = { userId: String(u[0]), loginId: String(u[1]), nickname: String(u[4]), email: String(u[6] || '') };
+  cache.put('sess_' + token, JSON.stringify(user), 300);
+  return user;
+}
+
+function clearAuthCache_(token) {
+  if (token) CacheService.getScriptCache().remove('sess_' + String(token));
 }
 
 function api_signup(loginId, password, email) {
@@ -285,6 +300,7 @@ function api_login(loginId, password) {
 
 function api_logout(token) {
   try {
+    clearAuthCache_(token);
     withLock_(function () {
       deleteRowsWhere_('Sessions', function (r) { return String(r[0]) === String(token); });
     });
@@ -385,6 +401,72 @@ function api_joinByCode(token, code) {
 }
 
 /* ==================== REQ-05·06 참여 등록 / 현황 ==================== */
+
+/**
+ * 메인 화면 통합 조회 — 현황 + 채팅을 한 번에 반환 (성능 최적화)
+ * 기존 api_getRoomToday + api_getMessages 2회 호출을 1회로 줄여
+ * 폴링 요청 수와 시트 읽기 횟수를 절반 이하로 낮춘다.
+ */
+function api_getRoomHome(token, roomId) {
+  try {
+    const me = auth_(token);
+    if (!me) return err_('AUTH');
+    const room = findRoom_(roomId);
+    if (!room) return err_('방을 찾을 수 없습니다.');
+
+    // Members는 한 번만 읽어 역할 확인과 명단 구성에 함께 사용
+    const members = rows_('Members').filter(function (r) { return String(r[0]) === String(roomId); });
+    const my = members.find(function (r) { return String(r[1]) === me.userId; });
+    if (!my) return err_('NOT_MEMBER');
+    const role = String(my[2]);
+
+    const nicks = nickMap_();
+    const today = todayStr_();
+
+    const statusMap = {};
+    rows_('Responses').forEach(function (r) {
+      if (dateStr_(r[0]) === today && String(r[1]) === String(roomId)) {
+        statusMap[String(r[2])] = String(r[3]);
+      }
+    });
+    const going = [], notGoing = [], noResponse = [];
+    members.forEach(function (m) {
+      const uid = String(m[1]);
+      const item = { userId: uid, nickname: nicks[uid] || '(탈퇴)' };
+      const st = statusMap[uid];
+      if (st === 'going') going.push(item);
+      else if (st === 'not-going') notGoing.push(item);
+      else noResponse.push(item);
+    });
+
+    const messages = rows_('Messages')
+      .filter(function (r) { return String(r[1]) === String(roomId) && dateStr_(r[4]) === today; })
+      .slice(-CHAT_FETCH_LIMIT)
+      .map(function (r) {
+        return {
+          messageId: String(r[0]),
+          userId: String(r[2]),
+          nickname: nicks[String(r[2])] || '(탈퇴)',
+          text: String(r[3]),
+          sentAt: String(r[4]),
+        };
+      });
+
+    return ok_({
+      roomName: room.roomName,
+      date: today,
+      myRole: role,
+      myUserId: me.userId,
+      myStatus: statusMap[me.userId] || null,
+      going: going,
+      notGoing: notGoing,
+      noResponse: noResponse,
+      inviteUrl: FRONTEND_URL + '?invite=' + room.inviteToken,
+      roomCode: room.roomCode,
+      messages: messages,
+    });
+  } catch (e) { return err_('처리 중 오류가 발생했습니다: ' + e.message); }
+}
 
 function api_getRoomToday(token, roomId) {
   try {
@@ -542,6 +624,7 @@ function api_updateNickname(token, nickname) {
       const idx = findRowIndex_('Users', function (r) { return String(r[0]) === me.userId; });
       if (idx < 0) return err_('사용자를 찾을 수 없습니다.');
       sheet_('Users').getRange(idx, 5).setValue(nickname);
+      clearAuthCache_(token);
       return ok_({ nickname: nickname });
     });
   } catch (e) { return err_('처리 중 오류가 발생했습니다: ' + e.message); }
@@ -575,6 +658,7 @@ function api_updateEmail(token, email) {
       const idx = findRowIndex_('Users', function (r) { return String(r[0]) === me.userId; });
       if (idx < 0) return err_('사용자를 찾을 수 없습니다.');
       sheet_('Users').getRange(idx, 7).setValue(email);
+      clearAuthCache_(token);
       return ok_({ email: email });
     });
   } catch (e) { return err_('처리 중 오류가 발생했습니다: ' + e.message); }
