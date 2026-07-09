@@ -3,10 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title>오늘점심 🍱</title>
+  <title>런치버디 🍱</title>
   <meta name="description" content="오늘 같이 식당 가요 — 사내 식당 점심 멤버 확인 서비스">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍱</text></svg>">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
 <style>
@@ -203,27 +202,7 @@
   .onb-nav { display: flex; gap: 8px; }
   .onb-nav .btn { margin-top: 0; }
   .onb-skip { margin-top: 12px; color: var(--gray); font-size: 13px; background: none; border: none; cursor: pointer; }
-
-  /* 전역 로딩 바 — 모든 버튼/액션이 서버와 통신하는 동안 상단에 표시 */
-  #loading-bar {
-    position: fixed; top: 0; left: 0; width: 100%; height: 3px; z-index: 300;
-    background: var(--green-bg); overflow: hidden; opacity: 0; transition: opacity .15s; pointer-events: none;
-  }
-  #loading-bar.on { opacity: 1; }
-  #loading-bar::after {
-    content: ''; position: absolute; top: 0; left: 0; height: 100%; width: 40%;
-    background: var(--green); border-radius: 999px;
-    animation: loading-slide 1s ease-in-out infinite;
-  }
-  @keyframes loading-slide {
-    0% { left: -40%; }
-    100% { left: 100%; }
-  }
-  /* 클릭한 버튼 자체에도 처리 중 표시 (아이콘 버튼류 포함) */
-  button:disabled { opacity: .6; cursor: default; }
 </style>
-
-<div id="loading-bar"></div>
 
 <div class="wrap">
 
@@ -231,7 +210,7 @@
   <div class="screen no-tab active" id="sc-loading">
     <div class="card center" style="margin-top:40vh;">
       <div class="logo">🍱</div>
-      <div class="sub mt8">오늘점심 불러오는 중...</div>
+      <div class="sub mt8">런치버디 불러오는 중...</div>
     </div>
   </div>
 
@@ -239,7 +218,7 @@
   <div class="screen no-tab" id="sc-auth">
     <div class="center" style="margin: 48px 0 24px;">
       <div class="logo">🍱</div>
-      <div class="title">오늘점심</div>
+      <div class="title">런치버디</div>
       <div class="sub">오늘 같이 식당 가요</div>
     </div>
     <div id="invite-notice" class="card center" style="display:none; background: var(--green-bg); box-shadow:none;">
@@ -257,9 +236,6 @@
       </div>
       <div class="form-error" id="login-error"></div>
       <button class="btn btn-green" id="btn-login" onclick="doLogin()">로그인</button>
-      <div class="center mt8">
-        <button class="link-btn" style="font-size:13px; color:var(--gray);" onclick="openForgotPassword()">비밀번호를 잊으셨나요?</button>
-      </div>
       <div class="center mt16">
         <span class="sub">아직 계정이 없나요?</span>
         <button class="link-btn" onclick="switchAuth('signup')">회원가입</button>
@@ -304,31 +280,11 @@
     </div>
   </div>
 
-  <!-- 비밀번호 재설정 (REQ-15, 이메일 링크로 접속) -->
-  <div class="screen no-tab" id="sc-reset-password">
-    <div class="center" style="margin: 48px 0 24px;">
-      <div class="logo">🔑</div>
-      <div class="title" style="font-size:18px;">새 비밀번호 설정</div>
-    </div>
-    <div class="card">
-      <div class="field">
-        <label>새 비밀번호 (8자 이상, 영문+숫자)</label>
-        <input type="password" id="reset-pw" autocomplete="new-password">
-      </div>
-      <div class="field">
-        <label>새 비밀번호 확인</label>
-        <input type="password" id="reset-pw2" autocomplete="new-password">
-      </div>
-      <div class="form-error" id="reset-error"></div>
-      <button class="btn btn-green" id="btn-reset" onclick="doResetPassword()">비밀번호 재설정</button>
-    </div>
-  </div>
-
   <!-- 방 목록 (SCR-02) -->
   <div class="screen no-tab" id="sc-rooms">
     <div class="header">
       <div class="grow">
-        <div class="title">🍱 오늘점심</div>
+        <div class="title">🍱 런치버디</div>
         <div class="sub" id="rooms-greet"></div>
       </div>
       <button class="icon-btn" title="설정" onclick="openSettings(false)">⚙️</button>
@@ -378,7 +334,7 @@
         <div class="chat-input-bar">
           <input type="text" id="chat-input" maxlength="300" placeholder="메시지 입력 (최대 300자)"
                  onkeydown="if(event.key==='Enter'){sendMsg();}">
-          <button onclick="busy(this, sendMsg())">전송</button>
+          <button onclick="sendMsg()">전송</button>
         </div>
       </div>
       <button class="btn btn-outline" onclick="copyInvite()">🔗 초대 링크 복사 (7일 유효)</button>
@@ -420,11 +376,11 @@
       <div class="card">
         <div class="set-row">
           <div class="grow"><b>방 이름 변경</b></div>
-          <button class="mini-btn" onclick="busy(this, doRenameRoom())">변경</button>
+          <button class="mini-btn" onclick="doRenameRoom()">변경</button>
         </div>
         <div class="set-row">
           <div class="grow"><b>초대 링크 재생성</b><div class="sub">기존 링크는 즉시 무효화됩니다</div></div>
-          <button class="mini-btn" onclick="busy(this, doRegenInvite())">재생성</button>
+          <button class="mini-btn" onclick="doRegenInvite()">재생성</button>
         </div>
       </div>
       <div class="section-label">알림 설정 (이메일)</div>
@@ -437,14 +393,14 @@
           <div class="grow"><b>발송 시각</b><div class="sub" id="notify-recipients"></div></div>
           <input type="time" id="notify-time" value="10:30" style="width:auto;padding:8px;border:1.5px solid var(--line);border-radius:10px;">
         </div>
-        <button class="btn btn-gray" style="margin-top:12px;" onclick="busy(this, saveNotify())">알림 설정 저장</button>
+        <button class="btn btn-gray" style="margin-top:12px;" onclick="saveNotify()">알림 설정 저장</button>
         <div class="hint" style="margin-top:10px;">평일(월~금)에만 발송되며, 설정한 시각 전후로 발송됩니다. 이메일은 알림 발송 목적으로만 사용됩니다.</div>
       </div>
       <div class="section-label">멤버 관리</div>
       <div class="card" id="set-members">불러오는 중...</div>
       <div id="set-danger" style="display:none;">
         <div class="section-label">위험 구역</div>
-        <button class="btn btn-danger" onclick="busy(this, doDeleteRoom())">🗑 방 삭제 (호스트 전용)</button>
+        <button class="btn btn-danger" onclick="doDeleteRoom()">🗑 방 삭제 (호스트 전용)</button>
       </div>
     </div>
 
@@ -456,14 +412,14 @@
         <input type="text" id="set-nickname" maxlength="10">
         <div class="hint">동료들이 명단·채팅에서 알아볼 수 있도록 <b>실명이나 알아보기 쉬운 이름</b>을 추천해요.</div>
       </div>
-      <button class="btn btn-gray" onclick="busy(this, saveNickname())">닉네임 저장</button>
+      <button class="btn btn-gray" onclick="saveNickname()">닉네임 저장</button>
     </div>
     <div class="card">
       <div class="field"><label>현재 비밀번호</label><input type="password" id="pw-cur" autocomplete="current-password"></div>
       <div class="field"><label>새 비밀번호 (8자 이상, 영문+숫자)</label><input type="password" id="pw-new" autocomplete="new-password"></div>
       <div class="field"><label>새 비밀번호 확인</label><input type="password" id="pw-new2" autocomplete="new-password"></div>
       <div class="form-error" id="pw-error"></div>
-      <button class="btn btn-gray" onclick="busy(this, changePw())">비밀번호 변경</button>
+      <button class="btn btn-gray" onclick="changePw()">비밀번호 변경</button>
     </div>
     <div class="card">
       <!-- REQ-14: 알림 수신 이메일 (선택) -->
@@ -472,32 +428,17 @@
         <input type="email" id="set-email" autocomplete="email" placeholder="예: me@daekyo.co.kr (비우면 알림 안 받음)">
         <div class="hint">점심 알림 메일을 받을 주소예요. <b>알림 발송 목적으로만 사용</b>하며, 비워서 저장하면 즉시 삭제됩니다.</div>
       </div>
-      <button class="btn btn-gray" onclick="busy(this, saveEmail())">이메일 저장</button>
+      <button class="btn btn-gray" onclick="saveEmail()">이메일 저장</button>
     </div>
     <div class="card">
       <div class="set-row" style="cursor:pointer;" onclick="openOnboarding()">
-        <div class="grow"><b>📖 사용 방법 보기</b><div class="sub">오늘점심 이용 안내를 다시 봅니다</div></div>
+        <div class="grow"><b>📖 사용 방법 보기</b><div class="sub">런치버디 이용 안내를 다시 봅니다</div></div>
         <span class="sub">›</span>
       </div>
     </div>
     <button class="btn btn-gray" onclick="doLogout(true)">로그아웃</button>
   </div>
 
-</div>
-
-<!-- 비밀번호 찾기 요청 모달 (REQ-15) -->
-<div class="modal-back" id="modal-forgot">
-  <div class="modal">
-    <div class="title" style="font-size:18px; margin-bottom:12px;">🔑 비밀번호 찾기</div>
-    <div class="field">
-      <label>아이디</label>
-      <input type="text" id="forgot-id" placeholder="가입한 아이디 입력" onkeydown="if(event.key==='Enter'){doRequestReset();}">
-      <div class="hint">가입 시 등록한 <b>이메일</b>이 있는 경우에만 재설정 링크가 발송돼요. 이메일을 등록하지 않았다면 운영자에게 문의해주세요.</div>
-    </div>
-    <div class="form-error" id="forgot-error"></div>
-    <button class="btn btn-green" id="btn-forgot" onclick="doRequestReset()">재설정 링크 받기</button>
-    <button class="btn btn-gray" onclick="closeForgotPassword()">취소</button>
-  </div>
 </div>
 
 <!-- 방 코드 참여 모달 (REQ-04 방법 2) -->
@@ -550,46 +491,11 @@
 
 <script>
   /* ==================== 설정 ==================== */
-  // Supabase 프로젝트 정보 — Project Settings > API 에서 확인
-  var SUPABASE_URL = 'https://kwbtquatwsjhkhloixbz.supabase.co';
-  var SUPABASE_ANON_KEY = 'sb_publishable_cQHxS9EXqLyF09W__Vtdrg_XxrvNQzn';
-  var supabase = (SUPABASE_URL.indexOf('supabase.co') > -1)
-    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-    : null;
-
-  // 프론트 함수명(기존 앱스크립트 호출명) → Postgres RPC 함수명 + 파라미터 순서 매핑
-  // (프론트 나머지 코드는 그대로 두고 이 매핑만으로 백엔드를 앱스크립트→Supabase로 교체)
-  var RPC_MAP = {
-    api_signup:               { name: 'api_signup',                params: ['p_login_id', 'p_password', 'p_email'] },
-    api_login:                { name: 'api_login',                 params: ['p_login_id', 'p_password'] },
-    api_logout:               { name: 'api_logout',                params: ['p_token'] },
-    api_getMe:                { name: 'api_get_me',                params: ['p_token'] },
-    api_getMyRooms:           { name: 'api_get_my_rooms',          params: ['p_token'] },
-    api_createRoom:           { name: 'api_create_room',           params: ['p_token', 'p_room_name'] },
-    api_joinByInvite:         { name: 'api_join_by_invite',        params: ['p_token', 'p_invite_token'] },
-    api_joinByCode:           { name: 'api_join_by_code',          params: ['p_token', 'p_code'] },
-    api_getRoomHome:          { name: 'api_get_room_home',         params: ['p_token', 'p_room_id'] },
-    api_setResponse:          { name: 'api_set_response',          params: ['p_token', 'p_room_id', 'p_status'] },
-    api_sendMessage:          { name: 'api_send_message',          params: ['p_token', 'p_room_id', 'p_text'] },
-    api_getHistory:           { name: 'api_get_history',           params: ['p_token', 'p_room_id'] },
-    api_updateNickname:       { name: 'api_update_nickname',       params: ['p_token', 'p_nickname'] },
-    api_changePassword:       { name: 'api_change_password',       params: ['p_token', 'p_current_pw', 'p_new_pw'] },
-    api_updateEmail:          { name: 'api_update_email',          params: ['p_token', 'p_email'] },
-    api_requestPasswordReset: { name: 'api_request_password_reset', params: ['p_login_id'] },
-    api_resetPassword:        { name: 'api_reset_password',        params: ['p_reset_token', 'p_new_password'] },
-    api_getMembers:           { name: 'api_get_members',           params: ['p_token', 'p_room_id'] },
-    api_renameRoom:           { name: 'api_rename_room',           params: ['p_token', 'p_room_id', 'p_room_name'] },
-    api_getRoomSettings:      { name: 'api_get_room_settings',     params: ['p_token', 'p_room_id'] },
-    api_setNotify:            { name: 'api_set_notify',            params: ['p_token', 'p_room_id', 'p_enabled', 'p_time'] },
-    api_regenerateInvite:     { name: 'api_regenerate_invite',     params: ['p_token', 'p_room_id'] },
-    api_setRole:              { name: 'api_set_role',              params: ['p_token', 'p_room_id', 'p_target_user_id', 'p_role'] },
-    api_kickMember:           { name: 'api_kick_member',           params: ['p_token', 'p_room_id', 'p_target_user_id'] },
-    api_deleteRoom:           { name: 'api_delete_room',           params: ['p_token', 'p_room_id'] },
-  };
+  // 앱스크립트 웹 앱 URL (백엔드 JSON API)
+  var API_URL = 'https://script.google.com/macros/s/AKfycbyb_W0pKLF6X-y4TiyH8AdMavBrY3XgHL9hRxwY7KZMph8xZbWWB0_R8HqEhXhZq8rY1w/exec';
 
   /* ==================== 상태 ==================== */
   var INVITE = new URLSearchParams(location.search).get('invite') || '';
-  var RESET_TOKEN = new URLSearchParams(location.search).get('reset') || '';
   var state = {
     token: localStorage.getItem('lb_token') || '',
     me: null,
@@ -610,40 +516,32 @@
   };
 
   /* ==================== 공통 ==================== */
-  // 모든 서버 호출 중 상단 로딩 바 표시 — 어떤 버튼을 눌러도 "실행 중" 상태가 보이도록 함
-  var pendingCalls = 0;
-  function beginBusy() { pendingCalls++; document.getElementById('loading-bar').classList.add('on'); }
-  function endBusy() { pendingCalls = Math.max(0, pendingCalls - 1); if (pendingCalls === 0) document.getElementById('loading-bar').classList.remove('on'); }
-  // 클릭한 버튼 자체를 처리 중에는 비활성화 — onclick="busy(this, someFn())" 형태로 사용
-  function busy(btn, maybePromise) {
-    if (maybePromise && typeof maybePromise.finally === 'function') {
-      btn.disabled = true;
-      maybePromise.finally(function () { btn.disabled = false; });
-    }
-  }
-
   function call(fn) {
     var args = Array.prototype.slice.call(arguments, 1);
-    var map = RPC_MAP[fn];
-    if (!map) return Promise.resolve({ ok: false, error: '알 수 없는 요청입니다: ' + fn });
-    var params = {};
-    map.params.forEach(function (p, i) { if (args[i] !== undefined) params[p] = args[i]; });
-
-    // Supabase Postgres 함수(RPC) 호출. 일시적 연결 실패에 대비해 최대 3회(0.8초 → 1.6초 간격) 자동 재시도
+    var payload = JSON.stringify({ fn: fn, args: args });
+    // 앱스크립트 JSON API 호출 — text/plain으로 보내야 CORS 사전요청(preflight) 없이 동작
+    // 일시적 연결 실패·서버 혼잡에 대비해 최대 3회(0.8초 → 1.6초 간격) 자동 재시도
     function attempt(n) {
-      return supabase.rpc(map.name, params).then(function (res) {
-        if (res.error) throw res.error;
-        return res.data; // 함수가 { ok, data|error } 형태의 jsonb를 그대로 반환
-      }).catch(function (e) {
-        if (n < 2) {
-          return new Promise(function (res) { setTimeout(res, 800 * (n + 1)); })
-            .then(function () { return attempt(n + 1); });
-        }
-        return { ok: false, error: '서버 연결이 원활하지 않습니다. 잠시 후 다시 시도해주세요.' };
-      });
+      var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 20000) : null; // 20초 무응답 시 중단 후 재시도
+      return fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: payload,
+        signal: ctrl ? ctrl.signal : undefined,
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (r) { if (timer) clearTimeout(timer); return r; })
+        .catch(function (e) {
+          if (timer) clearTimeout(timer);
+          if (n < 2) {
+            return new Promise(function (res) { setTimeout(res, 800 * (n + 1)); })
+              .then(function () { return attempt(n + 1); });
+          }
+          return { ok: false, error: '서버 연결이 원활하지 않습니다. 잠시 후 다시 시도해주세요.' };
+        });
     }
-    beginBusy();
-    return attempt(0).finally(endBusy);
+    return attempt(0);
   }
   function api(fn) {
     var args = Array.prototype.slice.call(arguments);
@@ -697,12 +595,11 @@
 
   /* ==================== 초기화 ==================== */
   function init() {
-    if (!supabase) {
+    if (API_URL.indexOf('/exec') === -1) {
       document.querySelector('#sc-loading .sub').textContent =
-        '⚠️ 설정 필요: docs/index-supabase.html의 SUPABASE_URL / SUPABASE_ANON_KEY를 입력해주세요.';
+        '⚠️ 설정 필요: docs/index.html의 API_URL에 앱스크립트 웹 앱 주소(/exec)를 입력해주세요.';
       return;
     }
-    if (RESET_TOKEN) { showResetPassword(); return; }
     if (state.token) {
       call('api_getMe', state.token).then(function (r) {
         if (r.ok) { state.me = r.data.user; afterLogin(); }
@@ -736,7 +633,7 @@
   var ONB_STEPS = [
     {
       icon: '🍱',
-      title: '오늘점심에 오신 걸 환영해요!',
+      title: '런치버디에 오신 걸 환영해요!',
       body: '오늘 점심 사내 식당에 <b>같이 갈 사람</b>을 매일 간편하게 확인하는 서비스예요.<br>잠깐이면 되는 사용법, 함께 볼까요?',
     },
     {
@@ -862,51 +759,6 @@
     localStorage.removeItem('lb_token');
     state.token = ''; state.me = null; state.roomId = null; state.pendingInvite = '';
     showAuth();
-  }
-
-  /* ==================== 비밀번호 찾기 (REQ-15) ==================== */
-  function openForgotPassword() {
-    document.getElementById('forgot-id').value = document.getElementById('login-id').value.trim();
-    document.getElementById('forgot-error').textContent = '';
-    document.getElementById('modal-forgot').classList.add('open');
-  }
-  function closeForgotPassword() { document.getElementById('modal-forgot').classList.remove('open'); }
-  function doRequestReset() {
-    var id = document.getElementById('forgot-id').value.trim();
-    var errEl = document.getElementById('forgot-error');
-    if (!id) { errEl.textContent = '아이디를 입력해주세요.'; return; }
-    var btn = document.getElementById('btn-forgot');
-    btn.disabled = true; errEl.textContent = '';
-    call('api_requestPasswordReset', id).then(function (r) {
-      btn.disabled = false;
-      if (!r.ok) { errEl.textContent = r.error; return; }
-      closeForgotPassword();
-      toast('등록된 이메일이 있다면 재설정 링크를 보냈어요. 메일함을 확인해주세요 📧');
-    });
-  }
-  function showResetPassword() {
-    document.getElementById('reset-pw').value = '';
-    document.getElementById('reset-pw2').value = '';
-    document.getElementById('reset-error').textContent = '';
-    show('sc-reset-password');
-  }
-  function doResetPassword() {
-    var pw = document.getElementById('reset-pw').value;
-    var pw2 = document.getElementById('reset-pw2').value;
-    var errEl = document.getElementById('reset-error');
-    errEl.textContent = '';
-    if (!/^(?=.*[A-Za-z])(?=.*[0-9]).{8,}$/.test(pw)) { errEl.textContent = '비밀번호는 8자 이상이며 영문과 숫자를 모두 포함해야 합니다.'; return; }
-    if (pw !== pw2) { errEl.textContent = '비밀번호가 일치하지 않습니다.'; return; }
-    var btn = document.getElementById('btn-reset');
-    btn.disabled = true;
-    call('api_resetPassword', RESET_TOKEN, pw).then(function (r) {
-      btn.disabled = false;
-      if (!r.ok) { errEl.textContent = r.error; return; }
-      toast('비밀번호가 재설정되었습니다. 로그인해주세요 ✅');
-      history.replaceState(null, '', location.pathname); // ?reset= 쿼리 제거
-      RESET_TOKEN = '';
-      showAuth();
-    });
   }
 
   /* ==================== 방 목록 (REQ-03) ==================== */
@@ -1037,8 +889,7 @@
   function renderToday(d) {
     state.myRole = d.myRole;
     state.myStatus = d.myStatus;
-    // 백엔드는 초대 토큰만 반환 — 서비스 주소는 프론트가 알고 있으므로 여기서 조립
-    state.inviteUrl = d.inviteToken ? (location.origin + location.pathname + '?invite=' + d.inviteToken) : '';
+    state.inviteUrl = d.inviteUrl;
     state.roomCode = d.roomCode || '';
     document.getElementById('btn-roomcode').textContent = '🔑 방 코드: ' + (state.roomCode || '------') + ' (탭하여 복사)';
     document.getElementById('room-title').textContent = '🍱 ' + d.roomName;
@@ -1142,7 +993,7 @@
     if (!text) return;
     if (text.length > 300) { toast('메시지는 300자 이내로 입력해주세요.'); return; }
     sending = true;
-    return api('api_sendMessage', state.token, state.roomId, text).then(function (r) {
+    api('api_sendMessage', state.token, state.roomId, text).then(function (r) {
       sending = false;
       if (!r.ok) { toast(r.error); return; }
       input.value = '';
@@ -1257,7 +1108,7 @@
 
   function saveNickname() {
     var nick = document.getElementById('set-nickname').value.trim();
-    return api('api_updateNickname', state.token, nick).then(function (r) {
+    api('api_updateNickname', state.token, nick).then(function (r) {
       if (!r.ok) { toast(r.error); return; }
       state.me.nickname = r.data.nickname;
       toast('닉네임이 변경되었습니다 ✅');
@@ -1266,7 +1117,7 @@
   function saveEmail() {
     var email = document.getElementById('set-email').value.trim();
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast('이메일 형식이 올바르지 않습니다.'); return; }
-    return api('api_updateEmail', state.token, email).then(function (r) {
+    api('api_updateEmail', state.token, email).then(function (r) {
       if (!r.ok) { toast(r.error); return; }
       state.me.email = r.data.email;
       toast(r.data.email ? '알림 이메일이 저장되었습니다 ✅' : '이메일이 삭제되었습니다.');
@@ -1290,7 +1141,7 @@
   function saveNotify() {
     var enabled = document.getElementById('notify-enabled').checked;
     var time = document.getElementById('notify-time').value;
-    return api('api_setNotify', state.token, state.roomId, enabled, time).then(function (r) {
+    api('api_setNotify', state.token, state.roomId, enabled, time).then(function (r) {
       if (!r.ok) { toast(r.error); return; }
       toast(enabled ? '알림이 설정되었습니다 (매일 ' + r.data.notifyTime + ') ✅' : '알림 발송을 껐습니다.');
     });
@@ -1303,7 +1154,7 @@
     errEl.textContent = '';
     if (!cur || !nw) { errEl.textContent = '현재 비밀번호와 새 비밀번호를 입력해주세요.'; return; }
     if (nw !== nw2) { errEl.textContent = '새 비밀번호가 일치하지 않습니다.'; return; }
-    return api('api_changePassword', state.token, cur, nw).then(function (r) {
+    api('api_changePassword', state.token, cur, nw).then(function (r) {
       if (!r.ok) { errEl.textContent = r.error; return; }
       document.getElementById('pw-cur').value = '';
       document.getElementById('pw-new').value = '';
@@ -1325,11 +1176,11 @@
         if (m.userId !== r.data.myUserId && m.role !== 'host') {
           if (myRole === 'host') {
             actions += m.role === 'co-host'
-              ? '<button class="mini-btn" onclick="busy(this, doSetRole(\'' + esc(m.userId) + '\',\'member\'))">공동호스트 해제</button>'
-              : '<button class="mini-btn blue" onclick="busy(this, doSetRole(\'' + esc(m.userId) + '\',\'co-host\'))">공동호스트 지정</button>';
+              ? '<button class="mini-btn" onclick="doSetRole(\'' + esc(m.userId) + '\',\'member\')">공동호스트 해제</button>'
+              : '<button class="mini-btn blue" onclick="doSetRole(\'' + esc(m.userId) + '\',\'co-host\')">공동호스트 지정</button>';
           }
           if (myRole === 'host' || (myRole === 'co-host' && m.role === 'member')) {
-            actions += '<button class="mini-btn danger" onclick="busy(this, doKick(\'' + esc(m.userId) + '\',\'' + esc(m.nickname) + '\'))">내보내기</button>';
+            actions += '<button class="mini-btn danger" onclick="doKick(\'' + esc(m.userId) + '\',\'' + esc(m.nickname) + '\')">내보내기</button>';
           }
         }
         return '<div class="member-row"><span class="nm">' + esc(m.nickname) + '</span>' + badge + actions + '</div>';
@@ -1337,7 +1188,7 @@
     });
   }
   function doSetRole(userId, role) {
-    return api('api_setRole', state.token, state.roomId, userId, role).then(function (r) {
+    api('api_setRole', state.token, state.roomId, userId, role).then(function (r) {
       if (!r.ok) { toast(r.error); return; }
       toast(role === 'co-host' ? '공동 호스트로 지정했습니다 ✅' : '공동 호스트를 해제했습니다.');
       loadMembersUI();
@@ -1345,7 +1196,7 @@
   }
   function doKick(userId, nickname) {
     if (!confirm(nickname + '님을 방에서 내보낼까요?\n(초대 링크로 다시 참여할 수 있습니다)')) return;
-    return api('api_kickMember', state.token, state.roomId, userId).then(function (r) {
+    api('api_kickMember', state.token, state.roomId, userId).then(function (r) {
       if (!r.ok) { toast(r.error); return; }
       toast(nickname + '님을 내보냈습니다.');
       loadMembersUI();
@@ -1355,7 +1206,7 @@
     var cur = document.getElementById('set-room-name').textContent;
     var name = prompt('새 방 이름을 입력해주세요 (2~20자)', cur);
     if (name === null) return;
-    return api('api_renameRoom', state.token, state.roomId, name.trim()).then(function (r) {
+    api('api_renameRoom', state.token, state.roomId, name.trim()).then(function (r) {
       if (!r.ok) { toast(r.error); return; }
       document.getElementById('set-room-name').textContent = r.data.roomName;
       document.getElementById('room-title').textContent = '🍱 ' + r.data.roomName;
@@ -1364,17 +1215,16 @@
   }
   function doRegenInvite() {
     if (!confirm('초대 링크를 재생성할까요?\n기존 링크는 즉시 사용할 수 없게 됩니다.')) return;
-    return api('api_regenerateInvite', state.token, state.roomId).then(function (r) {
+    api('api_regenerateInvite', state.token, state.roomId).then(function (r) {
       if (!r.ok) { toast(r.error); return; }
-      var url = location.origin + location.pathname + '?invite=' + r.data.inviteToken;
-      state.inviteUrl = url;
-      copyText(url);
+      state.inviteUrl = r.data.inviteUrl;
+      copyText(r.data.inviteUrl);
     });
   }
   function doDeleteRoom() {
     var roomName = document.getElementById('set-room-name').textContent;
     if (!confirm('정말 "' + roomName + '" 방을 삭제할까요?\n멤버·참여기록·채팅이 모두 삭제되며 되돌릴 수 없습니다.')) return;
-    return api('api_deleteRoom', state.token, state.roomId).then(function (r) {
+    api('api_deleteRoom', state.token, state.roomId).then(function (r) {
       if (!r.ok) { toast(r.error); return; }
       toast('방이 삭제되었습니다.');
       state.roomId = null;
