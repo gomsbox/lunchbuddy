@@ -48,15 +48,18 @@ declare
   v_room record;
   v_target_min int;
   v_recipients text[];
+  v_is_weekend boolean := (v_dow = 0 or v_dow = 6);
 begin
-  if v_dow = 0 or v_dow = 6 then return; end if; -- 주말 발송 없음
-
   select value into v_api_key from app_config where key = 'resend_api_key';
   select value into v_owner_email from app_config where key = 'owner_email';
   select coalesce((select value from app_config where key = 'frontend_url'), 'https://gomsbox.github.io/lunchbuddy/') into v_frontend_url;
   if v_api_key is null or v_owner_email is null then return; end if; -- 설정 전이면 조용히 종료
 
   for v_room in select * from rooms where notify_enabled = true and (last_notified_date is distinct from v_today) loop
+    -- 방별 평일/주말 다중 선택: 둘 다 켜면 매일, 평일만 켜면 월~금, 주말만 켜면 토~일
+    if v_is_weekend and not v_room.notify_weekend then continue; end if;
+    if not v_is_weekend and not v_room.notify_weekday then continue; end if;
+
     v_target_min := (split_part(v_room.notify_time, ':', 1))::int * 60 + (split_part(v_room.notify_time, ':', 2))::int;
     if v_now_min < v_target_min or v_now_min >= v_target_min + 60 then
       continue; -- 발송 창(시각~+60분) 밖

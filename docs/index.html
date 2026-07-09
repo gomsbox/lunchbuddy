@@ -433,12 +433,21 @@
           <div class="grow"><b>점심 알림 메일 발송</b><div class="sub">멤버 중 이메일 등록자에게 발송</div></div>
           <label class="switch"><input type="checkbox" id="notify-enabled" onchange="onNotifyToggle()"><span class="slider"></span></label>
         </div>
+        <div id="notify-days-row" class="set-row" style="display:none;">
+          <div class="grow"><b>발송 요일</b><div class="sub">둘 다 선택하면 매일 발송</div></div>
+          <label style="display:flex; align-items:center; gap:5px; font-size:13px; margin-right:12px; cursor:pointer;">
+            <input type="checkbox" id="notify-weekday" checked> 평일
+          </label>
+          <label style="display:flex; align-items:center; gap:5px; font-size:13px; cursor:pointer;">
+            <input type="checkbox" id="notify-weekend"> 주말
+          </label>
+        </div>
         <div id="notify-time-row" class="set-row" style="display:none;">
           <div class="grow"><b>발송 시각</b><div class="sub" id="notify-recipients"></div></div>
           <input type="time" id="notify-time" value="10:30" style="width:auto;padding:8px;border:1.5px solid var(--line);border-radius:10px;">
         </div>
         <button class="btn btn-gray" style="margin-top:12px;" onclick="busy(this, saveNotify())">알림 설정 저장</button>
-        <div class="hint" style="margin-top:10px;">평일(월~금)에만 발송되며, 설정한 시각 전후로 발송됩니다. 이메일은 알림 발송 목적으로만 사용됩니다.</div>
+        <div class="hint" style="margin-top:10px;">선택한 요일에만, 설정한 시각 전후로 발송됩니다. 이메일은 알림 발송 목적으로만 사용됩니다.</div>
       </div>
       <div class="section-label">멤버 관리</div>
       <div class="card" id="set-members">불러오는 중...</div>
@@ -580,7 +589,7 @@
     api_getMembers:           { name: 'api_get_members',           params: ['p_token', 'p_room_id'] },
     api_renameRoom:           { name: 'api_rename_room',           params: ['p_token', 'p_room_id', 'p_room_name'] },
     api_getRoomSettings:      { name: 'api_get_room_settings',     params: ['p_token', 'p_room_id'] },
-    api_setNotify:            { name: 'api_set_notify',            params: ['p_token', 'p_room_id', 'p_enabled', 'p_time'] },
+    api_setNotify:            { name: 'api_set_notify',            params: ['p_token', 'p_room_id', 'p_enabled', 'p_time', 'p_weekday', 'p_weekend'] },
     api_regenerateInvite:     { name: 'api_regenerate_invite',     params: ['p_token', 'p_room_id'] },
     api_setRole:              { name: 'api_set_role',              params: ['p_token', 'p_room_id', 'p_target_user_id', 'p_role'] },
     api_kickMember:           { name: 'api_kick_member',           params: ['p_token', 'p_room_id', 'p_target_user_id'] },
@@ -1273,26 +1282,33 @@
     });
   }
 
-  /* 호스트 알림 설정 (REQ-14) */
+  /* 호스트 알림 설정 (REQ-14) — 평일/주말 중복 선택 가능 */
   function loadNotifyUI() {
     api('api_getRoomSettings', state.token, state.roomId).then(function (r) {
       if (!r.ok) return;
       document.getElementById('notify-enabled').checked = r.data.notifyEnabled;
       document.getElementById('notify-time').value = r.data.notifyTime || '10:30';
+      document.getElementById('notify-weekday').checked = r.data.notifyWeekday !== false;
+      document.getElementById('notify-weekend').checked = !!r.data.notifyWeekend;
       document.getElementById('notify-recipients').textContent = '현재 이메일 등록 멤버 ' + r.data.recipientCount + '명';
       onNotifyToggle();
     });
   }
   function onNotifyToggle() {
     var on = document.getElementById('notify-enabled').checked;
+    document.getElementById('notify-days-row').style.display = on ? 'flex' : 'none';
     document.getElementById('notify-time-row').style.display = on ? 'flex' : 'none';
   }
   function saveNotify() {
     var enabled = document.getElementById('notify-enabled').checked;
     var time = document.getElementById('notify-time').value;
-    return api('api_setNotify', state.token, state.roomId, enabled, time).then(function (r) {
+    var weekday = document.getElementById('notify-weekday').checked;
+    var weekend = document.getElementById('notify-weekend').checked;
+    if (enabled && !weekday && !weekend) { toast('평일 또는 주말 중 최소 하나는 선택해주세요.'); return; }
+    return api('api_setNotify', state.token, state.roomId, enabled, time, weekday, weekend).then(function (r) {
       if (!r.ok) { toast(r.error); return; }
-      toast(enabled ? '알림이 설정되었습니다 (매일 ' + r.data.notifyTime + ') ✅' : '알림 발송을 껐습니다.');
+      var days = (weekday && weekend) ? '매일' : weekday ? '평일' : '주말';
+      toast(enabled ? '알림이 설정되었습니다 (' + days + ' ' + r.data.notifyTime + ') ✅' : '알림 발송을 껐습니다.');
     });
   }
   function changePw() {

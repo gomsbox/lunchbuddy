@@ -579,11 +579,16 @@ begin
   select count(*) into v_recipients from members m join users u on u.id = m.user_id
     where m.room_id = p_room_id and u.email is not null;
 
-  return fn_ok(jsonb_build_object('notifyEnabled', v_room.notify_enabled, 'notifyTime', v_room.notify_time, 'recipientCount', v_recipients));
+  return fn_ok(jsonb_build_object(
+    'notifyEnabled', v_room.notify_enabled, 'notifyTime', v_room.notify_time,
+    'notifyWeekday', v_room.notify_weekday, 'notifyWeekend', v_room.notify_weekend,
+    'recipientCount', v_recipients
+  ));
 end;
 $$;
 
-create or replace function api_set_notify(p_token uuid, p_room_id uuid, p_enabled boolean, p_time text) returns jsonb
+-- 평일/주말 중복 선택 가능 — 둘 다 켜면 7일 내내, 평일만 켜면 월~금 5일, 주말만 켜면 토~일 2일 발송
+create or replace function api_set_notify(p_token uuid, p_room_id uuid, p_enabled boolean, p_time text, p_weekday boolean default true, p_weekend boolean default false) returns jsonb
 language plpgsql security definer set search_path = public, extensions as $$
 declare
   v_me record;
@@ -595,10 +600,18 @@ begin
   if p_enabled and v_time !~ '^([01][0-9]|2[0-3]):[0-5][0-9]$' then
     return fn_err('발송 시각 형식이 올바르지 않습니다 (예: 10:30).');
   end if;
+  if p_enabled and not coalesce(p_weekday, false) and not coalesce(p_weekend, false) then
+    return fn_err('평일 또는 주말 중 최소 하나는 선택해주세요.');
+  end if;
   if v_time = '' then v_time := '10:30'; end if;
 
-  update rooms set notify_enabled = p_enabled, notify_time = v_time where id = p_room_id;
-  return fn_ok(jsonb_build_object('notifyEnabled', p_enabled, 'notifyTime', v_time));
+  update rooms set notify_enabled = p_enabled, notify_time = v_time,
+    notify_weekday = coalesce(p_weekday, true), notify_weekend = coalesce(p_weekend, false)
+    where id = p_room_id;
+  return fn_ok(jsonb_build_object(
+    'notifyEnabled', p_enabled, 'notifyTime', v_time,
+    'notifyWeekday', coalesce(p_weekday, true), 'notifyWeekend', coalesce(p_weekend, false)
+  ));
 end;
 $$;
 

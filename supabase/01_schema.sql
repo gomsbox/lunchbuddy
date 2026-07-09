@@ -51,11 +51,17 @@ create table if not exists rooms (
   room_code text unique not null,
   notify_enabled boolean not null default false,
   notify_time text not null default '10:30',
+  notify_weekday boolean not null default true,   -- 평일(월~금) 발송 여부
+  notify_weekend boolean not null default false,   -- 주말(토~일) 발송 여부 — 둘 다 켜면 매일 발송
   last_notified_date date,
   created_at timestamptz not null default now()
 );
 create index if not exists rooms_invite_token_idx on rooms (invite_token);
 create index if not exists rooms_room_code_idx on rooms (room_code);
+
+-- 기존에 만들어진 rooms 테이블에 새 컬럼 추가 (이미 실행했던 설치본도 안전하게 재실행 가능)
+alter table rooms add column if not exists notify_weekday boolean not null default true;
+alter table rooms add column if not exists notify_weekend boolean not null default false;
 
 create table if not exists members (
   room_id uuid not null references rooms(id) on delete cascade,
