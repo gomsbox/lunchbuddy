@@ -67,20 +67,28 @@ create table if not exists members (
   room_id uuid not null references rooms(id) on delete cascade,
   user_id uuid not null references users(id) on delete cascade,
   role text not null check (role in ('host', 'co-host', 'member')),
+  nickname text not null default '',   -- 방별 닉네임 (계정 닉네임과 독립적으로 방마다 다르게 설정 가능)
   joined_at timestamptz not null default now(),
   primary key (room_id, user_id)
 );
 create index if not exists members_user_id_idx on members (user_id);
+
+-- 기존 members 테이블에 닉네임 컬럼 추가 (없는 경우) + 계정 닉네임으로 초기값 채움
+alter table members add column if not exists nickname text;
+update members m set nickname = u.nickname from users u where u.id = m.user_id and (m.nickname is null or m.nickname = '');
+alter table members alter column nickname set not null;
 
 create table if not exists responses (
   date date not null,
   room_id uuid not null references rooms(id) on delete cascade,
   user_id uuid not null references users(id) on delete cascade,
   status text not null check (status in ('going', 'not-going')),
+  nickname text,   -- 응답 시점의 방 닉네임 스냅샷 (나중에 강퇴/탈퇴해도 히스토리 집계에 이름이 남도록)
   updated_at timestamptz not null default now(),
   primary key (date, room_id, user_id)
 );
 create index if not exists responses_room_date_idx on responses (room_id, date);
+alter table responses add column if not exists nickname text;
 
 create table if not exists history (
   date date not null,
@@ -94,10 +102,16 @@ create table if not exists messages (
   id uuid primary key default gen_random_uuid(),
   room_id uuid not null references rooms(id) on delete cascade,
   user_id uuid not null references users(id) on delete cascade,
+  nickname text,   -- 전송 시점의 방 닉네임 스냅샷 (나중에 강퇴/탈퇴해도 채팅 기록에 이름이 남도록)
   text text not null,
   sent_at timestamptz not null default now()
 );
 create index if not exists messages_room_date_idx on messages (room_id, sent_at);
+alter table messages add column if not exists nickname text;
+
+-- 기존 responses/messages 행에 남아있던 값이 있다면 방 닉네임으로 백필 (신규 설치에서는 대상 행이 없어 영향 없음)
+update responses r set nickname = m.nickname from members m where m.room_id = r.room_id and m.user_id = r.user_id and r.nickname is null;
+update messages msg set nickname = m.nickname from members m where m.room_id = msg.room_id and m.user_id = msg.user_id and msg.nickname is null;
 
 -- 운영 설정 저장용 (Resend API 키 등). RLS로 잠가서 RPC 함수 내부에서만 접근.
 create table if not exists app_config (

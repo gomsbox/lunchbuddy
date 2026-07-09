@@ -11,11 +11,12 @@ declare
   v_cutoff date := v_today - interval '29 days';
 begin
   -- 1) 과거 응답 → History 집계 후 삭제 (당일 데이터는 그대로 유지)
+  -- nickname은 응답 시점 스냅샷(responses.nickname) — 강퇴/탈퇴된 멤버도 히스토리에 정확히 남음
   insert into history (date, room_id, going_names, not_going_names)
   select r.date, r.room_id,
-    coalesce(string_agg(u.nickname, ',') filter (where r.status = 'going'), ''),
-    coalesce(string_agg(u.nickname, ',') filter (where r.status = 'not-going'), '')
-  from responses r join users u on u.id = r.user_id
+    coalesce(string_agg(coalesce(r.nickname, '(알수없음)'), ',') filter (where r.status = 'going'), ''),
+    coalesce(string_agg(coalesce(r.nickname, '(알수없음)'), ',') filter (where r.status = 'not-going'), '')
+  from responses r
   where r.date < v_today
   group by r.date, r.room_id
   on conflict (date, room_id) do nothing;

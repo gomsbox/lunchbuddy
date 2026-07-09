@@ -414,6 +414,19 @@
       <div class="grow"><div class="title" style="font-size:18px;">설정</div></div>
     </div>
 
+    <!-- 이 방에서의 내 닉네임 (전 멤버 공통, 방마다 독립적으로 저장됨) -->
+    <div id="set-room-nickname-section" style="display:none;">
+      <div class="section-label">이 방에서의 내 닉네임</div>
+      <div class="card">
+        <div class="field">
+          <label>닉네임 (2~10자 한글/영문/숫자)</label>
+          <input type="text" id="set-room-nickname" maxlength="10">
+          <div class="hint">닉네임은 <b>방마다 따로 저장</b>돼요. 동료들이 명단·채팅에서 알아볼 수 있도록 <b>실명이나 알아보기 쉬운 이름</b>을 추천해요.</div>
+        </div>
+        <button class="btn btn-gray" onclick="busy(this, saveNickname())">닉네임 저장</button>
+      </div>
+    </div>
+
     <!-- 방 관리 (호스트·공동 호스트 전용, REQ-10·11) -->
     <div id="set-room-section" style="display:none;">
       <div class="section-label">방 관리 · <span id="set-room-name"></span></div>
@@ -459,14 +472,6 @@
 
     <!-- 개인 설정 (REQ-09) -->
     <div class="section-label">개인 설정</div>
-    <div class="card">
-      <div class="field">
-        <label>닉네임 (2~10자 한글/영문/숫자)</label>
-        <input type="text" id="set-nickname" maxlength="10">
-        <div class="hint">동료들이 명단·채팅에서 알아볼 수 있도록 <b>실명이나 알아보기 쉬운 이름</b>을 추천해요.</div>
-      </div>
-      <button class="btn btn-gray" onclick="busy(this, saveNickname())">닉네임 저장</button>
-    </div>
     <div class="card">
       <div class="field"><label>현재 비밀번호</label><input type="password" id="pw-cur" autocomplete="current-password"></div>
       <div class="field"><label>새 비밀번호 (8자 이상, 영문+숫자)</label><input type="password" id="pw-new" autocomplete="new-password"></div>
@@ -581,7 +586,7 @@
     api_setResponse:          { name: 'api_set_response',          params: ['p_token', 'p_room_id', 'p_status'] },
     api_sendMessage:          { name: 'api_send_message',          params: ['p_token', 'p_room_id', 'p_text'] },
     api_getHistory:           { name: 'api_get_history',           params: ['p_token', 'p_room_id'] },
-    api_updateNickname:       { name: 'api_update_nickname',       params: ['p_token', 'p_nickname'] },
+    api_updateNickname:       { name: 'api_update_nickname',       params: ['p_token', 'p_room_id', 'p_nickname'] },
     api_changePassword:       { name: 'api_change_password',       params: ['p_token', 'p_current_pw', 'p_new_pw'] },
     api_updateEmail:          { name: 'api_update_email',          params: ['p_token', 'p_email'] },
     api_requestPasswordReset: { name: 'api_request_password_reset', params: ['p_login_id'] },
@@ -604,6 +609,7 @@
     me: null,
     roomId: null,
     myRole: '',
+    myNickname: '',   // 현재 방에서의 내 닉네임 (방마다 다를 수 있음)
     tab: 'today',
     pendingInvite: INVITE || '',
     inviteUrl: '',
@@ -751,9 +757,9 @@
     {
       icon: '🙋',
       title: '먼저 내 이름을 설정해요',
-      body: '가입하면 <b>닉네임이 아이디로 자동 설정</b>돼 있어요. 참여 명단과 채팅에서 동료들이 나를 알아볼 수 있도록 ' +
+      body: '방에 참여하면 <b>닉네임이 아이디로 자동 설정</b>돼요. 참여 명단과 채팅에서 동료들이 나를 알아볼 수 있도록 ' +
         '<b>실명이나 알아보기 쉬운 이름</b>으로 바꾸는 걸 추천해요.' +
-        '<span class="ex">⚙️ <b>설정 > 닉네임</b>에서 언제든 변경할 수 있어요</span>',
+        '<span class="ex">⚙️ 방 안 <b>설정 > 이 방에서의 내 닉네임</b>에서 변경할 수 있어요. <b>닉네임은 방마다 따로 저장</b>돼요</span>',
     },
     {
       icon: '🔗',
@@ -1046,6 +1052,7 @@
   function renderToday(d) {
     state.myRole = d.myRole;
     state.myStatus = d.myStatus;
+    state.myNickname = d.myNickname; // 이 방에서의 내 닉네임 (계정 닉네임과 다를 수 있음)
     // 백엔드는 초대 토큰만 반환 — 서비스 주소는 프론트가 알고 있으므로 여기서 조립
     state.inviteUrl = d.inviteToken ? (location.origin + location.pathname + '?invite=' + d.inviteToken) : '';
     state.roomCode = d.roomCode || '';
@@ -1054,7 +1061,7 @@
     var dt = new Date(d.date + 'T00:00:00');
     document.getElementById('room-date').textContent =
       dt.getFullYear() + '년 ' + (dt.getMonth() + 1) + '월 ' + dt.getDate() + '일 (' + DOW[dt.getDay()] + ')';
-    document.getElementById('today-my-name').textContent = state.me.nickname;
+    document.getElementById('today-my-name').textContent = state.myNickname;
 
     document.getElementById('btn-going').classList.toggle('on', d.myStatus === 'going');
     document.getElementById('btn-notgoing').classList.toggle('on', d.myStatus === 'not-going');
@@ -1242,12 +1249,16 @@
   function openSettings(fromRoom) {
     settingsFromRoom = fromRoom;
     show('sc-settings');
-    document.getElementById('set-nickname').value = state.me.nickname;
     document.getElementById('set-email').value = state.me.email || '';
     document.getElementById('pw-cur').value = '';
     document.getElementById('pw-new').value = '';
     document.getElementById('pw-new2').value = '';
     document.getElementById('pw-error').textContent = '';
+
+    // 닉네임은 방마다 저장되므로, 방 안에서 설정을 열었을 때만 편집란을 보여줌
+    var nickSection = document.getElementById('set-room-nickname-section');
+    nickSection.style.display = fromRoom ? 'block' : 'none';
+    if (fromRoom) document.getElementById('set-room-nickname').value = state.myNickname || '';
 
     var roomSection = document.getElementById('set-room-section');
     var isManager = fromRoom && (state.myRole === 'host' || state.myRole === 'co-host');
@@ -1265,11 +1276,12 @@
   }
 
   function saveNickname() {
-    var nick = document.getElementById('set-nickname').value.trim();
-    return api('api_updateNickname', state.token, nick).then(function (r) {
+    var nick = document.getElementById('set-room-nickname').value.trim();
+    return api('api_updateNickname', state.token, state.roomId, nick).then(function (r) {
       if (!r.ok) { toast(r.error); return; }
-      state.me.nickname = r.data.nickname;
-      toast('닉네임이 변경되었습니다 ✅');
+      state.myNickname = r.data.nickname;
+      document.getElementById('today-my-name').textContent = state.myNickname;
+      toast('이 방에서의 닉네임이 변경되었습니다 ✅');
     });
   }
   function saveEmail() {

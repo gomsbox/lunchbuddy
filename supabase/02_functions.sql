@@ -205,7 +205,8 @@ begin
 
   insert into rooms (name, host_user_id, room_code) values (v_name, v_me.user_id, fn_new_room_code())
   returning id into v_room_id;
-  insert into members (room_id, user_id, role) values (v_room_id, v_me.user_id, 'host');
+  -- 방 닉네임은 계정 닉네임으로 시작하되, 이후 방마다 독립적으로 변경 가능 (REQ-09)
+  insert into members (room_id, user_id, role, nickname) values (v_room_id, v_me.user_id, 'host', v_me.nickname);
 
   return fn_ok(jsonb_build_object('roomId', v_room_id));
 end;
@@ -229,7 +230,7 @@ begin
     return fn_ok(jsonb_build_object('roomId', v_room.id, 'already', true));
   end if;
 
-  insert into members (room_id, user_id, role) values (v_room.id, v_me.user_id, 'member')
+  insert into members (room_id, user_id, role, nickname) values (v_room.id, v_me.user_id, 'member', v_me.nickname)
   on conflict do nothing;
   return fn_ok(jsonb_build_object('roomId', v_room.id, 'already', false));
 end;
@@ -257,7 +258,7 @@ begin
     return fn_ok(jsonb_build_object('roomId', v_room.id, 'already', true));
   end if;
 
-  insert into members (room_id, user_id, role) values (v_room.id, v_me.user_id, 'member')
+  insert into members (room_id, user_id, role, nickname) values (v_room.id, v_me.user_id, 'member', v_me.nickname)
   on conflict do nothing;
   return fn_ok(jsonb_build_object('roomId', v_room.id, 'already', false));
 end;
@@ -276,6 +277,7 @@ declare
   v_not_going jsonb;
   v_no_response jsonb;
   v_my_status text;
+  v_my_nickname text;
   v_messages jsonb;
 begin
   select * into v_me from fn_auth(p_token);
@@ -287,33 +289,36 @@ begin
   select * into v_room from rooms where id = p_room_id;
   if v_room.id is null then return fn_err('방을 찾을 수 없습니다.'); end if;
 
-  select coalesce(jsonb_agg(jsonb_build_object('userId', m.user_id, 'nickname', u.nickname)), '[]'::jsonb) into v_going
-    from members m join users u on u.id = m.user_id
+  -- 닉네임은 members.nickname(방별 닉네임) 기준 — 계정 닉네임(users.nickname)이 아님
+  select coalesce(jsonb_agg(jsonb_build_object('userId', m.user_id, 'nickname', m.nickname)), '[]'::jsonb) into v_going
+    from members m
     join responses r on r.room_id = m.room_id and r.user_id = m.user_id and r.date = v_today
     where m.room_id = p_room_id and r.status = 'going';
 
-  select coalesce(jsonb_agg(jsonb_build_object('userId', m.user_id, 'nickname', u.nickname)), '[]'::jsonb) into v_not_going
-    from members m join users u on u.id = m.user_id
+  select coalesce(jsonb_agg(jsonb_build_object('userId', m.user_id, 'nickname', m.nickname)), '[]'::jsonb) into v_not_going
+    from members m
     join responses r on r.room_id = m.room_id and r.user_id = m.user_id and r.date = v_today
     where m.room_id = p_room_id and r.status = 'not-going';
 
-  select coalesce(jsonb_agg(jsonb_build_object('userId', m.user_id, 'nickname', u.nickname)), '[]'::jsonb) into v_no_response
-    from members m join users u on u.id = m.user_id
+  select coalesce(jsonb_agg(jsonb_build_object('userId', m.user_id, 'nickname', m.nickname)), '[]'::jsonb) into v_no_response
+    from members m
     where m.room_id = p_room_id
       and not exists (select 1 from responses r where r.room_id = m.room_id and r.user_id = m.user_id and r.date = v_today);
 
   select status into v_my_status from responses where room_id = p_room_id and user_id = v_me.user_id and date = v_today;
+  select nickname into v_my_nickname from members where room_id = p_room_id and user_id = v_me.user_id;
 
   -- sentAt: timestamptz를 서울 시각의 "naive" 타임스탬프로 변환해 반환 (그대로 두면 UTC로 직렬화되어 프론트 시간 표시가 9시간 어긋남)
+  -- nickname은 전송 시점 스냅샷(messages.nickname)을 그대로 사용 — 이후 강퇴/탈퇴돼도 채팅 기록은 유지됨
   select coalesce(jsonb_agg(jsonb_build_object(
-      'messageId', msg.id, 'userId', msg.user_id, 'nickname', u.nickname, 'text', msg.text,
+      'messageId', msg.id, 'userId', msg.user_id, 'nickname', coalesce(msg.nickname, '(알수없음)'), 'text', msg.text,
       'sentAt', (msg.sent_at at time zone 'Asia/Seoul')
     ) order by msg.sent_at), '[]'::jsonb) into v_messages
-    from messages msg join users u on u.id = msg.user_id
+    from messages msg
     where msg.room_id = p_room_id and (msg.sent_at at time zone 'Asia/Seoul')::date = v_today;
 
   return fn_ok(jsonb_build_object(
-    'roomName', v_room.name, 'date', v_today, 'myRole', v_role, 'myUserId', v_me.user_id,
+    'roomName', v_room.name, 'date', v_today, 'myRole', v_role, 'myUserId', v_me.user_id, 'myNickname', v_my_nickname,
     'myStatus', v_my_status, 'going', v_going, 'notGoing', v_not_going, 'noResponse', v_no_response,
     'inviteToken', v_room.invite_token, 'roomCode', v_room.room_code, 'messages', v_messages
   ));
@@ -325,17 +330,20 @@ language plpgsql security definer set search_path = public, extensions as $$
 declare
   v_me record;
   v_today date := fn_today();
+  v_nick text;
 begin
   select * into v_me from fn_auth(p_token);
   if v_me.user_id is null then return fn_err('AUTH'); end if;
-  if fn_member_role(p_room_id, v_me.user_id) is null then return fn_err('NOT_MEMBER'); end if;
+  select nickname into v_nick from members where room_id = p_room_id and user_id = v_me.user_id;
+  if v_nick is null then return fn_err('NOT_MEMBER'); end if;
   if p_status not in ('going', 'not-going', 'clear') then return fn_err('잘못된 응답 값입니다.'); end if;
 
   if p_status = 'clear' then
     delete from responses where room_id = p_room_id and user_id = v_me.user_id and date = v_today;
   else
-    insert into responses (date, room_id, user_id, status) values (v_today, p_room_id, v_me.user_id, p_status)
-    on conflict (date, room_id, user_id) do update set status = excluded.status, updated_at = now();
+    -- nickname은 응답 시점의 방 닉네임 스냅샷 (강퇴/탈퇴 후에도 히스토리 집계에 이름이 남도록)
+    insert into responses (date, room_id, user_id, status, nickname) values (v_today, p_room_id, v_me.user_id, p_status, v_nick)
+    on conflict (date, room_id, user_id) do update set status = excluded.status, nickname = excluded.nickname, updated_at = now();
   end if;
   return fn_ok();
 end;
@@ -346,14 +354,17 @@ language plpgsql security definer set search_path = public, extensions as $$
 declare
   v_me record;
   v_text text := trim(coalesce(p_text, ''));
+  v_nick text;
 begin
   select * into v_me from fn_auth(p_token);
   if v_me.user_id is null then return fn_err('AUTH'); end if;
-  if fn_member_role(p_room_id, v_me.user_id) is null then return fn_err('NOT_MEMBER'); end if;
+  select nickname into v_nick from members where room_id = p_room_id and user_id = v_me.user_id;
+  if v_nick is null then return fn_err('NOT_MEMBER'); end if;
   if v_text = '' then return fn_err('메시지를 입력해주세요.'); end if;
   if length(v_text) > 300 then return fn_err('메시지는 300자 이내로 입력해주세요.'); end if;
 
-  insert into messages (room_id, user_id, text) values (p_room_id, v_me.user_id, v_text);
+  -- nickname은 전송 시점의 방 닉네임 스냅샷 (강퇴/탈퇴 후에도 채팅 기록에 이름이 남도록)
+  insert into messages (room_id, user_id, text, nickname) values (p_room_id, v_me.user_id, v_text, v_nick);
   return fn_ok();
 end;
 $$;
@@ -380,12 +391,11 @@ begin
     )), '{}'::jsonb) into v_entries
     from history h where h.room_id = p_room_id and h.date >= v_cutoff and h.date <= v_today;
 
-  select array_agg(u.nickname) into v_today_going
-    from responses r join users u on u.id = r.user_id
-    where r.room_id = p_room_id and r.date = v_today and r.status = 'going';
-  select array_agg(u.nickname) into v_today_not
-    from responses r join users u on u.id = r.user_id
-    where r.room_id = p_room_id and r.date = v_today and r.status = 'not-going';
+  -- 응답 시점 스냅샷(responses.nickname) 사용 — 이후 강퇴/탈퇴돼도 오늘 기록은 유지됨
+  select array_agg(coalesce(r.nickname, '(알수없음)')) into v_today_going
+    from responses r where r.room_id = p_room_id and r.date = v_today and r.status = 'going';
+  select array_agg(coalesce(r.nickname, '(알수없음)')) into v_today_not
+    from responses r where r.room_id = p_room_id and r.date = v_today and r.status = 'not-going';
 
   if v_today_going is not null or v_today_not is not null then
     v_entries := v_entries || jsonb_build_object(to_char(v_today, 'YYYY-MM-DD'), jsonb_build_object(
@@ -400,7 +410,8 @@ $$;
 
 -- ---------- REQ-09 개인 설정 ----------
 
-create or replace function api_update_nickname(p_token uuid, p_nickname text) returns jsonb
+-- 닉네임은 방(멤버십) 단위로 저장 — 같은 사람도 방마다 다른 닉네임을 쓸 수 있음
+create or replace function api_update_nickname(p_token uuid, p_room_id uuid, p_nickname text) returns jsonb
 language plpgsql security definer set search_path = public, extensions as $$
 declare
   v_me record;
@@ -408,10 +419,11 @@ declare
 begin
   select * into v_me from fn_auth(p_token);
   if v_me.user_id is null then return fn_err('AUTH'); end if;
+  if fn_member_role(p_room_id, v_me.user_id) is null then return fn_err('NOT_MEMBER'); end if;
   if v_nick !~ '^[가-힣A-Za-z0-9]{2,10}$' then
     return fn_err('닉네임은 2~10자의 한글/영문/숫자만 사용할 수 있습니다.');
   end if;
-  update users set nickname = v_nick where id = v_me.user_id;
+  update members set nickname = v_nick where room_id = p_room_id and user_id = v_me.user_id;
   return fn_ok(jsonb_build_object('nickname', v_nick));
 end;
 $$;
@@ -537,10 +549,10 @@ begin
   if v_myrole is null then return fn_err('권한이 없습니다.'); end if;
 
   select coalesce(jsonb_agg(jsonb_build_object(
-      'userId', m.user_id, 'nickname', u.nickname, 'role', m.role, 'joinedAt', m.joined_at
-    ) order by case m.role when 'host' then 0 when 'co-host' then 1 else 2 end, u.nickname), '[]'::jsonb)
+      'userId', m.user_id, 'nickname', m.nickname, 'role', m.role, 'joinedAt', m.joined_at
+    ) order by case m.role when 'host' then 0 when 'co-host' then 1 else 2 end, m.nickname), '[]'::jsonb)
     into v_members
-    from members m join users u on u.id = m.user_id where m.room_id = p_room_id;
+    from members m where m.room_id = p_room_id;
 
   return fn_ok(jsonb_build_object('members', v_members, 'myRole', v_myrole, 'myUserId', v_me.user_id));
 end;
