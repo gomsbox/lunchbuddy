@@ -614,7 +614,7 @@
     pendingInvite: INVITE || '',
     inviteUrl: '',
     roomCode: '',
-    unrespOpen: false,        // 미응답 펼침 — 세션 내 유지 (REQ-06)
+    unrespOpen: true,         // 미응답 펼침 — 기본 펼침, 세션 내 유지 (REQ-06)
     histEntries: {},
     histToday: '',
     histCutoff: '',
@@ -1003,7 +1003,7 @@
   /* ==================== 방 내부 ==================== */
   function enterRoom(roomId) {
     state.roomId = roomId;
-    state.unrespOpen = false;
+    state.unrespOpen = true;
     state.histMonth = null;
     state.histSelected = null;
     show('sc-room');
