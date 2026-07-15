@@ -446,14 +446,25 @@
           <div class="grow"><b>점심 알림 메일 발송</b><div class="sub">멤버 중 이메일 등록자에게 발송</div></div>
           <label class="switch"><input type="checkbox" id="notify-enabled" onchange="onNotifyToggle()"><span class="slider"></span></label>
         </div>
-        <div id="notify-days-row" class="set-row" style="display:none;">
-          <div class="grow"><b>발송 요일</b><div class="sub">둘 다 선택하면 매일 발송</div></div>
-          <label style="display:flex; align-items:center; gap:5px; font-size:13px; margin-right:12px; cursor:pointer;">
-            <input type="checkbox" id="notify-weekday" checked> 평일
-          </label>
-          <label style="display:flex; align-items:center; gap:5px; font-size:13px; cursor:pointer;">
-            <input type="checkbox" id="notify-weekend"> 주말
-          </label>
+        <div id="notify-days-row" class="set-row" style="display:none; flex-direction:column; align-items:stretch; gap:10px;">
+          <div>
+            <b>발송 요일</b>
+            <div class="sub" style="margin-top:2px;">요일별로 직접 선택하세요. 아래 버튼으로 빠르게 채울 수 있어요.</div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="mini-btn" onclick="quickSelectDays('weekday')">평일 선택</button>
+            <button type="button" class="mini-btn" onclick="quickSelectDays('weekend')">주말 선택</button>
+            <button type="button" class="mini-btn" onclick="quickSelectDays('all')">매일 선택</button>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:10px;">
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;"><input type="checkbox" class="notify-day" id="notify-day-mon" checked> 월</label>
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;"><input type="checkbox" class="notify-day" id="notify-day-tue" checked> 화</label>
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;"><input type="checkbox" class="notify-day" id="notify-day-wed" checked> 수</label>
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;"><input type="checkbox" class="notify-day" id="notify-day-thu" checked> 목</label>
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;"><input type="checkbox" class="notify-day" id="notify-day-fri" checked> 금</label>
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;"><input type="checkbox" class="notify-day" id="notify-day-sat"> 토</label>
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;"><input type="checkbox" class="notify-day" id="notify-day-sun"> 일</label>
+          </div>
         </div>
         <div id="notify-time-row" class="set-row" style="display:none;">
           <div class="grow"><b>발송 시각</b><div class="sub" id="notify-recipients"></div></div>
@@ -594,7 +605,7 @@
     api_getMembers:           { name: 'api_get_members',           params: ['p_token', 'p_room_id'] },
     api_renameRoom:           { name: 'api_rename_room',           params: ['p_token', 'p_room_id', 'p_room_name'] },
     api_getRoomSettings:      { name: 'api_get_room_settings',     params: ['p_token', 'p_room_id'] },
-    api_setNotify:            { name: 'api_set_notify',            params: ['p_token', 'p_room_id', 'p_enabled', 'p_time', 'p_weekday', 'p_weekend'] },
+    api_setNotify:            { name: 'api_set_notify',            params: ['p_token', 'p_room_id', 'p_enabled', 'p_time', 'p_mon', 'p_tue', 'p_wed', 'p_thu', 'p_fri', 'p_sat', 'p_sun'] },
     api_regenerateInvite:     { name: 'api_regenerate_invite',     params: ['p_token', 'p_room_id'] },
     api_setRole:              { name: 'api_set_role',              params: ['p_token', 'p_room_id', 'p_target_user_id', 'p_role'] },
     api_kickMember:           { name: 'api_kick_member',           params: ['p_token', 'p_room_id', 'p_target_user_id'] },
@@ -1295,13 +1306,16 @@
   }
 
   /* 호스트 알림 설정 (REQ-14) — 평일/주말 중복 선택 가능 */
+  var NOTIFY_DAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
   function loadNotifyUI() {
     api('api_getRoomSettings', state.token, state.roomId).then(function (r) {
       if (!r.ok) return;
       document.getElementById('notify-enabled').checked = r.data.notifyEnabled;
       document.getElementById('notify-time').value = r.data.notifyTime || '10:30';
-      document.getElementById('notify-weekday').checked = r.data.notifyWeekday !== false;
-      document.getElementById('notify-weekend').checked = !!r.data.notifyWeekend;
+      var days = r.data.notifyDays || {};
+      NOTIFY_DAY_KEYS.forEach(function (k) {
+        document.getElementById('notify-day-' + k).checked = !!days[k];
+      });
       document.getElementById('notify-recipients').textContent = '현재 이메일 등록 멤버 ' + r.data.recipientCount + '명';
       onNotifyToggle();
     });
@@ -1311,16 +1325,24 @@
     document.getElementById('notify-days-row').style.display = on ? 'flex' : 'none';
     document.getElementById('notify-time-row').style.display = on ? 'flex' : 'none';
   }
+  // 빠른 선택 — 요일 체크박스를 일괄로 채워줌 (저장 전까지는 화면에서만 반영)
+  function quickSelectDays(mode) {
+    var weekday = ['mon', 'tue', 'wed', 'thu', 'fri'];
+    var weekend = ['sat', 'sun'];
+    if (mode === 'weekday') weekday.forEach(function (k) { document.getElementById('notify-day-' + k).checked = true; });
+    else if (mode === 'weekend') weekend.forEach(function (k) { document.getElementById('notify-day-' + k).checked = true; });
+    else if (mode === 'all') NOTIFY_DAY_KEYS.forEach(function (k) { document.getElementById('notify-day-' + k).checked = true; });
+  }
   function saveNotify() {
     var enabled = document.getElementById('notify-enabled').checked;
     var time = document.getElementById('notify-time').value;
-    var weekday = document.getElementById('notify-weekday').checked;
-    var weekend = document.getElementById('notify-weekend').checked;
-    if (enabled && !weekday && !weekend) { toast('평일 또는 주말 중 최소 하나는 선택해주세요.'); return; }
-    return api('api_setNotify', state.token, state.roomId, enabled, time, weekday, weekend).then(function (r) {
+    var dayVals = NOTIFY_DAY_KEYS.map(function (k) { return document.getElementById('notify-day-' + k).checked; });
+    if (enabled && dayVals.every(function (v) { return !v; })) { toast('요일을 최소 하나는 선택해주세요.'); return; }
+    return api.apply(null, ['api_setNotify', state.token, state.roomId, enabled, time].concat(dayVals)).then(function (r) {
       if (!r.ok) { toast(r.error); return; }
-      var days = (weekday && weekend) ? '매일' : weekday ? '평일' : '주말';
-      toast(enabled ? '알림이 설정되었습니다 (' + days + ' ' + r.data.notifyTime + ') ✅' : '알림 발송을 껐습니다.');
+      var names = ['월', '화', '수', '목', '금', '토', '일'];
+      var picked = names.filter(function (_, i) { return dayVals[i]; }).join('');
+      toast(enabled ? '알림이 설정되었습니다 (' + picked + ' ' + r.data.notifyTime + ') ✅' : '알림 발송을 껐습니다.');
     });
   }
   function changePw() {
