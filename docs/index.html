@@ -131,6 +131,8 @@
   .msg.other .bubble { background: #fff; border: 1px solid var(--line); border-top-left-radius: 4px; }
   .msg.mine { align-self: flex-end; text-align: right; }
   .msg.mine .bubble { background: var(--green); color: #fff; border-top-right-radius: 4px; text-align: left; }
+  .bubble-row { display: flex; align-items: flex-end; gap: 4px; }
+  .unread-count { font-size: 11px; font-weight: 700; color: var(--yellow); white-space: nowrap; padding-bottom: 2px; }
   .chat-input-bar { display: flex; gap: 8px; margin-top: 8px; }
   .chat-input-bar input { flex: 1; border: 1.5px solid var(--line); border-radius: 999px; padding: 10px 16px; font-size: 14px; }
   .chat-input-bar input:focus { outline: none; border-color: var(--green); }
@@ -1155,9 +1157,12 @@
     list.innerHTML = d.messages.map(function (m) {
       var mine = m.userId === d.myUserId;
       var meta = mine ? fmtMsgTime(m.sentAt) : esc(m.nickname) + ' · ' + fmtMsgTime(m.sentAt);
+      // 카카오톡처럼: 아직 안 읽은 인원 수를 작은 숫자로 표시, 모두 읽으면 숫자 사라짐
+      var badge = (m.unreadCount > 0) ? '<span class="unread-count">' + m.unreadCount + '</span>' : '';
+      var bubble = '<div class="bubble">' + esc(m.text) + '</div>';
+      var row = '<div class="bubble-row">' + (mine ? badge + bubble : bubble + badge) + '</div>';
       return '<div class="msg ' + (mine ? 'mine' : 'other') + '">' +
-        '<div class="meta">' + meta + '</div>' +
-        '<div class="bubble">' + esc(m.text) + '</div></div>';
+        '<div class="meta">' + meta + '</div>' + row + '</div>';
     }).join('');
     if (scrollBottom) list.scrollTop = list.scrollHeight;
   }
