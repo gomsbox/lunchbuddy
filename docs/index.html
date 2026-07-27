@@ -1473,8 +1473,9 @@
   }
 
   /* ==================== 하단 Footer (필수 법적 페이지 링크) ====================
-     탭바가 없는 화면(로그인/방목록/설정 등) 콘텐츠 맨 아래에 동일한 Footer를 삽입.
-     방 안(탭바 있는 화면)에는 넣지 않음 — 고정 탭바와 겹치는 문제를 피하기 위함. */
+     모든 화면 콘텐츠 맨 아래에 동일한 Footer를 삽입.
+     sc-room은 탭(오늘/히스토리)마다 각각 삽입 — 고정 탭바는 화면 자체의
+     padding-bottom(90px)이 이미 가려주므로 겹치지 않음. */
   var FOOTER_HTML =
     '<footer class="site-footer">' +
       '<div class="site-footer__links">' +
@@ -1487,6 +1488,10 @@
       '<div class="site-footer__copy">© 오늘점심</div>' +
     '</footer>';
   ['sc-auth', 'sc-rooms', 'sc-settings', 'sc-expired', 'sc-reset-password'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.insertAdjacentHTML('beforeend', FOOTER_HTML);
+  });
+  ['tab-today', 'tab-history'].forEach(function (id) {
     var el = document.getElementById(id);
     if (el) el.insertAdjacentHTML('beforeend', FOOTER_HTML);
   });
