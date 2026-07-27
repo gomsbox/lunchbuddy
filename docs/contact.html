@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>문의하기 - 오늘점심 🍱</title>
+<meta name="description" content="오늘점심 서비스 문의 안내입니다.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍱</text></svg>">
+<style>
+  :root {
+    --green: #22a45d; --green-dark: #1b8a4d; --green-bg: #e7f6ee;
+    --gray: #6b7280; --gray-bg: #eef0f3; --bg: #f6f7f9; --card: #ffffff;
+    --text: #1f2937; --line: #e5e7eb; --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    font-size: 15px; line-height: 1.7;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 28px 20px 60px; }
+  .back-link { display: inline-block; margin-bottom: 18px; color: var(--gray); text-decoration: none; font-size: 14px; font-weight: 600; }
+  .back-link:hover { color: var(--text); }
+  h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+  .sub { color: var(--gray); font-size: 13px; margin-bottom: 22px; }
+  .card { background: var(--card); border-radius: var(--radius); padding: 20px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  h2 { font-size: 16px; font-weight: 800; margin-bottom: 10px; }
+  p, li { color: #374151; font-size: 14.5px; }
+  ul { margin: 6px 0 0 18px; }
+  li { margin-bottom: 6px; }
+  .contact-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .contact-row:last-child { border-bottom: none; }
+  .contact-row .ico { font-size: 20px; }
+  .contact-row .label { font-size: 12.5px; color: var(--gray); font-weight: 700; }
+  .contact-row .val a { color: var(--text); font-weight: 700; text-decoration: none; }
+  .contact-row .val a:hover { color: var(--green-dark); text-decoration: underline; }
+  .btn-mail {
+    display: inline-block; margin-top: 6px; background: var(--green); color: #fff; font-weight: 700;
+    padding: 12px 20px; border-radius: 14px; text-decoration: none; font-size: 15px;
+  }
+  footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); text-align: center; }
+  footer .links { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; font-size: 12.5px; }
+  footer .links a { color: var(--gray); text-decoration: none; }
+  footer .links a:hover { color: var(--text); text-decoration: underline; }
+  footer .copy { margin-top: 8px; font-size: 11.5px; color: #9aa1ab; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="index.html">← 오늘점심으로 돌아가기</a>
+  <h1>🍱 문의하기</h1>
+  <div class="sub">서비스 이용 중 궁금한 점이나 불편한 점을 알려주세요.</div>
+
+  <div class="card">
+    <h2>운영자 연락처</h2>
+    <div class="contact-row">
+      <span class="ico">📧</span>
+      <div>
+        <div class="label">이메일</div>
+        <div class="val"><a href="mailto:goms.box@gmail.com">goms.box@gmail.com</a></div>
+      </div>
+    </div>
+    <a class="btn-mail" href="mailto:goms.box@gmail.com?subject=%5B오늘점심%5D%20문의">✉️ 메일 보내기</a>
+  </div>
+
+  <div class="card">
+    <h2>이런 문의를 받고 있어요</h2>
+    <ul>
+      <li>로그인/비밀번호 관련 문제 (아이디를 잊었거나, 등록한 이메일이 없어 재설정 링크를 받을 수 없는 경우)</li>
+      <li>방·채팅·알림 등 기능 오류 신고</li>
+      <li>계정 또는 개인정보 삭제 요청</li>
+      <li>서비스 개선 제안</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>문의 시 함께 보내주세요</h2>
+    <ul>
+      <li>가입 시 사용한 아이디</li>
+      <li>문제가 발생한 화면 또는 상황에 대한 간단한 설명</li>
+      <li>가능하다면 스크린샷</li>
+    </ul>
+    <p style="margin-top:8px;">보통 1~2 영업일 내로 답변드립니다.</p>
+  </div>
+
+  <footer>
+    <div class="links">
+      <a href="index.html">오늘점심 홈</a><span>·</span>
+      <a href="privacy.html">개인정보처리방침</a><span>·</span>
+      <a href="terms.html">이용약관</a>
+    </div>
+    <div class="copy">© 오늘점심</div>
+  </footer>
+</div>
+</body>
+</html>

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>오늘점심 🍱</title>
-  <meta name="description" content="오늘 같이 식당 가요 — 사내 식당 점심 멤버 확인 서비스">
+  <meta name="description" content="오늘 같이 점심 먹어요 — 점심 멤버 확인 서비스">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍱</text></svg>">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
@@ -192,6 +192,13 @@
   .link-btn { background: none; border: none; color: var(--green); font-weight: 700; cursor: pointer; font-size: 14px; }
   .logo { font-size: 34px; }
 
+  /* 하단 Footer (법적 페이지 링크) — 탭바 없는 화면 하단에 삽입됨 */
+  .site-footer { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--line); text-align: center; }
+  .site-footer__links { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; font-size: 12.5px; }
+  .site-footer__links a { color: var(--gray); text-decoration: none; }
+  .site-footer__links a:hover { color: var(--text); text-decoration: underline; }
+  .site-footer__copy { margin-top: 8px; font-size: 11.5px; color: #9aa1ab; }
+
   /* 온보딩 (사용 방법 안내) */
   .onb { max-width: 400px; text-align: center; padding: 26px 22px 20px; }
   .onb-icon { font-size: 52px; line-height: 1; margin-bottom: 14px; }
@@ -242,13 +249,33 @@
     <div class="center" style="margin: 48px 0 24px;">
       <div class="logo">🍱</div>
       <div class="title">오늘점심</div>
-      <div class="sub">오늘 같이 식당 가요</div>
+      <div class="sub">오늘 같이 점심 먹어요</div>
     </div>
     <div id="invite-notice" class="card center" style="display:none; background: var(--green-bg); box-shadow:none;">
       <b>초대 링크로 접속했어요!</b><br><span class="sub">로그인하거나 가입하면 자동으로 방에 참여됩니다.</span>
     </div>
 
-    <div class="card" id="login-form">
+    <!-- 대문(커버) 화면 — 서비스 소개 + 가입하기/로그인하기 진입 -->
+    <div id="auth-cover">
+      <div class="card">
+        <div style="font-weight:800; margin-bottom:10px;">점심 먹으러 오늘은 누구랑 갈까요?</div>
+        <div class="sub" style="line-height:1.7;">
+          같은 방 동료들이 "같이 가요 / 안 가요"를 눌러두면<br>
+          오늘 점심에 누가 같이 가는지 실시간으로 확인할 수 있어요.
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex; flex-direction:column; gap:10px; font-size:14px;">
+          <div>🟢 오늘 참여 여부를 한 번의 탭으로 공유</div>
+          <div>🔗 초대 링크 · 방 코드로 동료 초대</div>
+          <div>💬 방별 채팅 · 📅 최근 30일 참여 히스토리</div>
+        </div>
+      </div>
+      <button class="btn btn-green" id="btn-cover-signup" onclick="switchAuth('signup')">가입하기</button>
+      <button class="btn btn-outline" id="btn-cover-login" onclick="switchAuth('login')">로그인하기</button>
+    </div>
+
+    <div class="card" id="login-form" style="display:none;">
       <div class="field">
         <label>아이디</label>
         <input type="text" id="login-id" autocomplete="username" placeholder="아이디 입력">
@@ -265,6 +292,9 @@
       <div class="center mt16">
         <span class="sub">아직 계정이 없나요?</span>
         <button class="link-btn" onclick="switchAuth('signup')">회원가입</button>
+      </div>
+      <div class="center mt8">
+        <button class="link-btn" style="font-size:13px; color:var(--gray);" onclick="switchAuth('cover')">← 처음으로</button>
       </div>
     </div>
 
@@ -292,6 +322,9 @@
       <div class="center mt16">
         <span class="sub">이미 계정이 있나요?</span>
         <button class="link-btn" onclick="switchAuth('login')">로그인</button>
+      </div>
+      <div class="center mt8">
+        <button class="link-btn" style="font-size:13px; color:var(--gray);" onclick="switchAuth('cover')">← 처음으로</button>
       </div>
     </div>
   </div>
@@ -740,6 +773,7 @@
   }
   function showAuth() {
     document.getElementById('invite-notice').style.display = state.pendingInvite ? 'block' : 'none';
+    switchAuth('cover');
     show('sc-auth');
   }
   function afterLogin() {
@@ -765,7 +799,7 @@
     {
       icon: '🍱',
       title: '오늘점심에 오신 걸 환영해요!',
-      body: '오늘 점심 사내 식당에 <b>같이 갈 사람</b>을 매일 간편하게 확인하는 서비스예요.<br>잠깐이면 되는 사용법, 함께 볼까요?',
+      body: '오늘 점심 <b>같이 갈 사람</b>을 매일 간편하게 확인하는 서비스예요.<br>잠깐이면 되는 사용법, 함께 볼까요?',
     },
     {
       icon: '🙋',
@@ -843,6 +877,7 @@
 
   /* ==================== 로그인 / 회원가입 ==================== */
   function switchAuth(mode) {
+    document.getElementById('auth-cover').style.display = mode === 'cover' ? 'block' : 'none';
     document.getElementById('login-form').style.display = mode === 'login' ? 'block' : 'none';
     document.getElementById('signup-form').style.display = mode === 'signup' ? 'block' : 'none';
     document.getElementById('login-error').textContent = '';
@@ -1436,6 +1471,25 @@
       loadRooms();
     });
   }
+
+  /* ==================== 하단 Footer (필수 법적 페이지 링크) ====================
+     탭바가 없는 화면(로그인/방목록/설정 등) 콘텐츠 맨 아래에 동일한 Footer를 삽입.
+     방 안(탭바 있는 화면)에는 넣지 않음 — 고정 탭바와 겹치는 문제를 피하기 위함. */
+  var FOOTER_HTML =
+    '<footer class="site-footer">' +
+      '<div class="site-footer__links">' +
+        '<a href="privacy.html">개인정보처리방침</a>' +
+        '<span>·</span>' +
+        '<a href="terms.html">이용약관</a>' +
+        '<span>·</span>' +
+        '<a href="contact.html">문의하기</a>' +
+      '</div>' +
+      '<div class="site-footer__copy">© 오늘점심</div>' +
+    '</footer>';
+  ['sc-auth', 'sc-rooms', 'sc-settings', 'sc-expired', 'sc-reset-password'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.insertAdjacentHTML('beforeend', FOOTER_HTML);
+  });
 
   init();
 </script>
