@@ -312,7 +312,15 @@ begin
 end;
 $$;
 
-grant execute on all functions in schema public to anon, authenticated;
+-- 프론트가 호출하는 api_* 함수에만 실행 권한을 준다.
+-- (예전처럼 `grant execute on all functions`를 쓰면 fn_* 내부 헬퍼까지 공개된다 — 12_v2_grants_fix.sql 참고)
+grant execute on function api_create_room(uuid, text, text) to anon, authenticated;
+grant execute on function api_set_room_purpose(uuid, uuid, text, boolean, boolean) to anon, authenticated;
+grant execute on function api_set_menu_poll_config(uuid, uuid, text, boolean) to anon, authenticated;
+grant execute on function api_get_my_rooms(uuid) to anon, authenticated;
+grant execute on function api_join_by_code(uuid, text) to anon, authenticated;
+grant execute on function api_get_room_home(uuid, uuid) to anon, authenticated;
+grant execute on function api_get_room_settings(uuid, uuid) to anon, authenticated;
 
 -- ============================================================
 -- 실행 후 확인

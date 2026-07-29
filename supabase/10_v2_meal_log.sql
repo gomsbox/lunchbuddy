@@ -171,7 +171,10 @@ begin
 end;
 $$;
 
-grant execute on all functions in schema public to anon, authenticated;
+-- 프론트가 호출하는 api_* 함수에만 실행 권한을 준다 (12_v2_grants_fix.sql 참고)
+grant execute on function api_set_response(uuid, uuid, text, text, text) to anon, authenticated;
+grant execute on function api_get_room_home(uuid, uuid) to anon, authenticated;
+-- fn_daily_reset은 크론 전용 — 외부에 열지 않는다
 
 -- ============================================================
 -- 실행 후 확인
