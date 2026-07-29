@@ -95,6 +95,16 @@
   .chip .meal { opacity: .75; font-weight: 600; }
   .empty-note { color: var(--gray); font-size: 13px; }
 
+  /* 이달의 메뉴 랭킹 (REQ-18) */
+  .rank-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+  .rank-no { width: 18px; flex: none; font-weight: 800; font-size: 13px; color: var(--gray); }
+  .rank-name { flex: none; max-width: 42%; font-weight: 700; font-size: 14px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rank-bar { flex: 1; min-width: 20px; height: 8px; background: var(--gray-bg); border-radius: 999px; overflow: hidden; }
+  .rank-bar i { display: block; height: 100%; background: var(--green); border-radius: 999px; }
+  .rank-cnt { flex: none; font-size: 12px; font-weight: 700; color: var(--gray); }
+  .rank-sub { font-size: 12px; font-weight: 700; color: var(--gray); margin: 12px 0 2px; }
+
   /* 장소·메뉴 기록 (REQ-17) */
   .meal-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
   .meal-inputs { display: flex; gap: 8px; }
@@ -455,6 +465,11 @@
 
     <!-- 히스토리 탭 (REQ-08) -->
     <div id="tab-history" style="display:none;">
+      <!-- 메뉴 랭킹 (최근 30일, REQ-18) — 장소·메뉴 기록을 쓰는 방에서만 노출 -->
+      <div class="card" id="menu-ranking-card" style="display:none;">
+        <div class="group-head">🏆 <span id="rank-title">최근 30일 많이 먹은 메뉴</span></div>
+        <div id="rank-body"></div>
+      </div>
       <div class="card">
         <div class="cal-nav">
           <button id="cal-prev" onclick="moveMonth(-1)">◀ 이전 달</button>
@@ -690,6 +705,7 @@
     api_setResponse:          { name: 'api_set_response',          params: ['p_token', 'p_room_id', 'p_status', 'p_place_name', 'p_menu_name'] },
     api_sendMessage:          { name: 'api_send_message',          params: ['p_token', 'p_room_id', 'p_text'] },
     api_getHistory:           { name: 'api_get_history',           params: ['p_token', 'p_room_id'] },
+    api_getMenuRanking:       { name: 'api_get_menu_ranking',      params: ['p_token', 'p_room_id'] },
     api_updateNickname:       { name: 'api_update_nickname',       params: ['p_token', 'p_room_id', 'p_nickname'] },
     api_changePassword:       { name: 'api_change_password',       params: ['p_token', 'p_current_pw', 'p_new_pw'] },
     api_updateEmail:          { name: 'api_update_email',          params: ['p_token', 'p_email'] },
@@ -1398,6 +1414,49 @@
       }
       renderCalendar();
     });
+    loadMenuRanking();
+  }
+
+  /* 메뉴 랭킹 (최근 30일, REQ-18) */
+  function loadMenuRanking() {
+    var card = document.getElementById('menu-ranking-card');
+    // 장소·메뉴를 기록하지 않는 방(사내식당형 등)에서는 섹션 자체를 노출하지 않는다
+    if (!state.trackMealLog) { card.style.display = 'none'; return; }
+    api('api_getMenuRanking', state.token, state.roomId).then(function (r) {
+      if (!r.ok) { card.style.display = 'none'; return; }
+      card.style.display = 'block';
+      renderMenuRanking(r.data);
+    });
+  }
+  function renderMenuRanking(d) {
+    document.getElementById('rank-title').textContent = '최근 ' + (d.days || 30) + '일 많이 먹은 메뉴';
+    if (!d.totalCount) {
+      document.getElementById('rank-body').innerHTML =
+        '<div class="empty-note">아직 메뉴 기록이 없어요. 오늘 탭에서 <b>장소·메뉴</b>를 남기면 통계가 쌓여요 🍽</div>';
+      return;
+    }
+    // 1등 대비 비율로 막대 길이를 정한다
+    function rows(list, key, max) {
+      return list.map(function (it, i) {
+        var pct = max ? Math.round(it.count / max * 100) : 0;
+        return '<div class="rank-row">' +
+          '<span class="rank-no">' + (i + 1) + '</span>' +
+          '<span class="rank-name">' + esc(it[key]) + '</span>' +
+          '<span class="rank-bar"><i style="width:' + pct + '%"></i></span>' +
+          '<span class="rank-cnt">' + it.count + '회</span></div>';
+      }).join('');
+    }
+    var html = rows(d.roomTop, 'menu', d.roomTop.length ? d.roomTop[0].count : 0);
+    html += '<div class="hint" style="margin-top:8px;">방 전체 기준 · 최근 ' + (d.days || 30) + '일 기록 ' + d.totalCount + '건</div>';
+
+    if (d.myTop && d.myTop.length) {
+      html += '<div class="rank-sub">🙋 내가 많이 먹은 메뉴 (' + d.myCount + '건)</div>' +
+        rows(d.myTop, 'menu', d.myTop[0].count);
+    }
+    if (d.placeTop && d.placeTop.length) {
+      html += '<div class="rank-sub">📍 많이 간 곳</div>' + rows(d.placeTop, 'place', d.placeTop[0].count);
+    }
+    document.getElementById('rank-body').innerHTML = html;
   }
   function ymd(d) {
     return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
@@ -1459,7 +1518,20 @@
       '</div></div>' +
       '<div class="mt8"><span class="sub">⚫ 안 가요 (' + e.notGoing.length + '명)</span><div class="chips mt8">' +
       (e.notGoing.length ? e.notGoing.map(function (n) { return '<span class="chip n">' + esc(n) + '</span>'; }).join('') : '<span class="empty-note">없음</span>') +
-      '</div></div>';
+      '</div></div>' +
+      // 그 날 남긴 장소·메뉴 기록 (REQ-17) — 기록이 있을 때만 표시
+      dayMeals(e.meals);
+  }
+  /** 날짜 상세의 장소·메뉴 목록 HTML */
+  function dayMeals(meals) {
+    if (!meals || !meals.length) return '';
+    return '<div class="mt8"><span class="sub">🍽 그날의 메뉴 (' + meals.length + '건)</span><div class="chips mt8">' +
+      meals.map(function (m) {
+        var label = esc(m.nickname);
+        if (m.menu) label += '<span class="meal"> · ' + esc(m.menu) + '</span>';
+        var tip = m.place ? ' title="' + esc(m.place) + '"' : '';
+        return '<span class="chip g"' + tip + '>' + label + '</span>';
+      }).join('') + '</div></div>';
   }
 
   /* ==================== 설정 (REQ-09·10·11·12) ==================== */
