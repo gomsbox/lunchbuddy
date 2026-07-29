@@ -95,7 +95,27 @@
   .chip .meal { opacity: .75; font-weight: 600; }
   .empty-note { color: var(--gray); font-size: 13px; }
 
-  /* 이달의 메뉴 랭킹 (REQ-18) */
+  /* 메뉴 투표 (REQ-19) */
+  .poll-opt { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+    border: 1.5px solid var(--line); background: #fff; border-radius: 12px; padding: 10px 12px;
+    margin-bottom: 7px; cursor: pointer; position: relative; overflow: hidden; }
+  .poll-opt .fill { position: absolute; inset: 0 auto 0 0; background: var(--green-bg); transition: width .3s; z-index: 0; }
+  .poll-opt.on { border-color: var(--green); }
+  .poll-opt.on .fill { background: #c9ecd8; }
+  .poll-opt .lbl, .poll-opt .cnt, .poll-opt .tick { position: relative; z-index: 1; }
+  .poll-opt .lbl { flex: 1; font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .poll-opt .cnt { font-size: 12px; font-weight: 800; color: var(--green-dark); flex: none; }
+  .poll-opt .tick { flex: none; font-size: 13px; }
+  .poll-opt[disabled] { cursor: default; opacity: .95; }
+  .poll-win { background: var(--green); color: #fff; border-radius: 12px; padding: 13px 14px; margin-bottom: 10px; }
+  .poll-win .t { font-size: 12px; opacity: .9; font-weight: 700; }
+  .poll-win .m { font-size: 18px; font-weight: 800; margin-top: 3px; }
+  /* 동점 룰렛 — 후보 이름이 빠르게 바뀌는 연출 */
+  .roulette { text-align: center; padding: 16px 0; }
+  .roulette .spin { font-size: 20px; font-weight: 800; color: var(--green-dark); }
+  .roulette .tie { font-size: 13px; font-weight: 700; color: var(--yellow); margin-bottom: 6px; }
+
+  /* 메뉴 랭킹 (최근 30일, REQ-18) */
   .rank-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
   .rank-no { width: 18px; flex: none; font-weight: 800; font-size: 13px; color: var(--gray); }
   .rank-name { flex: none; max-width: 42%; font-weight: 700; font-size: 14px;
@@ -434,6 +454,11 @@
         </div>
         <div class="hint" id="meal-log-locked" style="display:none;">🍽 <b>같이 가요</b>를 선택하면 오늘 먹을 장소·메뉴를 기록할 수 있어요.</div>
       </div>
+      <!-- 메뉴 투표 (REQ-19) — 투표를 쓰는 방에서만 노출. 응답 바로 아래에 둬서 눈에 잘 띄게 함 -->
+      <div class="card" id="poll-card" style="display:none;">
+        <div class="group-head">🗳 <span id="poll-title">오늘 메뉴 투표</span></div>
+        <div id="poll-body"></div>
+      </div>
       <div class="card">
         <div class="group">
           <div class="group-head"><span id="grp-going-label">🟢 같이 가요 (</span><span id="cnt-going">0</span>명)</div>
@@ -706,6 +731,10 @@
     api_sendMessage:          { name: 'api_send_message',          params: ['p_token', 'p_room_id', 'p_text'] },
     api_getHistory:           { name: 'api_get_history',           params: ['p_token', 'p_room_id'] },
     api_getMenuRanking:       { name: 'api_get_menu_ranking',      params: ['p_token', 'p_room_id'] },
+    api_startMenuPoll:        { name: 'api_start_menu_poll',       params: ['p_token', 'p_room_id', 'p_options'] },
+    api_addPollOption:        { name: 'api_add_poll_option',       params: ['p_token', 'p_room_id', 'p_label'] },
+    api_votePoll:             { name: 'api_vote_poll',             params: ['p_token', 'p_room_id', 'p_option_id'] },
+    api_closePoll:            { name: 'api_close_poll',            params: ['p_token', 'p_room_id'] },
     api_updateNickname:       { name: 'api_update_nickname',       params: ['p_token', 'p_room_id', 'p_nickname'] },
     api_changePassword:       { name: 'api_change_password',       params: ['p_token', 'p_current_pw', 'p_new_pw'] },
     api_updateEmail:          { name: 'api_update_email',          params: ['p_token', 'p_email'] },
@@ -748,6 +777,8 @@
     eventStatus: 'open',      // 이벤트형 방 진행 상태 (REQ-25)
     createPurpose: 'cafeteria',   // 방 만들기 모달에서 고른 프리셋
     setPurpose: 'cafeteria',      // 설정 화면에서 고른 프리셋
+    rouletteShown: {},            // 동점 룰렛을 이미 돌린 투표 id (폴링마다 재생되지 않도록)
+    rouletteSpinning: false,      // 룰렛 연출 중 — 폴링이 화면을 덮어쓰지 않게 함
   };
 
   /* ==================== 방 목적 프리셋 (REQ-16) ====================
@@ -1309,9 +1340,156 @@
       box.style.display = state.unrespOpen ? 'flex' : 'none';
       box.innerHTML = chips(d.noResponse, 'y');
     }
+    renderPoll(d.menuPoll);
     document.getElementById('today-updated').textContent = '마지막 갱신: ' + nowHM();
   }
   function toggleUnresp() { state.unrespOpen = !state.unrespOpen; loadHome(false, true); }
+
+  /* ==================== 메뉴 투표 (REQ-19) ==================== */
+  function renderPoll(p) {
+    var card = document.getElementById('poll-card');
+    // 투표를 쓰지 않는 방이면 서버가 null을 준다
+    if (!p || p.exists === undefined) { card.style.display = 'none'; return; }
+    // 룰렛 연출 중에는 폴링이 화면을 덮어쓰지 않게 한다
+    if (state.rouletteSpinning) return;
+    card.style.display = 'block';
+    var body = document.getElementById('poll-body');
+    var title = document.getElementById('poll-title');
+
+    // ① 아직 오늘 투표가 없음
+    if (!p.exists) {
+      title.textContent = '오늘 메뉴 투표';
+      body.innerHTML = p.canStart
+        ? '<div class="sub">후보를 2~6개 적으면 멤버들이 투표해서 오늘 메뉴를 정할 수 있어요.</div>' +
+          '<div class="meal-inputs" style="margin-top:10px;">' +
+          '<input type="text" id="poll-new-1" maxlength="20" placeholder="후보 1 (예: 김치찌개)">' +
+          '<input type="text" id="poll-new-2" maxlength="20" placeholder="후보 2 (예: 돈까스)">' +
+          '</div>' +
+          '<div class="meal-inputs" style="margin-top:7px;">' +
+          '<input type="text" id="poll-new-3" maxlength="20" placeholder="후보 3 (선택)">' +
+          '<input type="text" id="poll-new-4" maxlength="20" placeholder="후보 4 (선택)">' +
+          '</div>' +
+          '<button class="btn btn-green" style="margin-top:10px;" onclick="busy(this, startPoll())">투표 시작하기</button>' +
+          (p.deadline ? '<div class="hint">' + esc(p.deadline) + '에 자동 마감돼요.</div>' : '')
+        : '<div class="empty-note">아직 오늘 메뉴 투표가 없어요. 호스트가 투표를 시작할 수 있어요.</div>';
+      return;
+    }
+
+    // ② 마감된 투표 — 결과 표시 (동점이었으면 룰렛 연출을 한 번 보여준다)
+    if (p.status === 'closed') {
+      title.textContent = '오늘의 메뉴 (마감)';
+      if (p.confirmedLabel && p.wasTie && !state.rouletteShown[p.pollId]) {
+        state.rouletteShown[p.pollId] = true;
+        spinRoulette(p);
+        return;
+      }
+      body.innerHTML = pollResultHtml(p) + pollOptionsHtml(p, false);
+      return;
+    }
+
+    // ③ 진행 중 — 투표 + 후보 추가 + 마감
+    title.textContent = '오늘 메뉴 투표 (' + p.totalVotes + '표)';
+    var html = pollOptionsHtml(p, p.canVote);
+    if (p.canVote && p.myVote) {
+      html += '<button class="btn btn-gray" onclick="busy(this, votePoll(null))">투표 취소</button>';
+    }
+    if (p.canAddOption && p.options.length < 6) {
+      html += '<div class="meal-inputs" style="margin-top:10px;">' +
+        '<input type="text" id="poll-add" maxlength="20" placeholder="후보 추가 (선택)"' +
+        ' onkeydown="if(event.key===\'Enter\'){addPollOption();}">' +
+        '<button class="mini-btn" onclick="busy(this, addPollOption())">추가</button></div>';
+    }
+    if (p.canClose) {
+      html += '<button class="btn btn-outline" style="margin-top:10px;" onclick="busy(this, closePoll())">투표 마감하고 메뉴 정하기</button>';
+    }
+    if (p.deadlineAt) {
+      html += '<div class="hint">' + esc(String(p.deadlineAt).slice(11, 16)) + '에 자동 마감돼요.</div>';
+    }
+    body.innerHTML = html;
+  }
+  /** 확정 결과 배너 */
+  function pollResultHtml(p) {
+    if (!p.confirmedLabel) {
+      return '<div class="empty-note">투표한 사람이 없어서 메뉴가 정해지지 않았어요.</div>';
+    }
+    return '<div class="poll-win"><div class="t">' +
+      (p.wasTie ? '🎲 동점이라 룰렛으로 뽑았어요' : '🗳 투표로 정해진 오늘의 메뉴') +
+      '</div><div class="m">' + esc(p.confirmedLabel) + '</div></div>';
+  }
+  /** 후보 목록 — clickable이면 투표 버튼으로 동작 */
+  function pollOptionsHtml(p, clickable) {
+    var max = 0;
+    p.options.forEach(function (o) { if (o.count > max) max = o.count; });
+    return p.options.map(function (o) {
+      var mine = o.optionId === p.myVote;
+      var isWin = o.optionId === p.confirmedOptionId;
+      var pct = max ? Math.round(o.count / max * 100) : 0;
+      return '<button type="button" class="poll-opt' + (mine || isWin ? ' on' : '') + '"' +
+        (clickable ? ' onclick="busy(this, votePoll(\'' + esc(o.optionId) + '\'))"' : ' disabled') + '>' +
+        '<span class="fill" style="width:' + pct + '%"></span>' +
+        '<span class="lbl">' + (isWin ? '👑 ' : '') + esc(o.label) + '</span>' +
+        '<span class="cnt">' + o.count + '표</span>' +
+        '<span class="tick">' + (mine ? '✓' : '') + '</span></button>';
+    }).join('');
+  }
+  /** 동점 룰렛 연출 — 후보 이름을 빠르게 돌린 뒤 서버가 이미 정한 결과를 공개한다 */
+  function spinRoulette(p) {
+    var body = document.getElementById('poll-body');
+    var labels = p.options.map(function (o) { return o.label; });
+    if (!labels.length) { body.innerHTML = pollResultHtml(p); return; }
+    state.rouletteSpinning = true;
+    body.innerHTML = '<div class="roulette"><div class="tie">동점입니다! 룰렛으로 정할게요 🎲</div>' +
+      '<div class="spin" id="roulette-spin">' + esc(labels[0]) + '</div></div>';
+    var i = 0, ticks = 0;
+    var timer = setInterval(function () {
+      i = (i + 1) % labels.length;
+      var el = document.getElementById('roulette-spin');
+      if (el) el.textContent = labels[i];
+      ticks++;
+      if (ticks >= 18) {   // 약 1.6초
+        clearInterval(timer);
+        state.rouletteSpinning = false;
+        body.innerHTML = pollResultHtml(p) + pollOptionsHtml(p, false);
+      }
+    }, 90);
+  }
+  function startPoll() {
+    var opts = [];
+    [1, 2, 3, 4].forEach(function (n) {
+      var el = document.getElementById('poll-new-' + n);
+      if (el && el.value.trim()) opts.push(el.value.trim());
+    });
+    if (opts.length < 2) { toast('후보를 2개 이상 입력해주세요.'); return; }
+    return api('api_startMenuPoll', state.token, state.roomId, opts).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      toast('메뉴 투표를 시작했어요 🗳');
+      loadHome(false, true);
+    });
+  }
+  function addPollOption() {
+    var el = document.getElementById('poll-add');
+    var label = el ? el.value.trim() : '';
+    if (!label) { toast('후보 이름을 입력해주세요.'); return; }
+    return api('api_addPollOption', state.token, state.roomId, label).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      toast('후보를 추가했어요.');
+      loadHome(false, true);
+    });
+  }
+  function votePoll(optionId) {
+    return api('api_votePoll', state.token, state.roomId, optionId).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      toast(optionId ? '투표했어요 🗳' : '투표를 취소했어요.');
+      loadHome(false, true);
+    });
+  }
+  function closePoll() {
+    if (!confirm('투표를 마감하고 오늘 메뉴를 정할까요?\n동점이면 룰렛으로 자동 선택됩니다.')) return;
+    return api('api_closePoll', state.token, state.roomId).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      loadHome(false, true);
+    });
+  }
   function clearResp() {
     api('api_setResponse', state.token, state.roomId, 'clear').then(function (r) {
       if (!r.ok) { toast(r.error); return; }
@@ -1420,8 +1598,9 @@
   /* 메뉴 랭킹 (최근 30일, REQ-18) */
   function loadMenuRanking() {
     var card = document.getElementById('menu-ranking-card');
-    // 장소·메뉴를 기록하지 않는 방(사내식당형 등)에서는 섹션 자체를 노출하지 않는다
-    if (!state.trackMealLog) { card.style.display = 'none'; return; }
+    // 장소·메뉴 기록도, 메뉴 투표도 안 쓰는 방(사내식당형 등)에서는 섹션 자체를 노출하지 않는다.
+    // 투표만 쓰는 방도 "투표로 확정된 메뉴"가 랭킹에 쌓이므로 보여준다 (REQ-18·19 연결).
+    if (!state.trackMealLog && !state.enableMenuPoll) { card.style.display = 'none'; return; }
     api('api_getMenuRanking', state.token, state.roomId).then(function (r) {
       if (!r.ok) { card.style.display = 'none'; return; }
       card.style.display = 'block';
