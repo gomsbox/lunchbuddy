@@ -92,7 +92,17 @@
   .chip.g { background: var(--green-bg); color: var(--green-dark); }
   .chip.n { background: var(--gray-bg); color: var(--gray); }
   .chip.y { background: var(--yellow-bg); color: var(--yellow); }
+  .chip .meal { opacity: .75; font-weight: 600; }
   .empty-note { color: var(--gray); font-size: 13px; }
+
+  /* 장소·메뉴 기록 (REQ-17) */
+  .meal-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .meal-inputs { display: flex; gap: 8px; }
+  .meal-inputs input {
+    flex: 1; min-width: 0; padding: 11px; border: 1.5px solid var(--line); border-radius: 10px;
+    font-size: 14px; background: #fff;
+  }
+  .meal-inputs input:focus { outline: none; border-color: var(--green); }
   .refresh-line { text-align: center; color: var(--gray); font-size: 12px; margin-top: 4px; }
 
   /* 하단 탭 바 */
@@ -402,6 +412,17 @@
         <div style="font-weight:800; margin-bottom:12px;">안녕하세요, <span id="today-my-name"></span>님 👋<br><span id="today-ask">오늘 점심, 어떻게 하세요?</span></div>
         <button class="btn resp-btn going" id="btn-going" onclick="setResp('going')">🟢 오늘 같이 가요</button>
         <button class="btn resp-btn notgoing" id="btn-notgoing" onclick="setResp('not-going')">⚫ 오늘은 안 가요</button>
+        <!-- 장소·메뉴 기록 (REQ-17) — 장소·메뉴 기록을 쓰는 방에서만 노출 -->
+        <div class="meal-row" id="meal-log-row" style="display:none;">
+          <div style="font-weight:800; font-size:14px; margin-bottom:8px;">🍽 오늘 뭐 먹어요? <span style="color:var(--gray);font-weight:400;font-size:12px;">(선택)</span></div>
+          <div class="meal-inputs">
+            <input type="text" id="meal-place" maxlength="20" placeholder="장소 (예: 김밥천국)">
+            <input type="text" id="meal-menu" maxlength="20" placeholder="메뉴 (예: 제육덮밥)">
+          </div>
+          <div class="hint">적어두면 <b>이달의 메뉴 통계</b>에 쌓여요. 개인정보(실명·연락처 등)는 적지 말아주세요.</div>
+          <button class="btn btn-gray" style="margin-top:10px;" onclick="busy(this, saveMealLog())">기록 저장</button>
+        </div>
+        <div class="hint" id="meal-log-locked" style="display:none;">🍽 <b>같이 가요</b>를 선택하면 오늘 먹을 장소·메뉴를 기록할 수 있어요.</div>
       </div>
       <div class="card">
         <div class="group">
@@ -666,7 +687,7 @@
     api_joinByInvite:         { name: 'api_join_by_invite',        params: ['p_token', 'p_invite_token'] },
     api_joinByCode:           { name: 'api_join_by_code',          params: ['p_token', 'p_code'] },
     api_getRoomHome:          { name: 'api_get_room_home',         params: ['p_token', 'p_room_id'] },
-    api_setResponse:          { name: 'api_set_response',          params: ['p_token', 'p_room_id', 'p_status'] },
+    api_setResponse:          { name: 'api_set_response',          params: ['p_token', 'p_room_id', 'p_status', 'p_place_name', 'p_menu_name'] },
     api_sendMessage:          { name: 'api_send_message',          params: ['p_token', 'p_room_id', 'p_text'] },
     api_getHistory:           { name: 'api_get_history',           params: ['p_token', 'p_room_id'] },
     api_updateNickname:       { name: 'api_update_nickname',       params: ['p_token', 'p_room_id', 'p_nickname'] },
@@ -1222,16 +1243,37 @@
     document.getElementById('btn-going').classList.toggle('on', d.myStatus === 'going');
     document.getElementById('btn-notgoing').classList.toggle('on', d.myStatus === 'not-going');
 
+    // 장소·메뉴 기록 (REQ-17) — 기록을 쓰는 방에서 '가요'를 선택한 사람에게만 입력란을 보여준다
+    var mealOn = state.trackMealLog && d.myStatus === 'going';
+    document.getElementById('meal-log-row').style.display = mealOn ? 'block' : 'none';
+    document.getElementById('meal-log-locked').style.display =
+      (state.trackMealLog && d.myStatus !== 'going') ? 'block' : 'none';
+    var placeEl = document.getElementById('meal-place');
+    var menuEl = document.getElementById('meal-menu');
+    if (mealOn) {
+      // 입력 중인 값을 폴링이 덮어쓰지 않도록, 포커스가 없을 때만 서버 값으로 채운다
+      if (document.activeElement !== placeEl) placeEl.value = d.myPlace || '';
+      if (document.activeElement !== menuEl) menuEl.value = d.myMenu || '';
+    } else {
+      // 입력란이 숨겨질 때는 값을 비운다. 안 비우면 '안 가요' → '가요'로 되돌릴 때
+      // 서버에서 이미 지워진 기록이 숨은 입력값 때문에 되살아난다.
+      placeEl.value = '';
+      menuEl.value = '';
+    }
+
     function chips(list, cls, removable) {
       if (!list.length) return '<span class="empty-note">아직 없어요</span>';
       return list.map(function (m) {
+        // 메뉴를 적었으면 칩에 "닉네임 · 메뉴"로 함께 보여준다 (장소는 title 툴팁으로 — REQ-17)
+        var meal = m.menu ? '<span class="meal"> · ' + esc(m.menu) + '</span>' : '';
+        var tip = m.place ? ' title="' + esc(m.place) + '"' : '';
         if (removable && m.userId === d.myUserId) {
           // 내 이름 탭 → 선택 취소(미응답 복귀) (REQ-05)
           return '<span class="chip ' + cls + ' me removable" onclick="clearResp()" title="선택 취소">' +
-            esc(m.nickname) + '<span class="x">✕</span></span>';
+            esc(m.nickname) + meal + '<span class="x">✕</span></span>';
         }
         var me = m.userId === d.myUserId ? ' me' : '';
-        return '<span class="chip ' + cls + me + '">' + esc(m.nickname) + '</span>';
+        return '<span class="chip ' + cls + me + '"' + tip + '>' + esc(m.nickname) + meal + '</span>';
       }).join('');
     }
     document.getElementById('cnt-going').textContent = d.going.length;
@@ -1265,11 +1307,28 @@
     if (state.myStatus === status) { clearResp(); return; } // 같은 버튼 재탭 → 선택 취소
     document.getElementById('btn-going').disabled = true;
     document.getElementById('btn-notgoing').disabled = true;
-    api('api_setResponse', state.token, state.roomId, status).then(function (r) {
+    // '가요'로 바꿀 때는 이미 적어둔 장소·메뉴를 함께 보내 유지한다 (REQ-17)
+    var place = status === 'going' ? document.getElementById('meal-place').value.trim() : null;
+    var menu = status === 'going' ? document.getElementById('meal-menu').value.trim() : null;
+    api('api_setResponse', state.token, state.roomId, status, place, menu).then(function (r) {
       document.getElementById('btn-going').disabled = false;
       document.getElementById('btn-notgoing').disabled = false;
       if (!r.ok) { toast(r.error); return; }
-      toast(status === 'going' ? '오늘 같이 가요! 🟢' : '오늘은 패스! ⚫');
+      var isEvent = state.purpose === 'event';
+      toast(status === 'going'
+        ? (isEvent ? '참석으로 등록했어요! 🟢' : '오늘 같이 가요! 🟢')
+        : (isEvent ? '불참으로 등록했어요. ⚫' : '오늘은 패스! ⚫'));
+      loadHome(false, true);
+    });
+  }
+  /** 장소·메뉴 기록 저장 (REQ-17) — 응답 상태는 '가요' 그대로 두고 기록만 갱신 */
+  function saveMealLog() {
+    var place = document.getElementById('meal-place').value.trim();
+    var menu = document.getElementById('meal-menu').value.trim();
+    if (place.length > 20 || menu.length > 20) { toast('장소·메뉴는 각각 20자 이내로 입력해주세요.'); return; }
+    return api('api_setResponse', state.token, state.roomId, 'going', place, menu).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      toast(menu || place ? '오늘의 기록을 저장했어요 🍽' : '기록을 비웠어요.');
       loadHome(false, true);
     });
   }
