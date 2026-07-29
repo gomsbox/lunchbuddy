@@ -115,6 +115,17 @@
   .badge { font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 6px; flex: none; }
   .badge.host { background: var(--green-bg); color: var(--green-dark); }
   .badge.cohost { background: #e8eefb; color: #3b5bdb; }
+  .badge.purpose { background: var(--gray-bg); color: var(--gray); font-weight: 600; }
+  .badge.closed { background: #fdecec; color: var(--red); }
+
+  /* 방 종류 프리셋 선택 카드 (REQ-16) */
+  .preset-grid { display: flex; flex-direction: column; gap: 8px; }
+  .preset-card { display: flex; align-items: flex-start; gap: 10px; text-align: left; width: 100%;
+    border: 1.5px solid var(--line); background: #fff; border-radius: 12px; padding: 11px 12px; cursor: pointer; }
+  .preset-card.on { border-color: var(--green); background: var(--green-bg); }
+  .preset-card .pi { font-size: 20px; line-height: 1.2; flex: none; }
+  .preset-card .pn { font-weight: 800; font-size: 14px; }
+  .preset-card .pd { font-size: 12px; color: var(--gray); margin-top: 2px; line-height: 1.45; }
   .fab {
     position: fixed; right: calc(50% - 240px + 16px); bottom: 24px; width: 56px; height: 56px;
     border-radius: 50%; border: none; background: var(--green); color: #fff; font-size: 28px;
@@ -388,17 +399,17 @@
     <!-- 오늘 탭 (REQ-05·06) -->
     <div id="tab-today">
       <div class="card">
-        <div style="font-weight:800; margin-bottom:12px;">안녕하세요, <span id="today-my-name"></span>님 👋<br>오늘 점심, 어떻게 하세요?</div>
+        <div style="font-weight:800; margin-bottom:12px;">안녕하세요, <span id="today-my-name"></span>님 👋<br><span id="today-ask">오늘 점심, 어떻게 하세요?</span></div>
         <button class="btn resp-btn going" id="btn-going" onclick="setResp('going')">🟢 오늘 같이 가요</button>
         <button class="btn resp-btn notgoing" id="btn-notgoing" onclick="setResp('not-going')">⚫ 오늘은 안 가요</button>
       </div>
       <div class="card">
         <div class="group">
-          <div class="group-head">🟢 같이 가요 (<span id="cnt-going">0</span>명)</div>
+          <div class="group-head"><span id="grp-going-label">🟢 같이 가요 (</span><span id="cnt-going">0</span>명)</div>
           <div class="chips" id="chips-going"></div>
         </div>
         <div class="group">
-          <div class="group-head">⚫ 안 가요 (<span id="cnt-notgoing">0</span>명)</div>
+          <div class="group-head"><span id="grp-notgoing-label">⚫ 안 가요 (</span><span id="cnt-notgoing">0</span>명)</div>
           <div class="chips" id="chips-notgoing"></div>
         </div>
         <div id="unresp-wrap">
@@ -475,6 +486,25 @@
           <button class="mini-btn" onclick="busy(this, doRegenInvite())">재생성</button>
         </div>
       </div>
+
+      <!-- 방 종류(프리셋) 변경 (REQ-16) -->
+      <div class="section-label">방 종류</div>
+      <div class="card">
+        <div class="preset-grid" id="set-presets"></div>
+        <div id="set-purpose-toggles" style="margin-top:6px;">
+          <div class="set-row">
+            <div class="grow"><b>장소·메뉴 기록</b><div class="sub">응답할 때 어디서 뭘 먹는지 함께 남겨요</div></div>
+            <label class="switch"><input type="checkbox" id="tg-meal-log"><span class="slider"></span></label>
+          </div>
+          <div class="set-row">
+            <div class="grow"><b>메뉴 투표</b><div class="sub">오늘 먹을 메뉴를 다수결로 정해요</div></div>
+            <label class="switch"><input type="checkbox" id="tg-menu-poll"><span class="slider"></span></label>
+          </div>
+        </div>
+        <button class="btn btn-gray" style="margin-top:12px;" onclick="busy(this, savePurpose())">방 종류 저장</button>
+        <div class="hint" id="set-purpose-hint" style="margin-top:10px;"></div>
+      </div>
+
       <div class="section-label">알림 설정 (이메일)</div>
       <div class="card">
         <div class="set-row">
@@ -580,10 +610,15 @@
 <!-- 방 만들기 모달 (REQ-03) -->
 <div class="modal-back" id="modal-create">
   <div class="modal">
-    <div class="title" style="font-size:18px; margin-bottom:12px;">새 점심방 만들기</div>
+    <div class="title" style="font-size:18px; margin-bottom:12px;">새 방 만들기</div>
     <div class="field">
       <label>방 이름 (2~20자)</label>
       <input type="text" id="create-room-name" maxlength="20">
+    </div>
+    <div class="field">
+      <label>방 종류</label>
+      <div class="preset-grid" id="create-presets"></div>
+      <div class="hint" id="create-preset-hint"></div>
     </div>
     <div class="form-error" id="create-error"></div>
     <button class="btn btn-green" id="btn-create" onclick="doCreateRoom()">방 만들기</button>
@@ -625,7 +660,9 @@
     api_logout:               { name: 'api_logout',                params: ['p_token'] },
     api_getMe:                { name: 'api_get_me',                params: ['p_token'] },
     api_getMyRooms:           { name: 'api_get_my_rooms',          params: ['p_token'] },
-    api_createRoom:           { name: 'api_create_room',           params: ['p_token', 'p_room_name'] },
+    api_createRoom:           { name: 'api_create_room',           params: ['p_token', 'p_room_name', 'p_purpose'] },
+    api_setRoomPurpose:       { name: 'api_set_room_purpose',      params: ['p_token', 'p_room_id', 'p_purpose', 'p_track_meal_log', 'p_enable_menu_poll'] },
+    api_setMenuPollConfig:    { name: 'api_set_menu_poll_config',  params: ['p_token', 'p_room_id', 'p_deadline', 'p_member_add'] },
     api_joinByInvite:         { name: 'api_join_by_invite',        params: ['p_token', 'p_invite_token'] },
     api_joinByCode:           { name: 'api_join_by_code',          params: ['p_token', 'p_code'] },
     api_getRoomHome:          { name: 'api_get_room_home',         params: ['p_token', 'p_room_id'] },
@@ -668,7 +705,43 @@
     histSelected: null,
     timer: null,
     onbIndex: 0,              // 온보딩 현재 단계
+    purpose: 'cafeteria',     // 현재 방의 목적 프리셋 (REQ-16)
+    trackMealLog: false,      // 장소·메뉴 기록 사용 여부 (REQ-17)
+    enableMenuPoll: false,    // 메뉴 투표 사용 여부 (REQ-19)
+    eventStatus: 'open',      // 이벤트형 방 진행 상태 (REQ-25)
+    createPurpose: 'cafeteria',   // 방 만들기 모달에서 고른 프리셋
+    setPurpose: 'cafeteria',      // 설정 화면에서 고른 프리셋
   };
+
+  /* ==================== 방 목적 프리셋 (REQ-16) ====================
+     프리셋은 화면 문구와 기본 기능 on/off만 결정한다. 데이터 구조는 모든 방이 동일하다.
+     ask/go/no = 방 종류에 따라 달라지는 응답 카드 문구 (페르소나 확장 — 사내식당 전용 표현 제거) */
+  var PRESETS = [
+    { key: 'cafeteria', icon: '🏢', name: '사내식당형', desc: '구내식당에 같이 갈 사람만 확인해요 (기존 방식)',
+      ask: '오늘 점심, 어떻게 하세요?', go: '🟢 오늘 같이 가요', no: '⚫ 오늘은 안 가요' },
+    { key: 'outside', icon: '🍜', name: '외부 점심형', desc: '어디서 뭘 먹었는지 메뉴까지 기록하고 통계로 봐요',
+      ask: '오늘 점심, 같이 드실 분?', go: '🟢 오늘 같이 먹어요', no: '⚫ 오늘은 안 먹어요' },
+    { key: 'poll', icon: '🗳️', name: '메뉴 투표형', desc: '참석 여부를 받고, 오늘 메뉴는 투표로 정해요',
+      ask: '오늘 점심, 어떻게 하세요?', go: '🟢 오늘 같이 가요', no: '⚫ 오늘은 안 가요' },
+    { key: 'event', icon: '🎉', name: '이벤트형 (1회용)', desc: '가입 없이 이름만 입력해 참여해요 · 초대 링크 전용, 행사 끝나면 마감',
+      ask: '이 모임에 참석하시나요?', go: '🟢 참석해요', no: '⚫ 참석 못해요' },
+    { key: 'custom', icon: '⚙️', name: '자유 설정', desc: '필요한 기능만 직접 켜서 써요',
+      ask: '오늘 점심, 어떻게 하세요?', go: '🟢 오늘 같이 가요', no: '⚫ 오늘은 안 가요' },
+  ];
+  function preset(key) {
+    for (var i = 0; i < PRESETS.length; i++) if (PRESETS[i].key === key) return PRESETS[i];
+    return PRESETS[0];
+  }
+  // 프리셋 카드 목록을 그려준다. onPick은 전역 함수 이름(문자열) — 인라인 onclick으로 연결
+  function presetCards(containerId, selectedKey, onPick) {
+    document.getElementById(containerId).innerHTML = PRESETS.map(function (p) {
+      return '<button type="button" class="preset-card' + (p.key === selectedKey ? ' on' : '') + '"' +
+        ' onclick="' + onPick + '(\'' + p.key + '\')">' +
+        '<span class="pi">' + p.icon + '</span>' +
+        '<span class="grow"><span class="pn">' + esc(p.name) + '</span>' +
+        '<span class="pd">' + esc(p.desc) + '</span></span></button>';
+    }).join('');
+  }
 
   /* ==================== 공통 ==================== */
   // 모든 서버 호출 중 상단 로딩 바 표시 — 어떤 버튼을 눌러도 "실행 중" 상태가 보이도록 함
@@ -988,10 +1061,15 @@
       return list.map(function (rm) {
         var badge = rm.role === 'host' ? '<span class="badge host">호스트</span>'
                   : rm.role === 'co-host' ? '<span class="badge cohost">공동호스트</span>' : '';
+        // 이벤트형처럼 성격이 다른 방은 목록에서 바로 구분되도록 배지를 덧붙임 (REQ-16)
+        var p = preset(rm.purpose || 'cafeteria');
+        var pBadge = (rm.purpose && rm.purpose !== 'cafeteria')
+          ? '<span class="badge purpose">' + p.icon + '</span>' : '';
+        if (rm.purpose === 'event' && rm.eventStatus === 'closed') pBadge = '<span class="badge closed">마감</span>';
         return '<div class="card room-card" onclick="enterRoom(\'' + esc(rm.roomId) + '\')">' +
-          '<div class="info"><div class="name">🍱 ' + esc(rm.roomName) + '</div>' +
-          '<div class="sub">오늘 ' + rm.goingCount + '명 같이 가요 · 멤버 ' + rm.memberCount + '명</div></div>' +
-          badge + '<span class="sub">›</span></div>';
+          '<div class="info"><div class="name">' + (rm.purpose === 'event' ? '🎉 ' : '🍱 ') + esc(rm.roomName) + '</div>' +
+          '<div class="sub">오늘 ' + rm.goingCount + '명 참여 · 멤버 ' + rm.memberCount + '명</div></div>' +
+          pBadge + badge + '<span class="sub">›</span></div>';
       }).join('');
     }
     if (data.hostRooms.length) html += '<div class="section-label">내가 만든 방</div>' + cards(data.hostRooms);
@@ -1007,20 +1085,31 @@
   function openCreateRoom() {
     document.getElementById('create-room-name').value = (state.me ? state.me.nickname : '') + '의 점심방';
     document.getElementById('create-error').textContent = '';
+    pickCreatePreset('cafeteria');
     document.getElementById('modal-create').classList.add('open');
   }
   function closeCreateRoom() { document.getElementById('modal-create').classList.remove('open'); }
+  // 방 만들기 모달에서 프리셋 선택 (REQ-16)
+  function pickCreatePreset(key) {
+    state.createPurpose = key;
+    presetCards('create-presets', key, 'pickCreatePreset');
+    document.getElementById('create-preset-hint').innerHTML = key === 'event'
+      ? '초대 링크를 받은 사람은 <b>회원가입 없이 이름만 입력</b>하고 참여해요. 방 코드는 발급되지 않고, 행사가 끝나면 마감해주세요.'
+      : '방 종류는 나중에 설정에서 바꿀 수 있어요. <b>이벤트형만 나중에 바꿀 수 없어요.</b>';
+  }
   function doCreateRoom() {
     var name = document.getElementById('create-room-name').value.trim();
     var errEl = document.getElementById('create-error');
     if (name.length < 2 || name.length > 20) { errEl.textContent = '방 이름은 2~20자로 입력해주세요.'; return; }
     var btn = document.getElementById('btn-create');
     btn.disabled = true;
-    api('api_createRoom', state.token, name).then(function (r) {
+    api('api_createRoom', state.token, name, state.createPurpose).then(function (r) {
       btn.disabled = false;
       if (!r.ok) { errEl.textContent = r.error; return; }
       closeCreateRoom();
-      toast('방이 만들어졌어요! 초대 링크를 공유해보세요 🎉');
+      toast(state.createPurpose === 'event'
+        ? '이벤트 방이 만들어졌어요! 초대 링크를 공유해보세요 🎉'
+        : '방이 만들어졌어요! 초대 링크를 공유해보세요 🎉');
       enterRoom(r.data.roomId);
     });
   }
@@ -1104,12 +1193,31 @@
     // 백엔드는 초대 토큰만 반환 — 서비스 주소는 프론트가 알고 있으므로 여기서 조립
     state.inviteUrl = d.inviteToken ? (location.origin + location.pathname + '?invite=' + d.inviteToken) : '';
     state.roomCode = d.roomCode || '';
-    document.getElementById('btn-roomcode').textContent = '🔑 방 코드: ' + (state.roomCode || '------') + ' (탭하여 복사)';
-    document.getElementById('room-title').textContent = '🍱 ' + d.roomName;
+    // v2 방 목적 — 서버가 아직 안 내려주는 경우에도 안전하게 기본값으로 동작 (하위 호환)
+    state.purpose = d.purpose || 'cafeteria';
+    state.trackMealLog = !!d.trackMealLog;
+    state.enableMenuPoll = !!d.enableMenuPoll;
+    state.eventStatus = d.eventStatus || 'open';
+    var pp = preset(state.purpose);
+    var isEvent = state.purpose === 'event';
+
+    // 이벤트형 방은 방 코드로 참여할 수 없으므로 코드 버튼 자체를 숨긴다 (REQ-25)
+    var codeBtn = document.getElementById('btn-roomcode');
+    codeBtn.style.display = isEvent ? 'none' : 'block';
+    codeBtn.textContent = '🔑 방 코드: ' + (state.roomCode || '------') + ' (탭하여 복사)';
+
+    document.getElementById('room-title').textContent = (isEvent ? '🎉 ' : '🍱 ') + d.roomName;
     var dt = new Date(d.date + 'T00:00:00');
     document.getElementById('room-date').textContent =
       dt.getFullYear() + '년 ' + (dt.getMonth() + 1) + '월 ' + dt.getDate() + '일 (' + DOW[dt.getDay()] + ')';
     document.getElementById('today-my-name').textContent = state.myNickname;
+
+    // 방 종류에 맞는 문구로 교체 (REQ-16 카피 일반화)
+    document.getElementById('today-ask').textContent = pp.ask;
+    document.getElementById('btn-going').textContent = pp.go;
+    document.getElementById('btn-notgoing').textContent = pp.no;
+    document.getElementById('grp-going-label').textContent = isEvent ? '🟢 참석 (' : '🟢 같이 가요 (';
+    document.getElementById('grp-notgoing-label').textContent = isEvent ? '⚫ 불참 (' : '⚫ 안 가요 (';
 
     document.getElementById('btn-going').classList.toggle('on', d.myStatus === 'going');
     document.getElementById('btn-notgoing').classList.toggle('on', d.myStatus === 'not-going');
@@ -1319,7 +1427,48 @@
       document.getElementById('set-danger').style.display = state.myRole === 'host' ? 'block' : 'none';
       loadMembersUI();
       loadNotifyUI();
+      loadPurposeUI();
     }
+  }
+
+  /* 방 종류(프리셋) 설정 (REQ-16) */
+  function loadPurposeUI() {
+    state.setPurpose = state.purpose || 'cafeteria';
+    document.getElementById('tg-meal-log').checked = !!state.trackMealLog;
+    document.getElementById('tg-menu-poll').checked = !!state.enableMenuPoll;
+    renderPurposeUI();
+  }
+  function renderPurposeUI() {
+    var isEvent = state.purpose === 'event';
+    // 이벤트형 방은 목적을 바꿀 수 없다 (게스트 참여 구조가 계정 기반 방과 다른 별도 트랙 — 명세서 3.1.1)
+    document.getElementById('set-presets').style.display = isEvent ? 'none' : 'block';
+    if (!isEvent) presetCards('set-presets', state.setPurpose, 'pickSetPreset');
+    document.getElementById('set-purpose-hint').innerHTML = isEvent
+      ? '이 방은 <b>이벤트형(1회용)</b>이에요. 종류는 바꿀 수 없지만 아래 기능은 켜고 끌 수 있어요.'
+      : '프리셋을 고르면 아래 기능이 자동으로 맞춰져요. 기능을 직접 바꾸면 <b>자유 설정</b>으로 전환됩니다.';
+  }
+  function pickSetPreset(key) {
+    state.setPurpose = key;
+    // 프리셋을 고르면 그 프리셋의 기본 토글 값으로 화면을 맞춰준다 (서버 fn_preset_toggles와 같은 규칙)
+    document.getElementById('tg-meal-log').checked = (key === 'outside');
+    document.getElementById('tg-menu-poll').checked = (key === 'poll' || key === 'event');
+    renderPurposeUI();
+  }
+  function savePurpose() {
+    var track = document.getElementById('tg-meal-log').checked;
+    var poll = document.getElementById('tg-menu-poll').checked;
+    return api('api_setRoomPurpose', state.token, state.roomId, state.setPurpose, track, poll).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      state.purpose = r.data.purpose;
+      state.trackMealLog = r.data.trackMealLog;
+      state.enableMenuPoll = r.data.enableMenuPoll;
+      state.setPurpose = r.data.purpose;
+      renderPurposeUI();
+      // 프리셋을 벗어나 custom으로 넘어간 경우 그 사실을 알려준다 (명세서 3.1.1)
+      toast(r.data.switchedToCustom
+        ? '기능을 직접 바꿔서 방 설정이 자유 설정으로 전환되었습니다 ⚙️'
+        : '방 종류가 저장되었습니다 ✅');
+    });
   }
   function closeSettings() {
     if (settingsFromRoom && state.roomId) { show('sc-room'); setTab(state.tab); }
