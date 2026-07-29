@@ -390,6 +390,43 @@
     </div>
   </div>
 
+  <!-- 게스트 참여 (SCR-07, REQ-25) — 이벤트형 방 초대 링크로 접속했을 때 -->
+  <div class="screen no-tab" id="sc-guest-join">
+    <div class="center" style="margin: 44px 0 20px;">
+      <div class="logo">🎉</div>
+      <div class="title" style="font-size:19px;" id="guest-room-name">모임</div>
+      <div class="sub mt8">이름만 입력하면 바로 참여할 수 있어요.<br>회원가입은 필요 없어요.</div>
+    </div>
+    <div class="card">
+      <div class="field">
+        <label>이름 (2~10자)</label>
+        <input type="text" id="guest-name" maxlength="10" placeholder="예: 채유정"
+               onkeydown="if(event.key==='Enter'){doGuestJoin();}">
+        <div class="hint">주최자와 다른 참여자에게 이 이름이 보여요.</div>
+      </div>
+      <div class="form-error" id="guest-error"></div>
+      <button class="btn btn-green" id="btn-guest-join" onclick="doGuestJoin()">참여하기</button>
+      <div class="hint mt8">
+        ⚠️ 참여 기록은 <b>이 브라우저에 저장</b>돼요. 다른 기기나 시크릿 모드로 접속하면
+        <b>다른 참여자로 새로 등록</b>되니 같은 브라우저로 다시 열어주세요.
+      </div>
+    </div>
+    <div class="card center">
+      <div class="sub">오늘점심 계정이 있으세요?</div>
+      <button class="btn btn-gray mt8" onclick="guestToLogin()">계정으로 로그인해서 참여</button>
+    </div>
+  </div>
+
+  <!-- 마감된 이벤트 링크로 접속했을 때 (REQ-25) -->
+  <div class="screen no-tab" id="sc-event-closed">
+    <div class="card center" style="margin-top:28vh;">
+      <div style="font-size:34px;">🏁</div>
+      <div class="title mt8" style="font-size:18px;">이미 마감된 모임이에요</div>
+      <div class="sub mt8" id="event-closed-name"></div>
+      <div class="sub mt8">주최자에게 문의해주세요.</div>
+    </div>
+  </div>
+
   <!-- 비밀번호 재설정 (REQ-15, 이메일 링크로 접속) -->
   <div class="screen no-tab" id="sc-reset-password">
     <div class="center" style="margin: 48px 0 24px;">
@@ -427,7 +464,7 @@
   <!-- 방 내부 (SCR-04·05·07) -->
   <div class="screen" id="sc-room">
     <div class="header">
-      <button class="icon-btn" onclick="backToRooms()">←</button>
+      <button class="icon-btn" id="btn-back-rooms" onclick="backToRooms()">←</button>
       <div class="grow">
         <div class="room-name" id="room-title">방</div>
         <div class="sub" id="room-date"></div>
@@ -438,6 +475,11 @@
 
     <!-- 오늘 탭 (REQ-05·06) -->
     <div id="tab-today">
+      <!-- 이벤트 마감 결과 요약 (SCR-08, REQ-25) — 마감된 이벤트형 방에서만 노출 -->
+      <div class="card" id="event-summary" style="display:none;">
+        <div class="group-head">🏁 <span id="evt-title">마감된 모임</span></div>
+        <div id="evt-body"></div>
+      </div>
       <div class="card">
         <div style="font-weight:800; margin-bottom:12px;">안녕하세요, <span id="today-my-name"></span>님 👋<br><span id="today-ask">오늘 점심, 어떻게 하세요?</span></div>
         <button class="btn resp-btn going" id="btn-going" onclick="setResp('going')">🟢 오늘 같이 가요</button>
@@ -483,8 +525,10 @@
           <button onclick="busy(this, sendMsg())">전송</button>
         </div>
       </div>
-      <button class="btn btn-outline" onclick="copyInvite()">🔗 초대 링크 복사 (7일 유효)</button>
+      <button class="btn btn-outline" id="btn-invite" onclick="copyInvite()">🔗 초대 링크 복사 (7일 유효)</button>
       <button class="btn btn-outline" id="btn-roomcode" onclick="copyRoomCode()">🔑 방 코드: ------</button>
+      <!-- 행사 마감 (이벤트형 방, 호스트·공동호스트 전용, REQ-25) -->
+      <button class="btn btn-outline" id="btn-close-event" style="display:none;" onclick="busy(this, closeEvent())">🏁 행사 마감하기</button>
       <div class="refresh-line" id="today-updated"></div>
     </div>
 
@@ -607,7 +651,20 @@
       </div>
     </div>
 
-    <!-- 개인 설정 (REQ-09) -->
+    <!-- 게스트 안내 (REQ-25) — 이름만 입력해 참여한 사람에게만 노출 -->
+    <div id="set-guest-note" style="display:none;">
+      <div class="section-label">참여 정보</div>
+      <div class="card">
+        <div class="sub">이 모임은 <b>가입 없이 이름만으로</b> 참여하셨어요. 계정이 없으므로 비밀번호·이메일 설정은 없습니다.</div>
+        <div class="hint mt8">
+          참여 기록은 <b>이 브라우저에만</b> 저장돼요. 아래 <b>이 브라우저에서 나가기</b>를 누르거나 브라우저 데이터를 지우면
+          <b>같은 사람으로 돌아올 수 없고</b>, 다시 참여하면 새 참여자로 등록돼요.
+        </div>
+      </div>
+    </div>
+
+    <!-- 개인 설정 (REQ-09) — 계정 사용자만 -->
+    <div id="set-account-section">
     <div class="section-label">개인 설정</div>
     <div class="card">
       <div class="field"><label>현재 비밀번호</label><input type="password" id="pw-cur" autocomplete="current-password"></div>
@@ -631,7 +688,8 @@
         <span class="sub">›</span>
       </div>
     </div>
-    <button class="btn btn-gray" onclick="doLogout(true)">로그아웃</button>
+    </div><!-- /set-account-section -->
+    <button class="btn btn-gray" id="btn-logout" onclick="doLogout(true)">로그아웃</button>
   </div>
 
 </div>
@@ -735,6 +793,9 @@
     api_addPollOption:        { name: 'api_add_poll_option',       params: ['p_token', 'p_room_id', 'p_label'] },
     api_votePoll:             { name: 'api_vote_poll',             params: ['p_token', 'p_room_id', 'p_option_id'] },
     api_closePoll:            { name: 'api_close_poll',            params: ['p_token', 'p_room_id'] },
+    api_peekInvite:           { name: 'api_peek_invite',           params: ['p_invite_token'] },
+    api_joinEventAsGuest:     { name: 'api_join_event_as_guest',   params: ['p_invite_token', 'p_name'] },
+    api_closeEvent:           { name: 'api_close_event',           params: ['p_token', 'p_room_id'] },
     api_updateNickname:       { name: 'api_update_nickname',       params: ['p_token', 'p_room_id', 'p_nickname'] },
     api_changePassword:       { name: 'api_change_password',       params: ['p_token', 'p_current_pw', 'p_new_pw'] },
     api_updateEmail:          { name: 'api_update_email',          params: ['p_token', 'p_email'] },
@@ -913,11 +974,66 @@
     } else showAuth();
   }
   function showAuth() {
+    // 이벤트형 방 초대 링크라면 로그인 화면 대신 "이름만 입력" 화면으로 보낸다 (REQ-25)
+    if (state.pendingInvite) {
+      call('api_peekInvite', state.pendingInvite).then(function (r) {
+        if (r.ok && r.data.isEvent) {
+          if (r.data.closed) {
+            document.getElementById('event-closed-name').textContent = r.data.roomName || '';
+            show('sc-event-closed');
+          } else {
+            document.getElementById('guest-room-name').textContent = '🎉 ' + (r.data.roomName || '모임');
+            document.getElementById('guest-error').textContent = '';
+            document.getElementById('guest-name').value = '';
+            show('sc-guest-join');
+          }
+          return;
+        }
+        showLoginScreen();
+      });
+      return;
+    }
+    showLoginScreen();
+  }
+  function showLoginScreen() {
     document.getElementById('invite-notice').style.display = state.pendingInvite ? 'block' : 'none';
     switchAuth('cover');
     show('sc-auth');
   }
+  /* 게스트 참여 (REQ-25) */
+  function doGuestJoin() {
+    var name = document.getElementById('guest-name').value.trim();
+    var errEl = document.getElementById('guest-error');
+    if (name.length < 2 || name.length > 10) { errEl.textContent = '이름은 2~10자로 입력해주세요.'; return; }
+    var btn = document.getElementById('btn-guest-join');
+    btn.disabled = true; errEl.textContent = '';
+    call('api_joinEventAsGuest', state.pendingInvite, name).then(function (r) {
+      btn.disabled = false;
+      if (!r.ok) {
+        if (r.error === 'EXPIRED') { show('sc-expired'); return; }
+        errEl.textContent = r.error; return;
+      }
+      // 일반 로그인과 동일하게 세션 토큰을 저장한다
+      state.token = r.data.token;
+      localStorage.setItem('lb_token', state.token);
+      state.me = r.data.user;
+      state.pendingInvite = '';
+      toast('참여했어요! 반가워요 ' + name + '님 🎉');
+      enterRoom(r.data.roomId);
+    });
+  }
+  /** 게스트 화면에서 "계정으로 로그인" 선택 — 기존 초대 흐름으로 넘긴다 */
+  function guestToLogin() { showLoginScreen(); }
   function afterLogin() {
+    // 게스트는 방 목록·온보딩 없이 참여한 그 방으로 바로 들어간다 (REQ-25)
+    if (state.me && state.me.isGuest) {
+      state.pendingInvite = '';
+      if (state.me.guestRoomId) { enterRoom(state.me.guestRoomId); return; }
+      // 방이 이미 삭제(자동 정리)된 게스트 세션 — 토큰을 버리고 처음 화면으로
+      localStorage.removeItem('lb_token'); state.token = ''; state.me = null;
+      show('sc-event-closed');
+      return;
+    }
     if (state.pendingInvite) {
       var inv = state.pendingInvite;
       state.pendingInvite = '';
@@ -988,6 +1104,8 @@
     },
   ];
   function maybeShowOnboarding() {
+    // 게스트는 1회용 참여라 온보딩을 띄우지 않는다 (안내는 게스트 참여 화면에 이미 있음)
+    if (state.me && state.me.isGuest) return;
     if (!localStorage.getItem('lb_onboarded_v1')) openOnboarding();
   }
   function openOnboarding() {
@@ -1062,6 +1180,10 @@
     });
   }
   function doLogout(callServer) {
+    // 게스트는 세션 토큰이 유일한 신원이라, 나가면 같은 참여자로 돌아올 수 없다 (REQ-25 / NFR-14)
+    if (state.me && state.me.isGuest) {
+      if (!confirm('이 브라우저에서 나가시겠어요?\n\n· 이름만 입력해 참여했기 때문에 같은 참여자로 다시 돌아올 수 없어요.\n· 다시 참여하면 새 참여자로 등록됩니다.')) return;
+    }
     if (callServer && state.token) call('api_logout', state.token);
     localStorage.removeItem('lb_token');
     state.token = ''; state.me = null; state.roomId = null; state.pendingInvite = '';
@@ -1214,7 +1336,11 @@
     show('sc-room');
     setTab('today');
   }
-  function backToRooms() { state.roomId = null; loadRooms(); }
+  function backToRooms() {
+    // 게스트는 참여한 방이 전부라 돌아갈 목록이 없다 (버튼도 숨겨두지만 방어적으로)
+    if (state.me && state.me.isGuest) return;
+    state.roomId = null; loadRooms();
+  }
 
   function setTab(tab) {
     state.tab = tab;
@@ -1269,10 +1395,33 @@
     var pp = preset(state.purpose);
     var isEvent = state.purpose === 'event';
 
+    var isClosed = isEvent && state.eventStatus === 'closed';
+    var isManager = d.myRole === 'host' || d.myRole === 'co-host';
+
     // 이벤트형 방은 방 코드로 참여할 수 없으므로 코드 버튼 자체를 숨긴다 (REQ-25)
     var codeBtn = document.getElementById('btn-roomcode');
     codeBtn.style.display = isEvent ? 'none' : 'block';
     codeBtn.textContent = '🔑 방 코드: ' + (state.roomCode || '------') + ' (탭하여 복사)';
+
+    // 이벤트형 방 초대 링크는 마감할 때까지 유효하고, 가입 없이 참여할 수 있다
+    var inviteBtn = document.getElementById('btn-invite');
+    inviteBtn.textContent = isEvent ? '🔗 초대 링크 복사 (가입 없이 참여)' : '🔗 초대 링크 복사 (7일 유효)';
+    inviteBtn.style.display = isClosed ? 'none' : 'block';
+
+    // 히스토리 탭은 반복 운영 전제 기능이라 이벤트형 방에서는 숨긴다 (REQ-25)
+    document.getElementById('tabbtn-history').style.display = isEvent ? 'none' : '';
+    if (isEvent && state.tab === 'history') setTab('today');
+
+    // 호스트에게만 행사 마감 버튼 (마감 전에만)
+    document.getElementById('btn-close-event').style.display = (isEvent && !isClosed && isManager) ? 'block' : 'none';
+
+    // 게스트는 방 목록이 없으므로 뒤로 가기 버튼을 숨긴다
+    document.getElementById('btn-back-rooms').style.display = (state.me && state.me.isGuest) ? 'none' : '';
+
+    // 마감되면 응답·기록을 잠그고 결과 요약을 보여준다 (SCR-08)
+    renderEventSummary(d, isClosed);
+    document.getElementById('btn-going').disabled = isClosed;
+    document.getElementById('btn-notgoing').disabled = isClosed;
 
     document.getElementById('room-title').textContent = (isEvent ? '🎉 ' : '🍱 ') + d.roomName;
     var dt = new Date(d.date + 'T00:00:00');
@@ -1291,7 +1440,8 @@
     document.getElementById('btn-notgoing').classList.toggle('on', d.myStatus === 'not-going');
 
     // 장소·메뉴 기록 (REQ-17) — 기록을 쓰는 방에서 '가요'를 선택한 사람에게만 입력란을 보여준다
-    var mealOn = state.trackMealLog && d.myStatus === 'going';
+    // (마감된 이벤트형 방은 읽기 전용이므로 입력란을 내린다)
+    var mealOn = state.trackMealLog && d.myStatus === 'going' && !isClosed;
     document.getElementById('meal-log-row').style.display = mealOn ? 'block' : 'none';
     document.getElementById('meal-log-locked').style.display =
       (state.trackMealLog && d.myStatus !== 'going') ? 'block' : 'none';
@@ -1344,6 +1494,50 @@
     document.getElementById('today-updated').textContent = '마지막 갱신: ' + nowHM();
   }
   function toggleUnresp() { state.unrespOpen = !state.unrespOpen; loadHome(false, true); }
+
+  /* ==================== 이벤트형 방 (REQ-25) ==================== */
+  /** 마감된 이벤트의 결과 요약 (SCR-08) — 참석 인원 + 확정 메뉴 */
+  function renderEventSummary(d, isClosed) {
+    var card = document.getElementById('event-summary');
+    if (!isClosed) { card.style.display = 'none'; return; }
+    card.style.display = 'block';
+    document.getElementById('evt-title').textContent = '마감된 모임 · 결과';
+
+    var mp = d.menuPoll;
+    var menu = (mp && mp.exists && mp.confirmedLabel) ? mp.confirmedLabel : null;
+    var html = '<div class="poll-win"><div class="t">🙋 참석</div>' +
+      '<div class="m">' + d.going.length + '명</div></div>';
+    if (menu) {
+      html += '<div class="poll-win" style="background:var(--green-dark);"><div class="t">' +
+        (mp.wasTie ? '🎲 동점이라 룰렛으로 정해진 메뉴' : '🗳 투표로 정해진 메뉴') +
+        '</div><div class="m">' + esc(menu) + '</div></div>';
+    }
+    html += '<div class="rank-sub">🙋 참석 (' + d.going.length + '명)</div>' +
+      '<div class="chips">' + (d.going.length
+        ? d.going.map(function (m) { return '<span class="chip g">' + esc(m.nickname) + '</span>'; }).join('')
+        : '<span class="empty-note">없음</span>') + '</div>';
+    html += '<div class="rank-sub">⚫ 불참 (' + d.notGoing.length + '명)</div>' +
+      '<div class="chips">' + (d.notGoing.length
+        ? d.notGoing.map(function (m) { return '<span class="chip n">' + esc(m.nickname) + '</span>'; }).join('')
+        : '<span class="empty-note">없음</span>') + '</div>';
+    if (d.noResponse.length) {
+      html += '<div class="rank-sub">⏳ 미응답 (' + d.noResponse.length + '명)</div>' +
+        '<div class="chips">' +
+        d.noResponse.map(function (m) { return '<span class="chip y">' + esc(m.nickname) + '</span>'; }).join('') +
+        '</div>';
+    }
+    html += '<div class="hint" style="margin-top:12px;">마감된 모임이라 응답과 투표를 바꿀 수 없어요. ' +
+      '이 모임 기록은 마감 후 일정 기간이 지나면 자동으로 삭제돼요.</div>';
+    document.getElementById('evt-body').innerHTML = html;
+  }
+  function closeEvent() {
+    if (!confirm('행사를 마감할까요?\n\n· 참석 응답과 메뉴 투표가 잠기고 결과가 확정됩니다.\n· 초대 링크로 새로 참여할 수 없게 됩니다.\n· 되돌릴 수 없어요.')) return;
+    return api('api_closeEvent', state.token, state.roomId).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      toast('행사를 마감했어요 🏁');
+      loadHome(false, true);
+    });
+  }
 
   /* ==================== 메뉴 투표 (REQ-19) ==================== */
   function renderPoll(p) {
@@ -1718,6 +1912,14 @@
   function openSettings(fromRoom) {
     settingsFromRoom = fromRoom;
     show('sc-settings');
+
+    // 게스트는 계정이 없으므로 비밀번호·이메일·회원 관련 항목을 감춘다 (REQ-25)
+    var isGuest = !!(state.me && state.me.isGuest);
+    document.getElementById('set-account-section').style.display = isGuest ? 'none' : 'block';
+    document.getElementById('set-guest-note').style.display = isGuest ? 'block' : 'none';
+    document.getElementById('btn-logout').textContent = isGuest
+      ? '이 브라우저에서 나가기' : '로그아웃';
+
     document.getElementById('set-email').value = state.me.email || '';
     document.getElementById('pw-cur').value = '';
     document.getElementById('pw-new').value = '';
@@ -1782,6 +1984,7 @@
   }
   function closeSettings() {
     if (settingsFromRoom && state.roomId) { show('sc-room'); setTab(state.tab); }
+    else if (state.me && state.me.isGuest && state.roomId) { show('sc-room'); setTab('today'); }
     else loadRooms();
   }
 
