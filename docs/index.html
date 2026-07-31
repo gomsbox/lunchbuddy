@@ -156,6 +156,13 @@
   .badge.host { background: var(--green-bg); color: var(--green-dark); }
   .badge.cohost { background: #e8eefb; color: #3b5bdb; }
   .badge.purpose { background: var(--gray-bg); color: var(--gray); font-weight: 600; }
+
+  /* 방 순서 편집 (REQ-26) */
+  .room-card.reorder { cursor: default; }
+  .ord-btns { display: flex; flex-direction: column; gap: 3px; flex: none; }
+  .ord-btns button { border: none; background: var(--gray-bg); color: var(--text);
+    border-radius: 6px; width: 30px; padding: 3px 0; font-size: 12px; cursor: pointer; line-height: 1.3; }
+  .ord-btns button:disabled { opacity: .3; cursor: default; }
   .badge.closed { background: #fdecec; color: var(--red); }
 
   /* 방 종류 프리셋 선택 카드 (REQ-16) */
@@ -456,8 +463,12 @@
       </div>
       <button class="icon-btn" title="설정" onclick="openSettings(false)">⚙️</button>
     </div>
+    <!-- 순서 편집 토글 (REQ-26) — 방이 2개 이상일 때만 노출 -->
+    <div id="rooms-order-bar" style="display:none; text-align:right; margin: 4px 2px -4px;">
+      <button class="mini-btn" id="btn-order-edit" onclick="toggleOrderEdit()">↕ 순서 편집</button>
+    </div>
     <div id="rooms-body"></div>
-    <button class="btn btn-outline mt8" onclick="openJoinCode()">🔑 방 코드로 참여</button>
+    <button class="btn btn-outline mt8" id="btn-join-code" onclick="openJoinCode()">🔑 방 코드로 참여</button>
     <button class="fab" title="새 방 만들기" onclick="openCreateRoom()">＋</button>
   </div>
 
@@ -827,6 +838,7 @@
     api_closeEvent:           { name: 'api_close_event',           params: ['p_token', 'p_room_id'] },
     api_getMealSuggestions:   { name: 'api_get_my_meal_suggestions', params: ['p_token', 'p_room_id'] },
     api_getDeletePreview:     { name: 'api_get_delete_preview',    params: ['p_token'] },
+    api_setRoomOrder:         { name: 'api_set_room_order',        params: ['p_token', 'p_room_ids'] },
     api_deleteAccount:        { name: 'api_delete_account',        params: ['p_token', 'p_password', 'p_delete_my_rooms'] },
     api_updateNickname:       { name: 'api_update_nickname',       params: ['p_token', 'p_room_id', 'p_nickname'] },
     api_changePassword:       { name: 'api_change_password',       params: ['p_token', 'p_current_pw', 'p_new_pw'] },
@@ -875,6 +887,8 @@
     suggestMenus: [],             // 내가 최근 입력한 메뉴 (자동완성·랜덤 추천용, REQ-20)
     suggestPlaces: [],
     suggestLoadedFor: '',         // 자동완성을 불러온 방 id (방마다 1회만 조회)
+    orderEdit: false,             // 방 목록 순서 편집 모드 (REQ-26)
+    roomLists: { hostRooms: [], otherRooms: [] },   // 현재 화면에 그려진 방 목록 (순서 조작 대상)
   };
 
   /* ==================== 방 목적 프리셋 (REQ-16) ====================
@@ -1273,6 +1287,7 @@
   /* ==================== 방 목록 (REQ-03) ==================== */
   function loadRooms() {
     show('sc-rooms');
+    state.orderEdit = false;   // 목록에 새로 들어올 때는 항상 보기 모드로 시작
     document.getElementById('rooms-greet').textContent = state.me ? state.me.nickname + '님, 오늘 점심 어때요?' : '';
     document.getElementById('rooms-body').innerHTML = '<div class="sub center mt16">불러오는 중...</div>';
     api('api_getMyRooms', state.token).then(function (r) {
@@ -1281,9 +1296,11 @@
     });
   }
   function renderRooms(data) {
+    state.roomLists = { hostRooms: data.hostRooms || [], otherRooms: data.otherRooms || [] };
     var html = '';
-    function cards(list) {
-      return list.map(function (rm) {
+    // listKey = 'hostRooms' | 'otherRooms' — 순서 조작은 섹션 안에서만 이뤄진다
+    function cards(list, listKey) {
+      return list.map(function (rm, i) {
         var badge = rm.role === 'host' ? '<span class="badge host">호스트</span>'
                   : rm.role === 'co-host' ? '<span class="badge cohost">공동호스트</span>' : '';
         // 이벤트형처럼 성격이 다른 방은 목록에서 바로 구분되도록 배지를 덧붙임 (REQ-16)
@@ -1291,21 +1308,64 @@
         var pBadge = (rm.purpose && rm.purpose !== 'cafeteria')
           ? '<span class="badge purpose">' + p.icon + '</span>' : '';
         if (rm.purpose === 'event' && rm.eventStatus === 'closed') pBadge = '<span class="badge closed">마감</span>';
-        return '<div class="card room-card" onclick="enterRoom(\'' + esc(rm.roomId) + '\')">' +
-          '<div class="info"><div class="name">' + (rm.purpose === 'event' ? '🎉 ' : '🍱 ') + esc(rm.roomName) + '</div>' +
-          '<div class="sub">오늘 ' + rm.goingCount + '명 참여 · 멤버 ' + rm.memberCount + '명</div></div>' +
+
+        var info = '<div class="info"><div class="name">' + (rm.purpose === 'event' ? '🎉 ' : '🍱 ') + esc(rm.roomName) + '</div>' +
+          '<div class="sub">오늘 ' + rm.goingCount + '명 참여 · 멤버 ' + rm.memberCount + '명</div></div>';
+
+        // 순서 편집 모드에서는 카드를 눌러 입장하지 않고 ▲▼로 위치만 바꾼다 (REQ-26)
+        if (state.orderEdit) {
+          return '<div class="card room-card reorder">' + info +
+            '<div class="ord-btns">' +
+            '<button onclick="moveRoom(\'' + listKey + '\',' + i + ',-1)"' + (i === 0 ? ' disabled' : '') + '>▲</button>' +
+            '<button onclick="moveRoom(\'' + listKey + '\',' + i + ',1)"' + (i === list.length - 1 ? ' disabled' : '') + '>▼</button>' +
+            '</div></div>';
+        }
+        return '<div class="card room-card" onclick="enterRoom(\'' + esc(rm.roomId) + '\')">' + info +
           pBadge + badge + '<span class="sub">›</span></div>';
       }).join('');
     }
-    if (data.hostRooms.length) html += '<div class="section-label">내가 만든 방</div>' + cards(data.hostRooms);
-    if (data.otherRooms.length) html += '<div class="section-label">참여 중인 방</div>' + cards(data.otherRooms);
+    if (data.hostRooms.length) html += '<div class="section-label">내가 만든 방</div>' + cards(data.hostRooms, 'hostRooms');
+    if (data.otherRooms.length) html += '<div class="section-label">참여 중인 방</div>' + cards(data.otherRooms, 'otherRooms');
     if (!data.hostRooms.length && !data.otherRooms.length) {
       html = '<div class="card center" style="padding:36px 18px;">' +
         '<div style="font-size:30px;">🥢</div>' +
         '<b class="mt8" style="display:block;">아직 참여 중인 방이 없어요</b>' +
         '<div class="sub mt8">오른쪽 아래 + 버튼으로 점심방을 만들거나,<br>동료에게 받은 초대 링크 또는 방 코드로 참여해보세요.</div></div>';
     }
+    if (state.orderEdit) {
+      html += '<div class="hint center" style="margin-top:10px;">▲▼로 순서를 바꾸면 바로 저장돼요. 순서는 <b>나에게만</b> 적용됩니다.</div>';
+    }
     document.getElementById('rooms-body').innerHTML = html;
+
+    // 방이 2개 이상일 때만 순서 편집 버튼을 보여준다
+    var total = data.hostRooms.length + data.otherRooms.length;
+    document.getElementById('rooms-order-bar').style.display = total >= 2 ? 'block' : 'none';
+    document.getElementById('btn-order-edit').textContent = state.orderEdit ? '✓ 완료' : '↕ 순서 편집';
+    // 편집 중에는 방 참여·생성 동작을 잠시 감춰 실수 클릭을 막는다
+    document.getElementById('btn-join-code').style.display = state.orderEdit ? 'none' : 'block';
+    document.querySelector('#sc-rooms .fab').style.display = state.orderEdit ? 'none' : '';
+  }
+
+  /* 방 목록 순서 편집 (REQ-26) */
+  function toggleOrderEdit() {
+    state.orderEdit = !state.orderEdit;
+    renderRooms(state.roomLists);
+  }
+  /** 섹션 안에서 방을 한 칸 이동하고 즉시 저장 (별도 저장 버튼 없이 유실 방지) */
+  function moveRoom(listKey, index, delta) {
+    var list = state.roomLists[listKey];
+    var to = index + delta;
+    if (!list || to < 0 || to >= list.length) return;
+    var moved = list.splice(index, 1)[0];
+    list.splice(to, 0, moved);
+    renderRooms(state.roomLists);
+
+    // 두 섹션을 합쳐 전체 순서를 보낸다 (서버는 내가 멤버인 방만 갱신)
+    var ids = state.roomLists.hostRooms.concat(state.roomLists.otherRooms)
+      .map(function (rm) { return rm.roomId; });
+    api('api_setRoomOrder', state.token, ids).then(function (r) {
+      if (!r.ok) { toast(r.error); loadRooms(); }
+    });
   }
   function openCreateRoom() {
     document.getElementById('create-room-name').value = (state.me ? state.me.nickname : '') + '의 점심방';
