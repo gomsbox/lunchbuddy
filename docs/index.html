@@ -488,10 +488,14 @@
         <div class="meal-row" id="meal-log-row" style="display:none;">
           <div style="font-weight:800; font-size:14px; margin-bottom:8px;">🍽 오늘 뭐 먹어요? <span style="color:var(--gray);font-weight:400;font-size:12px;">(선택)</span></div>
           <div class="meal-inputs">
-            <input type="text" id="meal-place" maxlength="20" placeholder="장소 (예: 김밥천국)">
-            <input type="text" id="meal-menu" maxlength="20" placeholder="메뉴 (예: 제육덮밥)">
+            <input type="text" id="meal-place" maxlength="20" placeholder="장소 (예: 김밥천국)" list="dl-places" autocomplete="off">
+            <input type="text" id="meal-menu" maxlength="20" placeholder="메뉴 (예: 제육덮밥)" list="dl-menus" autocomplete="off">
+            <button type="button" class="mini-btn" title="최근 먹은 것 중에서 추천" onclick="suggestRandomMeal()">🎲</button>
           </div>
-          <div class="hint">적어두면 <b>이달의 메뉴 통계</b>에 쌓여요. 개인정보(실명·연락처 등)는 적지 말아주세요.</div>
+          <!-- 자동완성 후보 (REQ-20) — 내가 최근 30일간 입력한 값 -->
+          <datalist id="dl-places"></datalist>
+          <datalist id="dl-menus"></datalist>
+          <div class="hint">적어두면 <b>메뉴 랭킹</b>에 쌓여요. 🎲를 누르면 최근 먹은 것 중에서 골라줘요. 개인정보(실명·연락처 등)는 적지 말아주세요.</div>
           <button class="btn btn-gray" style="margin-top:10px;" onclick="busy(this, saveMealLog())">기록 저장</button>
         </div>
         <div class="hint" id="meal-log-locked" style="display:none;">🍽 <b>같이 가요</b>를 선택하면 오늘 먹을 장소·메뉴를 기록할 수 있어요.</div>
@@ -688,10 +692,35 @@
         <span class="sub">›</span>
       </div>
     </div>
+    <!-- 회원 탈퇴 (REQ-21) -->
+    <div class="section-label">계정 삭제</div>
+    <div class="card">
+      <div class="set-row" style="cursor:pointer;" onclick="openDeleteAccount()">
+        <div class="grow"><b style="color:var(--red);">회원 탈퇴</b><div class="sub">계정과 내 데이터를 삭제합니다</div></div>
+        <span class="sub">›</span>
+      </div>
+    </div>
     </div><!-- /set-account-section -->
     <button class="btn btn-gray" id="btn-logout" onclick="doLogout(true)">로그아웃</button>
   </div>
 
+</div>
+
+<!-- 회원 탈퇴 모달 (REQ-21) -->
+<div class="modal-back" id="modal-delete">
+  <div class="modal">
+    <div class="title" style="font-size:18px; margin-bottom:12px;">회원 탈퇴</div>
+    <div class="sub">탈퇴하면 계정과 참여 기록이 삭제되고 <b>되돌릴 수 없어요.</b></div>
+    <div id="del-rooms" style="margin-top:12px;"></div>
+    <div class="field" style="margin-top:12px;">
+      <label>비밀번호 확인</label>
+      <input type="password" id="del-pw" autocomplete="current-password" placeholder="본인 확인을 위해 입력해주세요"
+             onkeydown="if(event.key==='Enter'){doDeleteAccount();}">
+    </div>
+    <div class="form-error" id="del-error"></div>
+    <button class="btn btn-danger" id="btn-del" onclick="doDeleteAccount()">탈퇴하기</button>
+    <button class="btn btn-gray" onclick="closeDeleteAccount()">취소</button>
+  </div>
 </div>
 
 <!-- 비밀번호 찾기 요청 모달 (REQ-15) -->
@@ -796,6 +825,9 @@
     api_peekInvite:           { name: 'api_peek_invite',           params: ['p_invite_token'] },
     api_joinEventAsGuest:     { name: 'api_join_event_as_guest',   params: ['p_invite_token', 'p_name'] },
     api_closeEvent:           { name: 'api_close_event',           params: ['p_token', 'p_room_id'] },
+    api_getMealSuggestions:   { name: 'api_get_my_meal_suggestions', params: ['p_token', 'p_room_id'] },
+    api_getDeletePreview:     { name: 'api_get_delete_preview',    params: ['p_token'] },
+    api_deleteAccount:        { name: 'api_delete_account',        params: ['p_token', 'p_password', 'p_delete_my_rooms'] },
     api_updateNickname:       { name: 'api_update_nickname',       params: ['p_token', 'p_room_id', 'p_nickname'] },
     api_changePassword:       { name: 'api_change_password',       params: ['p_token', 'p_current_pw', 'p_new_pw'] },
     api_updateEmail:          { name: 'api_update_email',          params: ['p_token', 'p_email'] },
@@ -840,6 +872,9 @@
     setPurpose: 'cafeteria',      // 설정 화면에서 고른 프리셋
     rouletteShown: {},            // 동점 룰렛을 이미 돌린 투표 id (폴링마다 재생되지 않도록)
     rouletteSpinning: false,      // 룰렛 연출 중 — 폴링이 화면을 덮어쓰지 않게 함
+    suggestMenus: [],             // 내가 최근 입력한 메뉴 (자동완성·랜덤 추천용, REQ-20)
+    suggestPlaces: [],
+    suggestLoadedFor: '',         // 자동완성을 불러온 방 id (방마다 1회만 조회)
   };
 
   /* ==================== 방 목적 프리셋 (REQ-16) ====================
@@ -1451,6 +1486,7 @@
       // 입력 중인 값을 폴링이 덮어쓰지 않도록, 포커스가 없을 때만 서버 값으로 채운다
       if (document.activeElement !== placeEl) placeEl.value = d.myPlace || '';
       if (document.activeElement !== menuEl) menuEl.value = d.myMenu || '';
+      loadMealSuggestions();
     } else {
       // 입력란이 숨겨질 때는 값을 비운다. 안 비우면 '안 가요' → '가요'로 되돌릴 때
       // 서버에서 이미 지워진 기록이 숨은 입력값 때문에 되살아난다.
@@ -1709,6 +1745,37 @@
       loadHome(false, true);
     });
   }
+  /* 자동완성·랜덤 추천 (REQ-20) — 내가 최근 30일간 입력한 값만 사용 */
+  function loadMealSuggestions() {
+    if (!state.trackMealLog) return;
+    if (state.suggestLoadedFor === state.roomId) return;   // 방마다 1회만 조회
+    state.suggestLoadedFor = state.roomId;
+    api('api_getMealSuggestions', state.token, state.roomId).then(function (r) {
+      if (!r.ok) return;
+      state.suggestMenus = r.data.menus || [];
+      state.suggestPlaces = r.data.places || [];
+      fillDatalist('dl-menus', state.suggestMenus);
+      fillDatalist('dl-places', state.suggestPlaces);
+    });
+  }
+  function fillDatalist(id, values) {
+    document.getElementById(id).innerHTML =
+      values.map(function (v) { return '<option value="' + esc(v) + '"></option>'; }).join('');
+  }
+  /** 🎲 최근 먹은 것 중에서 무작위 추천 — 강제 입력이 아니라 입력란을 채워주는 정도 */
+  function suggestRandomMeal() {
+    if (!state.suggestMenus.length) {
+      toast('추천할 기록이 아직 없어요. 몇 번 기록하면 여기서 골라드릴게요 🍽');
+      return;
+    }
+    var cur = document.getElementById('meal-menu').value.trim();
+    var pool = state.suggestMenus.filter(function (m) { return m !== cur; });
+    if (!pool.length) pool = state.suggestMenus;
+    var pick = pool[Math.floor(Math.random() * pool.length)];
+    document.getElementById('meal-menu').value = pick;
+    toast('오늘은 ' + pick + ' 어때요? 🎲');
+  }
+
   /** 장소·메뉴 기록 저장 (REQ-17) — 응답 상태는 '가요' 그대로 두고 기록만 갱신 */
   function saveMealLog() {
     var place = document.getElementById('meal-place').value.trim();
@@ -1717,6 +1784,7 @@
     return api('api_setResponse', state.token, state.roomId, 'going', place, menu).then(function (r) {
       if (!r.ok) { toast(r.error); return; }
       toast(menu || place ? '오늘의 기록을 저장했어요 🍽' : '기록을 비웠어요.');
+      state.suggestLoadedFor = '';   // 새로 적은 값이 자동완성에 반영되도록 다시 불러온다
       loadHome(false, true);
     });
   }
@@ -2004,6 +2072,65 @@
       if (!r.ok) { toast(r.error); return; }
       state.me.email = r.data.email;
       toast(r.data.email ? '알림 이메일이 저장되었습니다 ✅' : '이메일이 삭제되었습니다.');
+    });
+  }
+
+  /* ==================== 회원 탈퇴 (REQ-21) ==================== */
+  var delConfirmedRooms = false;   // "호스트인 방까지 함께 삭제"에 동의했는지
+  function openDeleteAccount() {
+    delConfirmedRooms = false;
+    document.getElementById('del-pw').value = '';
+    document.getElementById('del-error').textContent = '';
+    document.getElementById('del-rooms').innerHTML = '<div class="sub">확인 중...</div>';
+    document.getElementById('modal-delete').classList.add('open');
+
+    api('api_getDeletePreview', state.token).then(function (r) {
+      if (!r.ok) { document.getElementById('del-rooms').innerHTML = '<div class="form-error">' + esc(r.error) + '</div>'; return; }
+      var rooms = r.data.hostRooms || [];
+      if (!rooms.length) {
+        document.getElementById('del-rooms').innerHTML =
+          '<div class="hint">내가 호스트인 방은 없어요. 참여 중인 방에서는 자동으로 빠집니다.</div>';
+        return;
+      }
+      // 내가 호스트인 방은 탈퇴 시 함께 삭제된다 — 남은 멤버가 있으면 특히 분명히 알린다
+      var shared = rooms.filter(function (rm) { return rm.otherMembers > 0; });
+      var html = '<div class="hint"><b>내가 호스트인 방 ' + rooms.length + '개가 함께 삭제돼요.</b></div>' +
+        '<div class="chips mt8">' + rooms.map(function (rm) {
+          return '<span class="chip ' + (rm.otherMembers > 0 ? 'y' : '') + '">' + esc(rm.roomName) +
+            (rm.otherMembers > 0 ? ' · 멤버 ' + rm.otherMembers + '명' : '') + '</span>';
+        }).join('') + '</div>';
+      if (shared.length) {
+        html += '<label style="display:flex; gap:8px; align-items:flex-start; margin-top:12px; cursor:pointer; font-size:13px;">' +
+          '<input type="checkbox" id="del-agree" onchange="delConfirmedRooms = this.checked" style="margin-top:2px;">' +
+          '<span>다른 멤버가 있는 방 <b>' + shared.length + '개</b>도 함께 삭제되는 것에 동의합니다. ' +
+          '멤버들의 참여 기록·채팅도 사라져요.</span></label>';
+      } else {
+        delConfirmedRooms = true;   // 나 혼자인 방만 있으면 추가 동의를 받지 않는다
+      }
+      document.getElementById('del-rooms').innerHTML = html;
+    });
+  }
+  function closeDeleteAccount() { document.getElementById('modal-delete').classList.remove('open'); }
+  function doDeleteAccount() {
+    var pw = document.getElementById('del-pw').value;
+    var errEl = document.getElementById('del-error');
+    if (!pw) { errEl.textContent = '비밀번호를 입력해주세요.'; return; }
+    if (!confirm('정말 탈퇴하시겠어요?\n\n계정과 참여 기록이 삭제되고 되돌릴 수 없어요.')) return;
+    var btn = document.getElementById('btn-del');
+    btn.disabled = true; errEl.textContent = '';
+    api('api_deleteAccount', state.token, pw, delConfirmedRooms).then(function (r) {
+      btn.disabled = false;
+      if (!r.ok) {
+        errEl.textContent = (r.error === 'HOST_ROOMS')
+          ? '다른 멤버가 있는 방이 함께 삭제되는 것에 동의해주세요.'
+          : r.error;
+        return;
+      }
+      closeDeleteAccount();
+      localStorage.removeItem('lb_token');
+      state.token = ''; state.me = null; state.roomId = null; state.pendingInvite = '';
+      alert('탈퇴가 완료되었습니다. 그동안 이용해주셔서 감사합니다.');
+      showAuth();
     });
   }
 
