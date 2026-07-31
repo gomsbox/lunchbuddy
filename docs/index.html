@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>오늘점심 🍱</title>
-  <meta name="description" content="오늘 같이 점심 먹어요 — 점심 멤버 확인 서비스">
+  <meta name="description" content="오늘 같이 점심 먹어요 — 점심 멤버 확인 · 메뉴 투표 서비스. 회식·모임은 가입 없이 이름만으로 참여할 수 있어요.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍱</text></svg>">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
@@ -316,17 +316,26 @@
     <!-- 대문(커버) 화면 — 서비스 소개 + 가입하기/로그인하기 진입 -->
     <div id="auth-cover">
       <div class="card">
-        <div style="font-weight:800; margin-bottom:10px;">점심 먹으러 오늘은 누구랑 갈까요?</div>
+        <div style="font-weight:800; margin-bottom:10px;">오늘 뭐 먹을지, 누구랑 먹을지</div>
         <div class="sub" style="line-height:1.7;">
-          같은 방 동료들이 "같이 가요 / 안 가요"를 눌러두면<br>
-          오늘 점심에 누가 같이 가는지 실시간으로 확인할 수 있어요.
+          방을 만들어 링크만 공유하면 끝이에요.<br>
+          누가 같이 가는지 실시간으로 보이고, 메뉴는 투표로 정할 수 있어요.
         </div>
       </div>
       <div class="card">
         <div style="display:flex; flex-direction:column; gap:10px; font-size:14px;">
-          <div>🟢 오늘 참여 여부를 한 번의 탭으로 공유</div>
-          <div>🔗 초대 링크 · 방 코드로 동료 초대</div>
+          <div>🟢 참여 여부를 한 번의 탭으로 공유</div>
+          <div>🗳 오늘 메뉴는 투표로 결정 (동점이면 룰렛 🎲)</div>
+          <div>🍽 먹은 메뉴 기록 · 🏆 최근 30일 메뉴 랭킹</div>
+          <div>🎉 회식·모임은 <b>가입 없이 이름만</b>으로 참여</div>
           <div>💬 방별 채팅 · 📅 최근 30일 참여 히스토리</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="sub" style="line-height:1.7;">
+          <b>이런 분들이 쓰고 있어요</b><br>
+          🏢 구내식당 같이 갈 사람 확인 · 🍜 외부 식당 점심 팀<br>
+          🗳 메뉴를 다수결로 정하는 팀 · 🎉 회식·워크숍 참석 조사
         </div>
       </div>
       <button class="btn btn-green" id="btn-cover-signup" onclick="switchAuth('signup')">가입하기</button>
@@ -618,11 +627,28 @@
           </div>
           <div class="set-row">
             <div class="grow"><b>메뉴 투표</b><div class="sub">오늘 먹을 메뉴를 다수결로 정해요</div></div>
-            <label class="switch"><input type="checkbox" id="tg-menu-poll"><span class="slider"></span></label>
+            <label class="switch"><input type="checkbox" id="tg-menu-poll" onchange="renderPurposeUI()"><span class="slider"></span></label>
           </div>
         </div>
         <button class="btn btn-gray" style="margin-top:12px;" onclick="busy(this, savePurpose())">방 종류 저장</button>
         <div class="hint" id="set-purpose-hint" style="margin-top:10px;"></div>
+      </div>
+
+      <!-- 메뉴 투표 세부 설정 (REQ-19) — 투표를 쓰는 방에서만 노출 -->
+      <div id="set-poll-section" style="display:none;">
+        <div class="section-label">메뉴 투표 설정</div>
+        <div class="card">
+          <div class="set-row">
+            <div class="grow"><b>멤버도 후보 추가</b><div class="sub">끄면 호스트만 후보를 올릴 수 있어요</div></div>
+            <label class="switch"><input type="checkbox" id="poll-member-add"><span class="slider"></span></label>
+          </div>
+          <div class="set-row">
+            <div class="grow"><b>자동 마감 시각</b><div class="sub">비우면 호스트가 직접 마감할 때까지 열려 있어요</div></div>
+            <input type="time" id="poll-deadline" style="width:auto;padding:8px;border:1.5px solid var(--line);border-radius:10px;">
+          </div>
+          <button class="btn btn-gray" style="margin-top:12px;" onclick="busy(this, savePollConfig())">투표 설정 저장</button>
+          <div class="hint" style="margin-top:10px;">자동 마감 시각을 정하면 그 시각이 지난 뒤 5분 안에 결과가 확정돼요. 동점이면 룰렛으로 정해집니다.</div>
+        </div>
       </div>
 
       <div class="section-label">알림 설정 (이메일)</div>
@@ -1105,7 +1131,8 @@
     {
       icon: '🍱',
       title: '오늘점심에 오신 걸 환영해요!',
-      body: '오늘 점심 <b>같이 갈 사람</b>을 매일 간편하게 확인하는 서비스예요.<br>잠깐이면 되는 사용법, 함께 볼까요?',
+      body: '오늘 <b>누구랑</b> 먹을지, <b>뭘</b> 먹을지 한 화면에서 정하는 서비스예요.' +
+        '<br>구내식당·외부 식당·회식 모임까지 모두 쓸 수 있어요.',
     },
     {
       icon: '🙋',
@@ -1115,17 +1142,20 @@
         '<span class="ex">⚙️ 방 안 <b>설정 > 이 방에서의 내 닉네임</b>에서 변경할 수 있어요. <b>닉네임은 방마다 따로 저장</b>돼요</span>',
     },
     {
+      icon: '🏢',
+      title: '방을 만들 때 종류를 골라요',
+      body: '방 목록의 <b>＋ 버튼</b>으로 방을 만들면 내가 호스트가 돼요. 이때 <b>방 종류</b>를 고르면 화면과 기능이 맞춰져요.' +
+        '<span class="ex">🏢 <b>사내식당형</b> 구내식당 같이 갈 사람만 확인 · 🍜 <b>외부 점심형</b> 먹은 메뉴까지 기록</span>' +
+        '<span class="ex">🗳 <b>메뉴 투표형</b> 참석 + 메뉴 투표 · 🎉 <b>이벤트형</b> 가입 없이 이름만으로 참여 (1회용)</span>' +
+        '<span class="ex">⚙️ <b>자유 설정</b>으로 기능을 직접 켜고 끌 수도 있어요. 종류는 나중에 바꿀 수 있어요 (이벤트형만 예외)</span>',
+    },
+    {
       icon: '🔗',
       title: '초대 링크 · 방 코드로 참여',
       body: '동료에게 받은 방법으로 방에 들어갈 수 있어요.' +
         '<span class="ex">🔗 <b>초대 링크</b>를 누르면 로그인 후 자동으로 방에 참여돼요 (링크는 7일간 유효)</span>' +
-        '<span class="ex">🔑 <b>방 코드</b>는 방 목록의 “방 코드로 참여”에 6자리 코드를 입력하면 돼요 (만료 없음)</span>',
-    },
-    {
-      icon: '➕',
-      title: '내 방 만들고 초대하기',
-      body: '방 목록의 <b>＋ 버튼</b>으로 점심방을 직접 만들 수 있어요. 방을 만들면 내가 호스트가 돼요.' +
-        '<span class="ex">방 안의 <b>🔗 초대 링크 복사</b> · <b>🔑 방 코드</b>를 동료에게 공유해 초대하세요</span>',
+        '<span class="ex">🔑 <b>방 코드</b>는 방 목록의 “방 코드로 참여”에 6자리 코드를 입력하면 돼요 (만료 없음)</span>' +
+        '<span class="ex">🎉 <b>이벤트형 방</b>은 방 코드 없이 <b>링크로만</b> 참여하고, 받은 사람은 가입 없이 이름만 입력하면 돼요</span>',
     },
     {
       icon: '🟢',
@@ -1134,28 +1164,39 @@
         '<span class="ex">마음이 바뀌면 명단에서 <b>내 이름(✕)을 탭</b>하거나 같은 버튼을 다시 눌러 취소할 수 있어요 (미응답으로 돌아감)</span>',
     },
     {
-      icon: '💬',
-      title: '방 채팅',
-      body: '방 화면 안의 <b>“오늘의 채팅”</b>에서 메뉴나 약속을 가볍게 나눠보세요.' +
-        '<span class="ex">채팅은 <b>매일 자정에 초기화</b>돼서 그날의 대화만 남아요</span>',
+      icon: '🍽',
+      title: '먹은 메뉴 기록하고 통계 보기',
+      body: '장소·메뉴 기록을 쓰는 방이라면, 참여를 누른 뒤 <b>어디서 뭘 먹는지</b> 남길 수 있어요 (선택).' +
+        '<span class="ex">🏆 히스토리 탭에서 <b>최근 30일 많이 먹은 메뉴</b>와 내 순위, 많이 간 곳을 볼 수 있어요</span>' +
+        '<span class="ex">🎲 <b>주사위 버튼</b>을 누르면 최근 먹은 것 중에서 골라줘요. 자주 쓰는 값은 자동완성으로 떠요</span>',
     },
     {
-      icon: '🔔',
-      title: '점심 알림 메일 (선택)',
-      body: '<b>설정 > 알림 수신 이메일</b>에 주소를 등록하면, 호스트가 정한 시각에 “오늘 점심 같이 가요?” 알림 메일을 받아요.' +
-        '<span class="ex">이메일은 <b>선택</b>이며 알림 목적으로만 쓰여요. 설정에서 비우면 즉시 삭제돼요</span>',
+      icon: '🗳',
+      title: '오늘 메뉴는 투표로',
+      body: '메뉴 투표를 쓰는 방이면 호스트가 후보를 2~6개 올리고 다 같이 투표해 오늘 메뉴를 정해요.' +
+        '<span class="ex">1인 1표이고 마감 전까지 <b>다시 투표</b>할 수 있어요. 멤버가 후보를 추가하는 것도 허용할 수 있어요</span>' +
+        '<span class="ex">🎲 동점이면 <b>룰렛</b>으로 자동 선택돼요. 참여/불참 응답과는 <b>따로</b> 돌아가요</span>',
+    },
+    {
+      icon: '💬',
+      title: '방 채팅과 알림 메일',
+      body: '방 화면의 <b>“오늘의 채팅”</b>에서 메뉴나 약속을 가볍게 나눠보세요.' +
+        '<span class="ex">채팅은 <b>매일 자정에 초기화</b>돼서 그날의 대화만 남아요</span>' +
+        '<span class="ex">🔔 <b>설정 > 알림 수신 이메일</b>에 주소를 등록하면 호스트가 정한 시각에 알림 메일을 받아요. ' +
+        '이메일은 <b>선택</b>이며 알림 목적으로만 쓰이고, 비워서 저장하면 즉시 삭제돼요</span>',
     },
     {
       icon: '🎉',
       title: '준비 끝났어요!',
       body: '이제 방을 만들거나 초대받은 방에 참여해보세요.' +
+        '<span class="ex">↕ 방이 여러 개면 방 목록의 <b>순서 편집</b>으로 자주 쓰는 방을 위로 올릴 수 있어요</span>' +
         '<span class="ex">이 안내는 언제든 <b>설정 > 📖 사용 방법 보기</b>에서 다시 볼 수 있어요</span>',
     },
   ];
   function maybeShowOnboarding() {
     // 게스트는 1회용 참여라 온보딩을 띄우지 않는다 (안내는 게스트 참여 화면에 이미 있음)
     if (state.me && state.me.isGuest) return;
-    if (!localStorage.getItem('lb_onboarded_v1')) openOnboarding();
+    if (!localStorage.getItem('lb_onboarded_v2')) openOnboarding();
   }
   function openOnboarding() {
     state.onbIndex = 0;
@@ -1163,7 +1204,7 @@
     document.getElementById('onboarding').classList.add('open');
   }
   function closeOnboarding() {
-    localStorage.setItem('lb_onboarded_v1', '1');
+    localStorage.setItem('lb_onboarded_v2', '1');
     document.getElementById('onboarding').classList.remove('open');
   }
   function onbPrev() { if (state.onbIndex > 0) { state.onbIndex--; renderOnb(); } }
@@ -2077,9 +2118,26 @@
     document.getElementById('tg-meal-log').checked = !!state.trackMealLog;
     document.getElementById('tg-menu-poll').checked = !!state.enableMenuPoll;
     renderPurposeUI();
+    // 메뉴 투표 세부 설정은 서버에 저장된 값을 따로 받아온다 (REQ-19)
+    api('api_getRoomSettings', state.token, state.roomId).then(function (r) {
+      if (!r.ok) return;
+      document.getElementById('poll-member-add').checked = r.data.menuPollMemberAdd !== false;
+      document.getElementById('poll-deadline').value = r.data.menuPollDeadline || '';
+    });
+  }
+  function savePollConfig() {
+    var deadline = document.getElementById('poll-deadline').value || null;
+    var memberAdd = document.getElementById('poll-member-add').checked;
+    return api('api_setMenuPollConfig', state.token, state.roomId, deadline, memberAdd).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      toast('메뉴 투표 설정을 저장했어요 🗳');
+    });
   }
   function renderPurposeUI() {
     var isEvent = state.purpose === 'event';
+    // 투표를 켠 방에서만 투표 세부 설정을 노출 (화면에서 토글을 켠 직후에도 바로 반영)
+    document.getElementById('set-poll-section').style.display =
+      document.getElementById('tg-menu-poll').checked ? 'block' : 'none';
     // 이벤트형 방은 목적을 바꿀 수 없다 (게스트 참여 구조가 계정 기반 방과 다른 별도 트랙 — 명세서 3.1.1)
     document.getElementById('set-presets').style.display = isEvent ? 'none' : 'block';
     if (!isEvent) presetCards('set-presets', state.setPurpose, 'pickSetPreset');

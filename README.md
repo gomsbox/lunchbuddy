@@ -1,20 +1,27 @@
 # 🍱 오늘점심
 
-> 오늘 같이 식당 가요 — 사내 식당 점심 멤버 확인 서비스
+> 오늘 누구랑 먹을지, 뭘 먹을지 — 점심 멤버 확인 · 메뉴 투표 서비스
 
-매일 점심, 오늘 사내 식당에 누가 가는지 한눈에 확인하고 자연스럽게 동행하는 웹 서비스입니다.
-Supabase(Postgres + Auth 대체 자체 로그인 + Realtime 인프라) 기반으로 동작합니다.
+방을 만들어 링크만 공유하면, 오늘 누가 같이 가는지 한눈에 확인하고 메뉴는 투표로 정할 수 있는 웹 서비스입니다.
+구내식당 동행 확인부터 외부 식당 메뉴 기록, 회식·워크숍 참석 조사까지 쓸 수 있습니다.
+Supabase(Postgres + Auth 대체 자체 로그인 + pg_cron + pg_net) 기반으로 동작합니다.
 
 ## 주요 기능
 
 - 🔐 아이디/비밀번호 회원가입 (개인정보 최소 수집), 이메일 등록자는 셀프 비밀번호 재설정 가능
-- 🏠 점심방 생성·복수 운영, 초대 링크(7일 만료) + 방 코드(영구)로 참여
+- 🏠 방 생성·복수 운영, 초대 링크(7일 만료) + 방 코드(영구)로 참여, ↕ 방 목록 순서 편집
+- 🏢 **방 종류 프리셋 5종** — 사내식당형 / 외부 점심형 / 메뉴 투표형 / 이벤트형(1회용) / 자유 설정
 - 🟢 오늘 같이 가요 / ⚫ 오늘은 안 가요 — 실시간 현황 확인 (미응답자는 접기)
-- 💬 방별 간단 채팅 (당일만 보관)
-- 📅 월간(최근 30일) 참여 히스토리 달력
-- 🔔 이메일 알림 (선택 수집, 호스트가 방별 발송 시각 설정)
+- 🍽 **먹은 장소·메뉴 기록** (선택) + 자동완성 + 🎲 최근 먹은 것 중 랜덤 추천
+- 🏆 **최근 30일 메뉴 랭킹** — 방 전체 Top5 / 내 Top3 / 많이 간 곳 Top3
+- 🗳 **메뉴 투표** — 후보 2~6개, 1인 1표(재투표 가능), 마감 시각 자동 마감, 동점이면 룰렛 🎲
+- 🎉 **이벤트형 방** — 초대 링크만으로 참여, 받은 사람은 **가입 없이 이름만** 입력. 마감 후 결과 요약, 일정 기간 뒤 자동 삭제
+- 💬 방별 간단 채팅 (당일만 보관, 읽음 표시)
+- 📅 최근 30일 참여 히스토리 달력 (날짜별 장소·메뉴 포함)
+- 🔔 이메일 알림 (선택 수집, 호스트가 방별 발송 요일·시각 설정)
 - 📖 첫 접속 온보딩 안내 (설정에서 다시 보기)
 - 👑 호스트·공동 호스트 방 관리 (멤버 관리, 방 삭제는 호스트 전용)
+- 🚪 회원 탈퇴 (비밀번호 확인, 호스트인 방은 명시 동의 후 함께 삭제)
 - ⏳ 모든 액션에 실행 중 표시 (상단 로딩 바 + 버튼 비활성화)
 
 ## 서비스 주소
@@ -29,14 +36,52 @@ Supabase(Postgres + Auth 대체 자체 로그인 + Realtime 인프라) 기반으
 |------|------|
 | [`docs/index.html`](docs/index.html) | **프론트엔드** (서비스 화면 전체 — GitHub Pages가 서빙, Supabase JS 클라이언트로 통신) |
 | [`supabase/`](supabase/) | **백엔드** SQL 스키마·RPC 함수·크론 (Supabase SQL Editor에서 실행) |
+| [`mail-relay/`](mail-relay/) | **메일 릴레이** 앱스크립트 (구글 계정으로 알림 메일 발송 — Resend 403 대체) |
 | [`docs/index-appsscript-legacy.html`](docs/index-appsscript-legacy.html) | (배포 안 됨) 이전 구글 앱스크립트 버전 백업 — 참고용 |
 | [`lunchbuddy-gas/`](lunchbuddy-gas/) | (더 이상 운영에 사용 안 함) 이전 구글 앱스크립트 백엔드 소스 — 참고용 |
 
 ## 배포 방법
 
 1. Supabase 프로젝트 생성
-2. `supabase/01_schema.sql` → `02_functions.sql` → `03_cron.sql`을 SQL Editor에서 순서대로 실행
-3. `03_cron.sql` 하단 안내에 따라 `app_config`에 `resend_api_key`, `owner_email`, `frontend_url` 값 등록 (이메일 알림용)
+2. `supabase/` 의 SQL을 **번호 순서대로** SQL Editor에서 실행
+   - v1 기본: `01_schema.sql` → `02_functions.sql` → `03_cron.sql` → `05_mail_relay.sql` → `06_notify_days.sql` → `07_chat_read_receipts.sql`
+   - v2: `08_v2_schema.sql` → `09_v2_room_purpose.sql` → `10_v2_meal_log.sql` → `11_v2_menu_ranking.sql` → `12_v2_grants_fix.sql` → `13_v2_menu_poll.sql` → `14_v2_event_room.sql` → `15_v2_account.sql` → `16_v2_room_order.sql` → `17_v2_notify_copy.sql`
+   - 모든 파일은 재실행해도 안전합니다 (`add column if not exists`, `create or replace`)
+3. 이메일 알림용 설정:
+   - `mail-relay/Code.gs`를 새 앱스크립트 프로젝트로 만들어 웹 앱 배포 (파일 상단 설치 방법 참고)
+   - `app_config`에 `mail_relay_url`, `mail_relay_secret`, `owner_email`, `frontend_url` 값 등록 (`05_mail_relay.sql` 하단 안내 참고)
+   - ⚠️ Resend는 사용하지 않음 — 도메인 인증 없이는 테스트 발신 주소가 계정 본인에게만 발송 가능(그 외 수신자는 403 거부)해서 앱스크립트(MailApp) 릴레이로 교체함
 4. `docs/index.html`의 `SUPABASE_URL` / `SUPABASE_ANON_KEY`를 프로젝트 값으로 교체 후 push
 
 프론트 수정은 push만 하면 1~2분 내 자동 반영됩니다. 백엔드(SQL) 수정은 Supabase SQL Editor에서 `create or replace function`으로 재실행하면 됩니다 (재배포 절차 없음).
+
+## 함수 실행 권한 (중요)
+
+프론트가 호출하는 **`api_*` 함수만** `anon`·`authenticated`에 실행 권한을 줍니다. `fn_*` 내부 헬퍼와 크론 전용 함수는 열지 않습니다.
+
+- 새 SQL 파일에는 `grant execute on all functions in schema public ...` 를 **쓰지 마세요.** 이 문장은 내부 헬퍼까지 공개 anon 키로 호출 가능하게 만듭니다.
+- Postgres는 함수 생성 시 기본으로 `PUBLIC`에 EXECUTE를 부여하므로, 막으려면 `revoke ... from public` 까지 해야 합니다.
+- `02`·`06`·`07` 에는 아직 예전 blanket grant가 남아 있습니다. **그 파일들을 재실행했다면 `12_v2_grants_fix.sql`을 마지막에 다시 실행**하세요.
+
+권한 상태 확인:
+
+```sql
+select p.proname, has_function_privilege('anon', p.oid, 'execute') as anon_can_run
+from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public' and (p.proname like 'api\_%' or p.proname like 'fn\_%')
+order by anon_can_run desc, p.proname;
+```
+
+## 크론 작업
+
+| 잡 이름 | 주기 (UTC) | 내용 |
+|---------|-----------|------|
+| `lunchbuddy-daily-reset` | `0 15 * * *` (서울 00:00) | 전일 응답 → 히스토리 집계, 채팅 리셋, 30일 경과 데이터 삭제, 열린 투표 마감 |
+| `lunchbuddy-notify` | `*/5 * * * *` | 방별 알림 메일 발송 시각 확인 |
+| `lunchbuddy-close-polls` | `*/5 * * * *` | 마감 시각이 지난 메뉴 투표 자동 마감 |
+| `lunchbuddy-auto-close-events` | `10 16 * * *` (서울 01:10) | 기간이 지난 이벤트형 방 자동 마감 |
+| `lunchbuddy-purge-events` | `20 16 * * *` (서울 01:20) | 마감 후 기간이 지난 이벤트형 방·게스트 데이터 삭제 |
+
+```sql
+select jobname, schedule from cron.job where jobname like 'lunchbuddy%' order by jobname;
+```
