@@ -157,6 +157,16 @@
   .badge.cohost { background: #e8eefb; color: #3b5bdb; }
   .badge.purpose { background: var(--gray-bg); color: var(--gray); font-weight: 600; }
 
+  /* 이메일 등록 유도 배너 */
+  .nudge { background: var(--yellow-bg); border-radius: 14px; padding: 14px; margin-bottom: 4px; }
+  .nudge .t { font-weight: 800; font-size: 14px; margin-bottom: 4px; }
+  .nudge .d { font-size: 13px; color: #6b5a1e; line-height: 1.6; }
+  .nudge .acts { display: flex; gap: 8px; margin-top: 11px; }
+  .nudge .acts button { flex: 1; border: none; border-radius: 9px; padding: 9px 0;
+    font-size: 13px; font-weight: 700; cursor: pointer; }
+  .nudge .acts .go { background: var(--green); color: #fff; }
+  .nudge .acts .later { background: #fff; color: var(--gray); }
+
   /* 방 순서 편집 (REQ-26) */
   .room-card.reorder { cursor: default; }
   .ord-btns { display: flex; flex-direction: column; gap: 3px; flex: none; }
@@ -472,6 +482,17 @@
       </div>
       <button class="icon-btn" title="설정" onclick="openSettings(false)">⚙️</button>
     </div>
+    <!-- 이메일 등록 유도 — 미등록자에게만, 나중에 누르면 14일간 숨김 -->
+    <div class="nudge" id="email-nudge" style="display:none;">
+      <div class="t">📧 비밀번호를 잊었을 때를 대비해주세요</div>
+      <div class="d">알림 수신 이메일을 등록해두면 비밀번호를 잊어도 <b>직접 재설정</b>할 수 있어요.
+        등록 안 하면 운영자에게 따로 요청해야 해요. 이메일은 <b>알림·재설정 목적으로만</b> 쓰여요.</div>
+      <div class="acts">
+        <button class="go" onclick="goRegisterEmail()">이메일 등록하기</button>
+        <button class="later" onclick="dismissEmailNudge()">나중에</button>
+      </div>
+    </div>
+
     <!-- 순서 편집 토글 (REQ-26) — 방이 2개 이상일 때만 노출 -->
     <div id="rooms-order-bar" style="display:none; text-align:right; margin: 4px 2px -4px;">
       <button class="mini-btn" id="btn-order-edit" onclick="toggleOrderEdit()">↕ 순서 편집</button>
@@ -1329,6 +1350,7 @@
   function loadRooms() {
     show('sc-rooms');
     state.orderEdit = false;   // 목록에 새로 들어올 때는 항상 보기 모드로 시작
+    renderEmailNudge();        // 목록 로딩 중에도 먼저 판단 (renderRooms에서 한 번 더 갱신)
     document.getElementById('rooms-greet').textContent = state.me ? state.me.nickname + '님, 오늘 점심 어때요?' : '';
     document.getElementById('rooms-body').innerHTML = '<div class="sub center mt16">불러오는 중...</div>';
     api('api_getMyRooms', state.token).then(function (r) {
@@ -1385,6 +1407,29 @@
     // 편집 중에는 방 참여·생성 동작을 잠시 감춰 실수 클릭을 막는다
     document.getElementById('btn-join-code').style.display = state.orderEdit ? 'none' : 'block';
     document.querySelector('#sc-rooms .fab').style.display = state.orderEdit ? 'none' : '';
+    renderEmailNudge();
+  }
+
+  /* 이메일 등록 유도 배너 — 미등록 계정 사용자에게만 노출
+     이메일이 없으면 비밀번호 분실 시 셀프 재설정이 불가능해 운영자 수작업이 필요하다.
+     계속 뜨면 성가시므로 '나중에'를 누르면 14일간 숨긴다. */
+  var EMAIL_NUDGE_KEY = 'lb_email_nudge_until';
+  function renderEmailNudge() {
+    var el = document.getElementById('email-nudge');
+    var until = Number(localStorage.getItem(EMAIL_NUDGE_KEY) || 0);
+    // 순서 편집 중에는 화면을 단순하게 유지하려고 함께 숨긴다
+    var show = state.me && !state.me.isGuest && !state.me.email
+      && !state.orderEdit && Date.now() > until;
+    el.style.display = show ? 'block' : 'none';
+  }
+  function goRegisterEmail() {
+    openSettings(false);
+    var el = document.getElementById('set-email');
+    if (el) { el.focus(); el.scrollIntoView({ block: 'center' }); }
+  }
+  function dismissEmailNudge() {
+    localStorage.setItem(EMAIL_NUDGE_KEY, String(Date.now() + 14 * 24 * 60 * 60 * 1000));
+    document.getElementById('email-nudge').style.display = 'none';
   }
 
   /* 방 목록 순서 편집 (REQ-26) */
