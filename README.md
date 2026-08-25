@@ -49,6 +49,7 @@ Supabase(Postgres + Auth 대체 자체 로그인 + pg_cron + pg_net) 기반으�
    - 모든 파일은 재실행해도 안전합니다 (`add column if not exists`, `create or replace`)
 3. 이메일 알림용 설정:
    - `mail-relay/Code.gs`를 새 앱스크립트 프로젝트로 만들어 웹 앱 배포 (파일 상단 설치 방법 참고)
+   - 앱스크립트 **프로젝트 설정 > 스크립트 속성**에 `RELAY_SECRET`(필수) 등록 — 비밀키와 수신자 이메일은 코드에 쓰지 않습니다. 값이 잘 들어갔는지는 편집기에서 `checkSetup` 함수를 실행해 확인
    - `app_config`에 `mail_relay_url`, `mail_relay_secret`, `owner_email`, `frontend_url` 값 등록 (`05_mail_relay.sql` 하단 안내 참고)
    - ⚠️ Resend는 사용하지 않음 — 도메인 인증 없이는 테스트 발신 주소가 계정 본인에게만 발송 가능(그 외 수신자는 403 거부)해서 앱스크립트(MailApp) 릴레이로 교체함
 4. `docs/index.html`의 `SUPABASE_URL` / `SUPABASE_ANON_KEY`를 프로젝트 값으로 교체 후 push
