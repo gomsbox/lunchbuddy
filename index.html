@@ -1,0 +1,2630 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2AC1BC">
+  <title>오늘점심</title>
+  <meta name="description" content="오늘 같이 점심 먹어요 — 점심 멤버 확인 · 메뉴 투표 서비스. 회식·모임은 가입 없이 이름만으로 참여할 수 있어요.">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+<body>
+<!-- Heroicons (MIT) 스프라이트 + 오늘점심 마크(i-brand). 사용: <svg class="ic"><use href="#i-이름"/></svg> -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<symbol id="i-sparkles" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M9 4.5a.75.75 0 0 1 .721.544l.813 2.846a3.75 3.75 0 0 0 2.576 2.576l2.846.813a.75.75 0 0 1 0 1.442l-2.846.813a3.75 3.75 0 0 0-2.576 2.576l-.813 2.846a.75.75 0 0 1-1.442 0l-.813-2.846a3.75 3.75 0 0 0-2.576-2.576l-2.846-.813a.75.75 0 0 1 0-1.442l2.846-.813A3.75 3.75 0 0 0 7.466 7.89l.813-2.846A.75.75 0 0 1 9 4.5ZM18 1.5a.75.75 0 0 1 .728.568l.258 1.036c.236.94.97 1.674 1.91 1.91l1.036.258a.75.75 0 0 1 0 1.456l-1.036.258c-.94.236-1.674.97-1.91 1.91l-.258 1.036a.75.75 0 0 1-1.456 0l-.258-1.036a2.625 2.625 0 0 0-1.91-1.91l-1.036-.258a.75.75 0 0 1 0-1.456l1.036-.258a2.625 2.625 0 0 0 1.91-1.91l.258-1.036A.75.75 0 0 1 18 1.5ZM16.5 15a.75.75 0 0 1 .712.513l.394 1.183c.15.447.5.799.948.948l1.183.395a.75.75 0 0 1 0 1.422l-1.183.395c-.447.15-.799.5-.948.948l-.395 1.183a.75.75 0 0 1-1.422 0l-.395-1.183a1.5 1.5 0 0 0-.948-.948l-1.183-.395a.75.75 0 0 1 0-1.422l1.183-.395c.447-.15.799-.5.948-.948l.395-1.183A.75.75 0 0 1 16.5 15Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-check-circle" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-x-circle" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-clipboard-document-check" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M7.502 6h7.128A3.375 3.375 0 0 1 18 9.375v9.375a3 3 0 0 0 3-3V6.108c0-1.505-1.125-2.811-2.664-2.94a48.972 48.972 0 0 0-.673-.05A3 3 0 0 0 15 1.5h-1.5a3 3 0 0 0-2.663 1.618c-.225.015-.45.032-.673.05C8.662 3.295 7.554 4.542 7.502 6ZM13.5 3A1.5 1.5 0 0 0 12 4.5h4.5A1.5 1.5 0 0 0 15 3h-1.5Z" clip-rule="evenodd"/> <path fill-rule="evenodd" d="M3 9.375C3 8.339 3.84 7.5 4.875 7.5h9.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-9.75A1.875 1.875 0 0 1 3 20.625V9.375Zm9.586 4.594a.75.75 0 0 0-1.172-.938l-2.476 3.096-.908-.907a.75.75 0 0 0-1.06 1.06l1.5 1.5a.75.75 0 0 0 1.116-.062l3-3.75Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-cube" viewBox="0 0 24 24"><g fill="currentColor"><path d="M12.378 1.602a.75.75 0 0 0-.756 0L3 6.632l9 5.25 9-5.25-8.622-5.03ZM21.75 7.93l-9 5.25v9l8.628-5.032a.75.75 0 0 0 .372-.648V7.93ZM11.25 22.18v-9l-9-5.25v8.57a.75.75 0 0 0 .372.648l8.628 5.033Z"/></g></symbol>
+<symbol id="i-clipboard-document-list" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M7.502 6h7.128A3.375 3.375 0 0 1 18 9.375v9.375a3 3 0 0 0 3-3V6.108c0-1.505-1.125-2.811-2.664-2.94a48.972 48.972 0 0 0-.673-.05A3 3 0 0 0 15 1.5h-1.5a3 3 0 0 0-2.663 1.618c-.225.015-.45.032-.673.05C8.662 3.295 7.554 4.542 7.502 6ZM13.5 3A1.5 1.5 0 0 0 12 4.5h4.5A1.5 1.5 0 0 0 15 3h-1.5Z" clip-rule="evenodd"/> <path fill-rule="evenodd" d="M3 9.375C3 8.339 3.84 7.5 4.875 7.5h9.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-9.75A1.875 1.875 0 0 1 3 20.625V9.375ZM6 12a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H6.75a.75.75 0 0 1-.75-.75V12Zm2.25 0a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75ZM6 15a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H6.75a.75.75 0 0 1-.75-.75V15Zm2.25 0a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75ZM6 18a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H6.75a.75.75 0 0 1-.75-.75V18Zm2.25 0a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-key" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M15.75 1.5a6.75 6.75 0 0 0-6.651 7.906c.067.39-.032.717-.221.906l-6.5 6.499a3 3 0 0 0-.878 2.121v2.818c0 .414.336.75.75.75H6a.75.75 0 0 0 .75-.75v-1.5h1.5A.75.75 0 0 0 9 19.5V18h1.5a.75.75 0 0 0 .53-.22l2.658-2.658c.19-.189.517-.288.906-.22A6.75 6.75 0 1 0 15.75 1.5Zm0 3a.75.75 0 0 0 0 1.5A2.25 2.25 0 0 1 18 8.25a.75.75 0 0 0 1.5 0 3.75 3.75 0 0 0-3.75-3.75Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M19.902 4.098a3.75 3.75 0 0 0-5.304 0l-4.5 4.5a3.75 3.75 0 0 0 1.035 6.037.75.75 0 0 1-.646 1.353 5.25 5.25 0 0 1-1.449-8.45l4.5-4.5a5.25 5.25 0 1 1 7.424 7.424l-1.757 1.757a.75.75 0 1 1-1.06-1.06l1.757-1.757a3.75 3.75 0 0 0 0-5.304Zm-7.389 4.267a.75.75 0 0 1 1-.353 5.25 5.25 0 0 1 1.449 8.45l-4.5 4.5a5.25 5.25 0 1 1-7.424-7.424l1.757-1.757a.75.75 0 1 1 1.06 1.06l-1.757 1.757a3.75 3.75 0 1 0 5.304 5.304l4.5-4.5a3.75 3.75 0 0 0-1.035-6.037.75.75 0 0 1-.354-1Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-cog-6-tooth" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 0 0-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 0 0-2.282.819l-.922 1.597a1.875 1.875 0 0 0 .432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 0 0 0 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 0 0-.432 2.385l.922 1.597a1.875 1.875 0 0 0 2.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.57.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 0 0 2.28-.819l.923-1.597a1.875 1.875 0 0 0-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 0 0 0-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 0 0-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 0 0-.985-.57c-.183-.087-.277-.227-.297-.348l-.179-1.072a1.875 1.875 0 0 0-1.85-1.567h-1.843ZM12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-chat-bubble-left-right" viewBox="0 0 24 24"><g fill="currentColor"><path d="M4.913 2.658c2.075-.27 4.19-.408 6.337-.408 2.147 0 4.262.139 6.337.408 1.922.25 3.291 1.861 3.405 3.727a4.403 4.403 0 0 0-1.032-.211 50.89 50.89 0 0 0-8.42 0c-2.358.196-4.04 2.19-4.04 4.434v4.286a4.47 4.47 0 0 0 2.433 3.984L7.28 21.53A.75.75 0 0 1 6 21v-4.03a48.527 48.527 0 0 1-1.087-.128C2.905 16.58 1.5 14.833 1.5 12.862V6.638c0-1.97 1.405-3.718 3.413-3.979Z"/> <path d="M15.75 7.5c-1.376 0-2.739.057-4.086.169C10.124 7.797 9 9.103 9 10.609v4.285c0 1.507 1.128 2.814 2.67 2.94 1.243.102 2.5.157 3.768.165l2.782 2.781a.75.75 0 0 0 1.28-.53v-2.39l.33-.026c1.542-.125 2.67-1.433 2.67-2.94v-4.286c0-1.505-1.125-2.811-2.664-2.94A49.392 49.392 0 0 0 15.75 7.5Z"/></g></symbol>
+<symbol id="i-building-office" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M4.5 2.25a.75.75 0 0 0 0 1.5v16.5h-.75a.75.75 0 0 0 0 1.5h16.5a.75.75 0 0 0 0-1.5h-.75V3.75a.75.75 0 0 0 0-1.5h-15ZM9 6a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5H9Zm-.75 3.75A.75.75 0 0 1 9 9h1.5a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75ZM9 12a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5H9Zm3.75-5.25A.75.75 0 0 1 13.5 6H15a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75ZM13.5 9a.75.75 0 0 0 0 1.5H15A.75.75 0 0 0 15 9h-1.5Zm-.75 3.75a.75.75 0 0 1 .75-.75H15a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75ZM9 19.5v-2.25a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-.75.75h-4.5A.75.75 0 0 1 9 19.5Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-building-storefront" viewBox="0 0 24 24"><g fill="currentColor"><path d="M5.223 2.25c-.497 0-.974.198-1.325.55l-1.3 1.298A3.75 3.75 0 0 0 7.5 9.75c.627.47 1.406.75 2.25.75.844 0 1.624-.28 2.25-.75.626.47 1.406.75 2.25.75.844 0 1.623-.28 2.25-.75a3.75 3.75 0 0 0 4.902-5.652l-1.3-1.299a1.875 1.875 0 0 0-1.325-.549H5.223Z"/> <path fill-rule="evenodd" d="M3 20.25v-8.755c1.42.674 3.08.673 4.5 0A5.234 5.234 0 0 0 9.75 12c.804 0 1.568-.182 2.25-.506a5.234 5.234 0 0 0 2.25.506c.804 0 1.567-.182 2.25-.506 1.42.674 3.08.675 4.5.001v8.755h.75a.75.75 0 0 1 0 1.5H2.25a.75.75 0 0 1 0-1.5H3Zm3-6a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75v3a.75.75 0 0 1-.75.75h-3a.75.75 0 0 1-.75-.75v-3Zm8.25-.75a.75.75 0 0 0-.75.75v5.25c0 .414.336.75.75.75h3a.75.75 0 0 0 .75-.75v-5.25a.75.75 0 0 0-.75-.75h-3Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-flag" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M3 2.25a.75.75 0 0 1 .75.75v.54l1.838-.46a9.75 9.75 0 0 1 6.725.738l.108.054A8.25 8.25 0 0 0 18 4.524l3.11-.732a.75.75 0 0 1 .917.81 47.784 47.784 0 0 0 .005 10.337.75.75 0 0 1-.574.812l-3.114.733a9.75 9.75 0 0 1-6.594-.77l-.108-.054a8.25 8.25 0 0 0-5.69-.625l-2.202.55V21a.75.75 0 0 1-1.5 0V3A.75.75 0 0 1 3 2.25Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-hand-raised" viewBox="0 0 24 24"><g fill="currentColor"><path d="M10.5 1.875a1.125 1.125 0 0 1 2.25 0v8.219c.517.162 1.02.382 1.5.659V3.375a1.125 1.125 0 0 1 2.25 0v10.937a4.505 4.505 0 0 0-3.25 2.373 8.963 8.963 0 0 1 4-.935A.75.75 0 0 0 18 15v-2.266a3.368 3.368 0 0 1 .988-2.37 1.125 1.125 0 0 1 1.591 1.59 1.118 1.118 0 0 0-.329.79v3.006h-.005a6 6 0 0 1-1.752 4.007l-1.736 1.736a6 6 0 0 1-4.242 1.757H10.5a7.5 7.5 0 0 1-7.5-7.5V6.375a1.125 1.125 0 0 1 2.25 0v5.519c.46-.452.965-.832 1.5-1.141V3.375a1.125 1.125 0 0 1 2.25 0v6.526c.495-.1.997-.151 1.5-.151V1.875Z"/></g></symbol>
+<symbol id="i-trophy" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M5.166 2.621v.858c-1.035.148-2.059.33-3.071.543a.75.75 0 0 0-.584.859 6.753 6.753 0 0 0 6.138 5.6 6.73 6.73 0 0 0 2.743 1.346A6.707 6.707 0 0 1 9.279 15H8.54c-1.036 0-1.875.84-1.875 1.875V19.5h-.75a2.25 2.25 0 0 0-2.25 2.25c0 .414.336.75.75.75h15a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-2.25-2.25h-.75v-2.625c0-1.036-.84-1.875-1.875-1.875h-.739a6.706 6.706 0 0 1-1.112-3.173 6.73 6.73 0 0 0 2.743-1.347 6.753 6.753 0 0 0 6.139-5.6.75.75 0 0 0-.585-.858 47.077 47.077 0 0 0-3.07-.543V2.62a.75.75 0 0 0-.658-.744 49.22 49.22 0 0 0-6.093-.377c-2.063 0-4.096.128-6.093.377a.75.75 0 0 0-.657.744Zm0 2.629c0 1.196.312 2.32.857 3.294A5.266 5.266 0 0 1 3.16 5.337a45.6 45.6 0 0 1 2.006-.343v.256Zm13.5 0v-.256c.674.1 1.343.214 2.006.343a5.265 5.265 0 0 1-2.863 3.207 6.72 6.72 0 0 0 .857-3.294Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-arrows-up-down" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M6.97 2.47a.75.75 0 0 1 1.06 0l4.5 4.5a.75.75 0 0 1-1.06 1.06L8.25 4.81V16.5a.75.75 0 0 1-1.5 0V4.81L3.53 8.03a.75.75 0 0 1-1.06-1.06l4.5-4.5Zm9.53 4.28a.75.75 0 0 1 .75.75v11.69l3.22-3.22a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 1 1 1.06-1.06l3.22 3.22V7.5a.75.75 0 0 1 .75-.75Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-calendar-days" viewBox="0 0 24 24"><g fill="currentColor"><path d="M12.75 12.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM7.5 15.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM8.25 17.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM9.75 15.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM10.5 17.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12 15.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM12.75 17.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM14.25 15.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM15 17.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM16.5 15.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM15 12.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM16.5 13.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z"/> <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 3v1.5h9V3A.75.75 0 0 1 18 3v1.5h.75a3 3 0 0 1 3 3v11.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V7.5a3 3 0 0 1 3-3H6V3a.75.75 0 0 1 .75-.75Zm13.5 9a1.5 1.5 0 0 0-1.5-1.5H5.25a1.5 1.5 0 0 0-1.5 1.5v7.5a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5v-7.5Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-exclamation-triangle" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-envelope" viewBox="0 0 24 24"><g fill="currentColor"><path d="M1.5 8.67v8.58a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V8.67l-8.928 5.493a3 3 0 0 1-3.144 0L1.5 8.67Z"/> <path d="M22.5 6.908V6.75a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3v.158l9.714 5.978a1.5 1.5 0 0 0 1.572 0L22.5 6.908Z"/></g></symbol>
+<symbol id="i-book-open" viewBox="0 0 24 24"><g fill="currentColor"><path d="M11.25 4.533A9.707 9.707 0 0 0 6 3a9.735 9.735 0 0 0-3.25.555.75.75 0 0 0-.5.707v14.25a.75.75 0 0 0 1 .707A8.237 8.237 0 0 1 6 18.75c1.995 0 3.823.707 5.25 1.886V4.533ZM12.75 20.636A8.214 8.214 0 0 1 18 18.75c.966 0 1.89.166 2.75.47a.75.75 0 0 0 1-.708V4.262a.75.75 0 0 0-.5-.707A9.735 9.735 0 0 0 18 3a9.707 9.707 0 0 0-5.25 1.533v16.103Z"/></g></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 6a.75.75 0 0 0-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 0 0 0-1.5h-3.75V6Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-face-smile" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-2.625 6c-.54 0-.828.419-.936.634a1.96 1.96 0 0 0-.189.866c0 .298.059.605.189.866.108.215.395.634.936.634.54 0 .828-.419.936-.634.13-.26.189-.568.189-.866 0-.298-.059-.605-.189-.866-.108-.215-.395-.634-.936-.634Zm4.314.634c.108-.215.395-.634.936-.634.54 0 .828.419.936.634.13.26.189.568.189.866 0 .298-.059.605-.189.866-.108.215-.395.634-.936.634-.54 0-.828-.419-.936-.634a1.96 1.96 0 0 1-.189-.866c0-.298.059-.605.189-.866Zm2.023 6.828a.75.75 0 1 0-1.06-1.06 3.75 3.75 0 0 1-5.304 0 .75.75 0 0 0-1.06 1.06 5.25 5.25 0 0 0 7.424 0Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-chevron-left" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M7.72 12.53a.75.75 0 0 1 0-1.06l7.5-7.5a.75.75 0 1 1 1.06 1.06L9.31 12l6.97 6.97a.75.75 0 1 1-1.06 1.06l-7.5-7.5Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-chevron-right" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M16.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-chevron-up" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M11.47 7.72a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 1 1-1.06 1.06L12 9.31l-6.97 6.97a.75.75 0 0 1-1.06-1.06l7.5-7.5Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-chevron-down" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.48.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M5.25 9a6.75 6.75 0 0 1 13.5 0v.75c0 2.123.8 4.057 2.118 5.52a.75.75 0 0 1-.297 1.206c-1.544.57-3.16.99-4.831 1.243a3.75 3.75 0 1 1-7.48 0 24.585 24.585 0 0 1-4.831-1.244.75.75 0 0 1-.298-1.205A8.217 8.217 0 0 0 5.25 9.75V9Zm4.502 8.9a2.25 2.25 0 1 0 4.496 0 25.057 25.057 0 0 1-4.496 0Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-map-pin" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-user-group" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M8.25 6.75a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0ZM15.75 9.75a3 3 0 1 1 6 0 3 3 0 0 1-6 0ZM2.25 9.75a3 3 0 1 1 6 0 3 3 0 0 1-6 0ZM6.31 15.117A6.745 6.745 0 0 1 12 12a6.745 6.745 0 0 1 6.709 7.498.75.75 0 0 1-.372.568A12.696 12.696 0 0 1 12 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 0 1-.372-.568 6.787 6.787 0 0 1 1.019-4.38Z" clip-rule="evenodd"/> <path d="M5.082 14.254a8.287 8.287 0 0 0-1.308 5.135 9.687 9.687 0 0 1-1.764-.44l-.115-.04a.563.563 0 0 1-.373-.487l-.01-.121a3.75 3.75 0 0 1 3.57-4.047ZM20.226 19.389a8.287 8.287 0 0 0-1.308-5.135 3.75 3.75 0 0 1 3.57 4.047l-.01.121a.563.563 0 0 1-.373.486l-.115.04c-.567.2-1.156.349-1.764.441Z"/></g></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 0 1 .75.75v6.75h6.75a.75.75 0 0 1 0 1.5h-6.75v6.75a.75.75 0 0 1-1.5 0v-6.75H4.5a.75.75 0 0 1 0-1.5h6.75V4.5a.75.75 0 0 1 .75-.75Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-arrow-left" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M11.03 3.97a.75.75 0 0 1 0 1.06l-6.22 6.22H21a.75.75 0 0 1 0 1.5H4.81l6.22 6.22a.75.75 0 1 1-1.06 1.06l-7.5-7.5a.75.75 0 0 1 0-1.06l7.5-7.5a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-arrow-path" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M4.755 10.059a7.5 7.5 0 0 1 12.548-3.364l1.903 1.903h-3.183a.75.75 0 1 0 0 1.5h4.992a.75.75 0 0 0 .75-.75V4.356a.75.75 0 0 0-1.5 0v3.18l-1.9-1.9A9 9 0 0 0 3.306 9.67a.75.75 0 1 0 1.45.388Zm15.408 3.352a.75.75 0 0 0-.919.53 7.5 7.5 0 0 1-12.548 3.364l-1.902-1.903h3.183a.75.75 0 0 0 0-1.5H2.984a.75.75 0 0 0-.75.75v4.992a.75.75 0 0 0 1.5 0v-3.18l1.9 1.9a9 9 0 0 0 15.059-4.035.75.75 0 0 0-.53-.918Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-x-mark" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><g fill="currentColor"><path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z"/></g></symbol>
+<symbol id="i-information-circle" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd"/></g></symbol>
+<symbol id="o-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"/></g></symbol>
+<symbol id="o-calendar-days" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"/></g></symbol>
+<symbol id="i-brand" viewBox="0 0 512 512"><g fill="currentColor"><path fill-rule="evenodd" d="M256 148a108 108 0 1 0 0 216 108 108 0 0 0 0-216zm0 36a72 72 0 1 1 0 144 72 72 0 0 1 0-144z"/><rect x="68" y="142" width="12" height="92" rx="6"/><rect x="90" y="142" width="12" height="92" rx="6"/><rect x="112" y="142" width="12" height="92" rx="6"/><path d="M68 214h56v10a28 28 0 0 1-56 0z"/><rect x="84" y="244" width="24" height="124" rx="12"/><path d="M396 144C432 150 442 196 440 262H396z"/><rect x="404" y="252" width="28" height="116" rx="14"/></g></symbol>
+</svg>
+
+<style>
+  :root {
+    --mint: #2AC1BC;          /* 브랜드 민트 — 배너·아이콘·FAB */
+    --mint-deep: #11A09A;     /* 주요 버튼·선택 상태 (흰 글자 대비 확보) */
+    --mint-ink: #0A7F7A;      /* 민트 배경 위 글자·강조 */
+    --mint-bg: #E6F8F7;
+    --mint-line: #BDECE9;
+    --gray: #6C757D;
+    --gray-bg: #F1F3F5;
+    --yellow-bg: #FFF4CC;
+    --yellow: #8A6200;
+    --yellow-icon: #FFC400;
+    --red: #E03131;
+    --red-bg: #FFE8E8;
+    --blue: #3B5BDB;
+    --blue-bg: #E8EEFB;
+    --bg: #F4F5F7;
+    --card: #ffffff;
+    --text: #212529;
+    --line: #E9ECEF;
+    --radius: 20px;
+    --font-display: "Jua", "Pretendard Variable", Pretendard, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    --font-body: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px; line-height: 1.5; letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, select, textarea { font-family: inherit; }
+  .wrap { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; }
+  .screen { display: none; padding: 16px 16px 96px; }
+  .screen.active { display: block; }
+  .screen.no-tab { padding-bottom: 24px; }
+
+  /* 아이콘 (Heroicons 스프라이트) */
+  .ic { display: inline-block; width: 1.25em; height: 1.25em; flex: none; vertical-align: -0.24em; }
+  .ic-sm { width: 1em; height: 1em; vertical-align: -0.16em; }
+  .ic-xs { width: .85em; height: .85em; vertical-align: -0.08em; }
+  .ic-inline { width: 1.1em; height: 1.1em; margin-right: 2px; vertical-align: -0.2em; color: var(--mint-ink); }
+  .t-mint { color: var(--mint-deep); }
+  .t-gray { color: var(--gray); }
+  .t-yellow { color: var(--yellow-icon); }
+
+  .card { background: var(--card); border-radius: var(--radius); padding: 18px; margin-bottom: 12px;
+    box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 4px 16px rgba(16,24,40,.04); }
+  .title { font-family: var(--font-display); font-size: 24px; font-weight: 400; letter-spacing: -0.02em; line-height: 1.25; }
+  .sub { color: var(--gray); font-size: 13px; }
+  .section-label { font-size: 13px; font-weight: 700; color: var(--gray); margin: 20px 4px 8px; }
+
+  .header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .header .grow { flex: 1; min-width: 0; }
+  .header .room-name { font-family: var(--font-display); font-size: 20px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .room-name .ic { margin-right: 6px; vertical-align: -0.2em; }
+  .icon-btn {
+    border: none; background: var(--card); color: var(--text); width: 40px; height: 40px; border-radius: 14px;
+    display: grid; place-items: center; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,.08); flex: none;
+  }
+  .icon-btn .ic { width: 22px; height: 22px; vertical-align: 0; }
+  .icon-btn:active { transform: scale(.94); }
+
+  /* 민트 상단 배너 (배민 스타일 헤더) */
+  .hero { margin: -16px -16px 18px; padding: max(18px, env(safe-area-inset-top)) 16px 22px;
+    background: var(--mint); color: #fff; border-radius: 0 0 28px 28px; }
+  .hero .title, .hero .room-name { color: #fff; }
+  .hero .sub { color: rgba(255,255,255,.9); }
+  .hero .icon-btn { background: rgba(255,255,255,.24); color: #fff; box-shadow: none; }
+  .hero .icon-btn:active { background: rgba(255,255,255,.38); }
+  .hero .brandmark { width: 42px; height: 42px; border-radius: 14px; background: #fff; color: var(--mint-deep);
+    display: grid; place-items: center; flex: none; }
+  .hero .brandmark .ic { width: 28px; height: 28px; vertical-align: 0; }
+
+  .btn {
+    display: block; width: 100%; border: none; border-radius: 16px; padding: 15px 14px;
+    font-family: var(--font-display); font-size: 17px; font-weight: 400; letter-spacing: -0.01em; line-height: 1.3;
+    cursor: pointer; text-align: center; transition: transform .08s, background .15s;
+  }
+  .btn .ic { margin-right: 6px; vertical-align: -0.22em; }
+  .btn:active { transform: scale(.98); }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .btn-primary { background: var(--mint-deep); color: #fff; }
+  .btn-primary:active { background: var(--mint-ink); }
+  .btn-gray { background: var(--gray-bg); color: var(--text); }
+  .btn-outline { background: #fff; color: var(--mint-ink); border: 2px solid var(--mint-deep); padding: 13px 14px; }
+  .btn-danger { background: var(--red-bg); color: var(--red); }
+  .btn-sm { width: auto; display: inline-block; padding: 8px 14px; font-size: 14px; border-radius: 12px; }
+  .btn + .btn { margin-top: 10px; }
+
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--gray); }
+  .field input {
+    width: 100%; padding: 13px 14px; border: 1.5px solid #DEE2E6; border-radius: 14px;
+    font-size: 15px; background: #fff;
+  }
+  .field input::placeholder, .meal-inputs input::placeholder, .chat-input-bar input::placeholder { color: #ADB5BD; }
+  .field input:focus { outline: none; border-color: var(--mint-deep); box-shadow: 0 0 0 3px var(--mint-bg); }
+  .hint { font-size: 12px; color: var(--gray); margin-top: 4px; }
+  .form-error { color: var(--red); font-size: 13px; margin: 8px 0; min-height: 18px; }
+
+  /* 참여 버튼 (REQ-05) */
+  .resp-btn { border: 2px solid transparent; }
+  .resp-btn.going { background: var(--mint-bg); color: var(--mint-ink); }
+  .resp-btn.going.on { background: var(--mint-deep); color: #fff; }
+  .resp-btn.notgoing { background: var(--gray-bg); color: var(--gray); }
+  .resp-btn.notgoing.on { background: #495057; color: #fff; }
+
+  /* 현황 그룹 (REQ-06) */
+  .group { margin-bottom: 14px; }
+  .group-head { display: flex; align-items: center; gap: 7px; font-family: var(--font-display); font-size: 16px; font-weight: 400; margin-bottom: 10px; }
+  .group-head .ic { width: 1.3em; height: 1.3em; vertical-align: 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { background: var(--gray-bg); border-radius: 999px; padding: 6px 13px; font-size: 13px; }
+  .chip.me { font-weight: 800; }
+  .chip.removable { cursor: pointer; }
+  .chip.removable .x { margin-left: 4px; opacity: .65; }
+  .chip.removable .x .ic { width: .8em; height: .8em; vertical-align: -0.05em; }
+  .chip.g { background: var(--mint-bg); color: var(--mint-ink); }
+  .chip.n { background: var(--gray-bg); color: var(--gray); }
+  .chip.y { background: var(--yellow-bg); color: var(--yellow); }
+  .chip .meal { opacity: .75; font-weight: 600; }
+  .empty-note { color: var(--gray); font-size: 13px; }
+
+  /* 메뉴 투표 (REQ-19) */
+  .poll-opt { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+    border: 1.5px solid var(--line); background: #fff; border-radius: 14px; padding: 12px 14px;
+    margin-bottom: 8px; cursor: pointer; position: relative; overflow: hidden; }
+  .poll-opt .fill { position: absolute; inset: 0 auto 0 0; background: var(--mint-bg); transition: width .3s; z-index: 0; }
+  .poll-opt.on { border-color: var(--mint-deep); }
+  .poll-opt.on .fill { background: var(--mint-line); }
+  .poll-opt .lbl, .poll-opt .cnt, .poll-opt .tick { position: relative; z-index: 1; }
+  .poll-opt .lbl { flex: 1; font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .poll-opt .lbl .ic { color: var(--yellow-icon); margin-right: 4px; vertical-align: -0.22em; }
+  .poll-opt .cnt { font-size: 12px; font-weight: 800; color: var(--mint-ink); flex: none; }
+  .poll-opt .tick { flex: none; width: 18px; height: 18px; color: var(--mint-ink); }
+  .poll-opt .tick .ic { width: 18px; height: 18px; vertical-align: 0; }
+  .poll-opt[disabled] { cursor: default; opacity: .95; }
+  .poll-win { background: linear-gradient(135deg, var(--mint-deep), var(--mint)); color: #fff; border-radius: 16px; padding: 14px 16px; margin-bottom: 10px; }
+  .poll-win .t { font-size: 12px; opacity: .95; font-weight: 700; }
+  .poll-win .t .ic { margin-right: 3px; vertical-align: -0.2em; }
+  .poll-win .m { font-family: var(--font-display); font-size: 20px; font-weight: 400; margin-top: 3px; }
+  /* 동점 룰렛 — 후보 이름이 빠르게 바뀌는 연출 */
+  .roulette { text-align: center; padding: 16px 0; }
+  .roulette .spin { font-family: var(--font-display); font-size: 22px; color: var(--mint-ink); }
+  .roulette .tie { font-size: 13px; font-weight: 700; color: var(--yellow); margin-bottom: 6px; }
+
+  /* 메뉴 랭킹 (최근 30일, REQ-18) */
+  .rank-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+  .rank-no { width: 18px; flex: none; font-family: var(--font-display); font-size: 14px; color: var(--mint-ink); }
+  .rank-name { flex: none; max-width: 42%; font-weight: 700; font-size: 14px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rank-bar { flex: 1; min-width: 20px; height: 10px; background: var(--gray-bg); border-radius: 999px; overflow: hidden; }
+  .rank-bar i { display: block; height: 100%; background: var(--mint); border-radius: 999px; }
+  .rank-cnt { flex: none; font-size: 12px; font-weight: 700; color: var(--gray); }
+  .rank-sub { font-size: 12px; font-weight: 700; color: var(--gray); margin: 14px 0 2px; }
+  .rank-sub .ic { margin-right: 3px; vertical-align: -0.2em; }
+
+  /* 장소·메뉴 기록 (REQ-17) */
+  .meal-row { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--line); }
+  .meal-row .lead { font-family: var(--font-display); font-size: 15px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .meal-row .lead .ic { color: var(--mint-deep); }
+  .meal-inputs { display: flex; gap: 8px; }
+  .meal-inputs input {
+    flex: 1; min-width: 0; padding: 11px 12px; border: 1.5px solid #DEE2E6; border-radius: 12px;
+    font-size: 14px; background: #fff;
+  }
+  .meal-inputs input:focus { outline: none; border-color: var(--mint-deep); box-shadow: 0 0 0 3px var(--mint-bg); }
+  .refresh-line { text-align: center; color: var(--gray); font-size: 12px; margin-top: 4px; }
+
+  /* 하단 탭 바 */
+  .tabbar {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px; background: #fff; border-top: 1px solid var(--line);
+    border-radius: 22px 22px 0 0; box-shadow: 0 -4px 16px rgba(16,24,40,.06);
+    display: flex; z-index: 50;
+  }
+  .tabbar button {
+    flex: 1; border: none; background: none; padding: 10px 0 max(10px, env(safe-area-inset-bottom));
+    font-size: 12px; color: var(--gray); cursor: pointer; font-weight: 700;
+  }
+  .tabbar button .ico { display: block; position: relative; width: 26px; height: 26px; margin: 0 auto 2px; }
+  .tabbar button .ico .ic { position: absolute; inset: 0; width: 26px; height: 26px; vertical-align: 0; }
+  .tabbar button .on-i { display: none; }
+  .tabbar button.on { color: var(--mint-ink); }
+  .tabbar button.on .off-i { display: none; }
+  .tabbar button.on .on-i { display: block; }
+
+  /* 방 목록 */
+  .room-card { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 14px 16px; }
+  .room-card .av { width: 46px; height: 46px; border-radius: 15px; background: var(--mint-bg); color: var(--mint-deep);
+    display: grid; place-items: center; flex: none; }
+  .room-card .av .ic { width: 28px; height: 28px; vertical-align: 0; }
+  .room-card .info { flex: 1; min-width: 0; }
+  .room-card .name { font-family: var(--font-display); font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .room-card .go { color: var(--gray); flex: none; }
+  .badge { font-size: 11px; font-weight: 700; border-radius: 8px; padding: 3px 7px; flex: none; }
+  .badge .ic { vertical-align: -0.2em; }
+  .badge.host { background: var(--mint-bg); color: var(--mint-ink); }
+  .badge.cohost { background: var(--blue-bg); color: var(--blue); }
+  .badge.purpose { background: var(--gray-bg); color: var(--gray); font-weight: 600; }
+
+  /* 이메일 등록 유도 배너 */
+  .nudge { background: var(--yellow-bg); border-radius: 18px; padding: 15px; margin-bottom: 4px; }
+  .nudge .t { font-family: var(--font-display); font-size: 15px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+  .nudge .t .ic { color: var(--yellow); }
+  .nudge .d { font-size: 13px; color: #6b5a1e; line-height: 1.6; }
+  .nudge .acts { display: flex; gap: 8px; margin-top: 12px; }
+  .nudge .acts button { flex: 1; border: none; border-radius: 12px; padding: 10px 0;
+    font-size: 13px; font-weight: 700; cursor: pointer; }
+  .nudge .acts .go { background: var(--mint-deep); color: #fff; }
+  .nudge .acts .later { background: #fff; color: var(--gray); }
+
+  /* 방 순서 편집 (REQ-26) */
+  .room-card.reorder { cursor: default; }
+  .ord-btns { display: flex; flex-direction: column; gap: 3px; flex: none; }
+  .ord-btns button { border: none; background: var(--gray-bg); color: var(--text); display: grid; place-items: center;
+    border-radius: 8px; width: 34px; height: 24px; cursor: pointer; }
+  .ord-btns button .ic { width: 16px; height: 16px; vertical-align: 0; }
+  .ord-btns button:disabled { opacity: .3; cursor: default; }
+  .badge.closed { background: var(--red-bg); color: var(--red); }
+
+  /* 방 종류 프리셋 선택 카드 (REQ-16) */
+  .preset-grid { display: flex; flex-direction: column; gap: 8px; }
+  .preset-card { display: flex; align-items: flex-start; gap: 12px; text-align: left; width: 100%;
+    border: 1.5px solid var(--line); background: #fff; border-radius: 16px; padding: 12px 14px; cursor: pointer; }
+  .preset-card.on { border-color: var(--mint-deep); background: var(--mint-bg); }
+  .preset-card .pi { width: 38px; height: 38px; border-radius: 12px; background: var(--mint-bg); color: var(--mint-deep);
+    display: grid; place-items: center; flex: none; }
+  .preset-card.on .pi { background: var(--mint-deep); color: #fff; }
+  .preset-card .pi .ic { width: 22px; height: 22px; vertical-align: 0; }
+  .preset-card .grow { flex: 1; min-width: 0; }
+  .preset-card .pn { display: block; font-family: var(--font-display); font-size: 15px; }
+  .preset-card .pd { display: block; font-size: 12px; color: var(--gray); margin-top: 2px; line-height: 1.45; }
+  .fab {
+    position: fixed; right: calc(50% - 240px + 16px); bottom: 24px; width: 60px; height: 60px;
+    border-radius: 50%; border: none; background: var(--mint); color: #fff; display: grid; place-items: center;
+    cursor: pointer; box-shadow: 0 6px 16px rgba(42,193,188,.5); z-index: 40;
+  }
+  .fab .ic { width: 30px; height: 30px; vertical-align: 0; }
+  .fab:active { transform: scale(.94); }
+  @media (max-width: 500px) { .fab { right: 16px; } }
+
+  /* 채팅 (REQ-13) — 메인 화면 내 섹션 */
+  .chat-list { display: flex; flex-direction: column; gap: 10px; min-height: 80px; max-height: 320px; overflow-y: auto; padding: 4px 0 8px; }
+  .msg { max-width: 78%; }
+  .msg .meta { font-size: 11px; color: var(--gray); margin-bottom: 2px; }
+  .msg .bubble { padding: 10px 14px; border-radius: 18px; font-size: 14px; word-break: break-word; white-space: pre-wrap; }
+  .msg.other { align-self: flex-start; }
+  .msg.other .bubble { background: var(--gray-bg); border-top-left-radius: 5px; }
+  .msg.mine { align-self: flex-end; text-align: right; }
+  .msg.mine .bubble { background: var(--mint-deep); color: #fff; border-top-right-radius: 5px; text-align: left; }
+  .bubble-row { display: flex; align-items: flex-end; gap: 4px; }
+  .unread-count { font-size: 11px; font-weight: 700; color: var(--yellow); white-space: nowrap; padding-bottom: 2px; }
+  .chat-input-bar { display: flex; gap: 8px; margin-top: 8px; }
+  .chat-input-bar input { flex: 1; border: 1.5px solid #DEE2E6; border-radius: 999px; padding: 11px 16px; font-size: 14px; }
+  .chat-input-bar input:focus { outline: none; border-color: var(--mint-deep); box-shadow: 0 0 0 3px var(--mint-bg); }
+  .chat-input-bar button { border: none; background: var(--mint-deep); color: #fff; border-radius: 999px; padding: 0 20px;
+    font-family: var(--font-display); font-size: 15px; cursor: pointer; }
+
+  /* 달력 (REQ-08) */
+  .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .cal-nav .month { font-family: var(--font-display); font-size: 18px; }
+  .cal-nav button { border: none; background: var(--gray-bg); border-radius: 12px; padding: 8px 12px; cursor: pointer; font-size: 13px; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 2px; color: var(--text); }
+  .cal-nav button .ic { width: 16px; height: 16px; vertical-align: 0; }
+  .cal-nav button:disabled { opacity: .35; cursor: default; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-dow { text-align: center; font-size: 11px; color: var(--gray); font-weight: 700; padding: 4px 0; }
+  .cal-cell {
+    aspect-ratio: 1; border-radius: 12px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; font-size: 13px; cursor: default; border: 1.5px solid transparent;
+  }
+  .cal-cell.dim { color: #CED4DA; }
+  .cal-cell.has { background: var(--mint-bg); color: var(--mint-ink); font-weight: 700; cursor: pointer; }
+  .cal-cell.today { border-color: var(--mint-deep); }
+  .cal-cell.sel { background: var(--mint-deep); color: #fff; }
+  .cal-cell .cnt { font-size: 10px; line-height: 1; margin-top: 2px; display: inline-flex; align-items: center; gap: 1px; }
+  .cal-cell .cnt .ic { width: 10px; height: 10px; vertical-align: 0; }
+  .day-detail { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
+  .day-detail .sub .ic { margin-right: 2px; vertical-align: -0.2em; }
+
+  /* 설정 */
+  .set-row { display: flex; align-items: center; gap: 10px; padding: 14px 2px; border-bottom: 1px solid var(--line); }
+  .set-row:last-child { border-bottom: none; }
+  .set-row .grow { flex: 1; }
+  .set-row .ic-go { color: #ADB5BD; flex: none; }
+  .member-row { display: flex; align-items: center; gap: 8px; padding: 10px 2px; border-bottom: 1px solid var(--line); }
+  .member-row:last-child { border-bottom: none; }
+  .member-row .nm { flex: 1; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mini-btn { border: none; border-radius: 10px; padding: 7px 11px; font-size: 12px; font-weight: 700; cursor: pointer; background: var(--gray-bg); color: var(--text); flex: none;
+    display: inline-flex; align-items: center; gap: 3px; }
+  .mini-btn .ic { width: 15px; height: 15px; vertical-align: 0; }
+  .mini-btn.danger { background: var(--red-bg); color: var(--red); }
+  .mini-btn.blue { background: var(--blue-bg); color: var(--blue); }
+
+  /* 토글 스위치 */
+  .switch { position: relative; display: inline-block; width: 48px; height: 28px; flex: none; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch .slider { position: absolute; inset: 0; background: #CED4DA; border-radius: 999px; transition: .2s; cursor: pointer; }
+  .switch .slider::before { content: ''; position: absolute; height: 22px; width: 22px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .switch input:checked + .slider { background: var(--mint-deep); }
+  .switch input:checked + .slider::before { transform: translateX(20px); }
+  input[type="checkbox"] { accent-color: var(--mint-deep); }
+
+  /* 모달 & 토스트 */
+  .modal-back {
+    display: none; position: fixed; inset: 0; background: rgba(33,37,41,.5); z-index: 100;
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-back.open { display: flex; }
+  .modal { background: #fff; border-radius: 24px; padding: 22px 20px; width: 100%; max-width: 380px; max-height: 92vh; overflow-y: auto; }
+  .modal-back.open .modal { animation: sheet-in .22s ease-out; }
+  @keyframes sheet-in { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @media (max-width: 560px) {
+    .modal-back { align-items: flex-end; padding: 0; }
+    .modal { max-width: none; border-radius: 26px 26px 0 0; padding-bottom: calc(22px + env(safe-area-inset-bottom)); }
+    .modal.onb { max-width: none; }
+  }
+  .modal .title .ic { color: var(--mint-deep); margin-right: 4px; vertical-align: -0.2em; }
+  #toast {
+    position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+    background: rgba(33,37,41,.94); color: #fff; padding: 12px 20px; border-radius: 999px;
+    font-size: 13.5px; font-weight: 600; z-index: 200; display: none; width: max-content; max-width: 90%; text-align: center; line-height: 1.45;
+    box-shadow: 0 6px 20px rgba(0,0,0,.25);
+  }
+  #toast .ic { color: var(--mint); margin-right: 6px; }
+  .center { text-align: center; }
+  .mt8 { margin-top: 8px; } .mt16 { margin-top: 16px; }
+  .link-btn { background: none; border: none; color: var(--mint-ink); font-weight: 700; cursor: pointer; font-size: 14px; }
+  .link-btn .ic { vertical-align: -0.2em; }
+
+  /* 큰 아이콘 배지 (로딩·안내 화면) */
+  .logo { width: 76px; height: 76px; border-radius: 26px; background: var(--mint); color: #fff; display: grid; place-items: center;
+    margin: 0 auto 14px; box-shadow: 0 8px 20px rgba(42,193,188,.35); }
+  .logo .ic { width: 44px; height: 44px; vertical-align: 0; }
+  .logo.soft { background: var(--mint-bg); color: var(--mint-ink); box-shadow: none; }
+  .logo.warn { background: var(--yellow-bg); color: var(--yellow); box-shadow: none; }
+  .logo.gray { background: var(--gray-bg); color: var(--gray); box-shadow: none; }
+  .logo.pulse { animation: logo-pulse 1.2s ease-in-out infinite; }
+  @keyframes logo-pulse { 50% { transform: scale(.93); opacity: .85; } }
+  @media (prefers-reduced-motion: reduce) { .logo.pulse { animation: none; } }
+
+  /* 로그인·가입 대문 */
+  .auth-hero { margin: -16px -16px 20px; padding: max(52px, env(safe-area-inset-top)) 16px 40px;
+    background: var(--mint); color: #fff; text-align: center; border-radius: 0 0 36px 36px; }
+  .auth-hero .mark { width: 88px; height: 88px; border-radius: 29px; background: #fff; color: var(--mint-deep);
+    display: grid; place-items: center; margin: 0 auto 16px; box-shadow: 0 10px 24px rgba(8,110,106,.28); }
+  .auth-hero .mark .ic { width: 58px; height: 58px; vertical-align: 0; }
+  .auth-hero .title { color: #fff; font-size: 38px; }
+  .auth-hero .sub { color: rgba(255,255,255,.94); font-size: 15px; margin-top: 4px; }
+  .card-title { font-family: var(--font-display); font-size: 18px; margin-bottom: 10px; }
+  .feat-list { display: flex; flex-direction: column; gap: 12px; font-size: 14px; }
+  .feat { display: flex; align-items: center; gap: 11px; }
+  .feat .fi { width: 34px; height: 34px; border-radius: 11px; background: var(--mint-bg); color: var(--mint-ink);
+    display: grid; place-items: center; flex: none; }
+  .feat .fi .ic { width: 19px; height: 19px; vertical-align: 0; }
+  .use-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+  .use-chip { display: inline-flex; align-items: center; gap: 5px; background: var(--gray-bg); border-radius: 999px;
+    padding: 7px 12px; font-size: 13px; font-weight: 600; color: var(--text); }
+  .use-chip .ic { color: var(--mint-deep); width: 1.1em; height: 1.1em; vertical-align: 0; }
+
+  /* 하단 Footer (법적 페이지 링크) — 탭바 없는 화면 하단에 삽입됨 */
+  .site-footer { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--line); text-align: center; }
+  .site-footer__links { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; font-size: 12.5px; }
+  .site-footer__links a { color: var(--gray); text-decoration: none; }
+  .site-footer__links a:hover { color: var(--text); text-decoration: underline; }
+  .site-footer__copy { margin-top: 8px; font-size: 11.5px; color: #9aa1ab; }
+
+  /* 온보딩 (사용 방법 안내) */
+  .onb { max-width: 400px; text-align: center; padding: 28px 22px 22px; }
+  .onb-icon { width: 84px; height: 84px; border-radius: 28px; background: var(--mint-bg); color: var(--mint-deep);
+    display: grid; place-items: center; margin: 0 auto 16px; }
+  .onb-icon .ic { width: 46px; height: 46px; vertical-align: 0; }
+  .onb-title { font-family: var(--font-display); font-size: 22px; margin-bottom: 10px; }
+  .onb-body { color: #495057; font-size: 15px; line-height: 1.65; text-align: left; }
+  .onb-body b { color: var(--text); }
+  .onb-body .ex { display: block; background: var(--gray-bg); border-radius: 12px; padding: 9px 13px; margin-top: 10px; font-size: 13px; color: #495057; }
+  .onb-dots { display: flex; justify-content: center; gap: 6px; margin: 18px 0 14px; }
+  .onb-dots i { width: 7px; height: 7px; border-radius: 50%; background: #CED4DA; transition: .2s; }
+  .onb-dots i.on { background: var(--mint-deep); width: 22px; border-radius: 999px; }
+  .onb-nav { display: flex; gap: 8px; }
+  .onb-nav .btn { margin-top: 0; }
+  .onb-skip { margin-top: 12px; color: var(--gray); font-size: 13px; background: none; border: none; cursor: pointer; }
+
+  /* 전역 로딩 바 — 모든 버튼/액션이 서버와 통신하는 동안 상단에 표시 */
+  #loading-bar {
+    position: fixed; top: 0; left: 0; width: 100%; height: 3px; z-index: 300;
+    background: var(--mint-bg); overflow: hidden; opacity: 0; transition: opacity .15s; pointer-events: none;
+  }
+  #loading-bar.on { opacity: 1; }
+  #loading-bar::after {
+    content: ''; position: absolute; top: 0; left: 0; height: 100%; width: 40%;
+    background: var(--mint-deep); border-radius: 999px;
+    animation: loading-slide 1s ease-in-out infinite;
+  }
+  @keyframes loading-slide {
+    0% { left: -40%; }
+    100% { left: 100%; }
+  }
+  /* 클릭한 버튼 자체에도 처리 중 표시 (아이콘 버튼류 포함) */
+  button:disabled { opacity: .6; cursor: default; }
+</style>
+
+<div id="loading-bar"></div>
+
+<div class="wrap">
+
+  <!-- 로딩 -->
+  <div class="screen no-tab active" id="sc-loading">
+    <div class="card center" style="margin-top:34vh;">
+      <div class="logo pulse"><svg class="ic" aria-hidden="true"><use href="#i-brand"/></svg></div>
+      <div class="sub mt8">오늘점심 불러오는 중...</div>
+    </div>
+  </div>
+
+  <!-- 로그인 / 회원가입 (REQ-01·02) -->
+  <div class="screen no-tab" id="sc-auth">
+    <div class="auth-hero">
+      <div class="mark"><svg class="ic" aria-hidden="true"><use href="#i-brand"/></svg></div>
+      <div class="title">오늘점심</div>
+      <div class="sub">오늘 같이 점심 먹어요</div>
+    </div>
+    <div id="invite-notice" class="card center" style="display:none; background: var(--mint-bg); box-shadow:none;">
+      <b>초대 링크로 접속했어요!</b><br><span class="sub">로그인하거나 가입하면 자동으로 방에 참여됩니다.</span>
+    </div>
+
+    <!-- 대문(커버) 화면 — 서비스 소개 + 가입하기/로그인하기 진입 -->
+    <div id="auth-cover">
+      <div class="card">
+        <div class="card-title">오늘 뭐 먹을지, 누구랑 먹을지</div>
+        <div class="sub" style="line-height:1.7;">
+          방을 만들어 링크만 공유하면 끝이에요.<br>
+          누가 같이 가는지 실시간으로 보이고, 메뉴는 투표로 정할 수 있어요.
+        </div>
+      </div>
+      <div class="card">
+        <div class="feat-list">
+          <div class="feat"><span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-check-circle"/></svg></span><span>참여 여부를 한 번의 탭으로 공유</span></div>
+          <div class="feat"><span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-clipboard-document-check"/></svg></span><span>오늘 메뉴는 투표로 결정 (동점이면 룰렛)</span></div>
+          <div class="feat"><span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-trophy"/></svg></span><span>먹은 메뉴 기록 · 최근 30일 메뉴 랭킹</span></div>
+          <div class="feat"><span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-sparkles"/></svg></span><span>회식·모임은 <b>가입 없이 이름만</b>으로 참여</span></div>
+          <div class="feat"><span class="fi"><svg class="ic" aria-hidden="true"><use href="#i-chat-bubble-left-right"/></svg></span><span>방별 채팅 · 최근 30일 참여 히스토리</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="font-size:16px; margin-bottom:0;">이런 분들이 쓰고 있어요</div>
+        <div class="use-chips">
+          <span class="use-chip"><svg class="ic" aria-hidden="true"><use href="#i-building-office"/></svg>구내식당 같이 갈 사람 확인</span>
+          <span class="use-chip"><svg class="ic" aria-hidden="true"><use href="#i-building-storefront"/></svg>외부 식당 점심 팀</span>
+          <span class="use-chip"><svg class="ic" aria-hidden="true"><use href="#i-clipboard-document-check"/></svg>메뉴를 다수결로 정하는 팀</span>
+          <span class="use-chip"><svg class="ic" aria-hidden="true"><use href="#i-sparkles"/></svg>회식·워크숍 참석 조사</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="btn-cover-signup" onclick="switchAuth('signup')">가입하기</button>
+      <button class="btn btn-outline" id="btn-cover-login" onclick="switchAuth('login')">로그인하기</button>
+    </div>
+
+    <div class="card" id="login-form" style="display:none;">
+      <div class="field">
+        <label>아이디</label>
+        <input type="text" id="login-id" autocomplete="username" placeholder="아이디 입력">
+      </div>
+      <div class="field">
+        <label>비밀번호</label>
+        <input type="password" id="login-pw" autocomplete="current-password" placeholder="비밀번호 입력">
+      </div>
+      <div class="form-error" id="login-error"></div>
+      <button class="btn btn-primary" id="btn-login" onclick="doLogin()">로그인</button>
+      <div class="center mt8">
+        <button class="link-btn" style="font-size:13px; color:var(--gray);" onclick="openForgotPassword()">비밀번호를 잊으셨나요?</button>
+      </div>
+      <div class="center mt16">
+        <span class="sub">아직 계정이 없나요?</span>
+        <button class="link-btn" onclick="switchAuth('signup')">회원가입</button>
+      </div>
+      <div class="center mt8">
+        <button class="link-btn" style="font-size:13px; color:var(--gray);" onclick="switchAuth('cover')"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-arrow-left"/></svg> 처음으로</button>
+      </div>
+    </div>
+
+    <div class="card" id="signup-form" style="display:none;">
+      <div class="field">
+        <label>아이디</label>
+        <input type="text" id="signup-id" autocomplete="username" placeholder="4~20자 영문 소문자·숫자">
+        <div class="hint">가입 후 닉네임은 아이디로 시작하며 설정에서 바꿀 수 있어요.</div>
+      </div>
+      <div class="field">
+        <label>비밀번호</label>
+        <input type="password" id="signup-pw" autocomplete="new-password" placeholder="8자 이상, 영문+숫자">
+      </div>
+      <div class="field">
+        <label>비밀번호 확인</label>
+        <input type="password" id="signup-pw2" autocomplete="new-password" placeholder="비밀번호 다시 입력">
+      </div>
+      <div class="field">
+        <label>이메일 <span style="color:var(--gray);font-weight:400;">(선택 · 알림 수신용)</span></label>
+        <input type="email" id="signup-email" autocomplete="email" placeholder="비워두어도 가입할 수 있어요">
+        <div class="hint">점심 알림 메일을 받고 싶을 때만 입력하세요. 알림 발송 목적으로만 사용하며, 언제든 설정에서 삭제할 수 있어요.</div>
+      </div>
+      <div class="form-error" id="signup-error"></div>
+      <button class="btn btn-primary" id="btn-signup" onclick="doSignup()">가입하고 시작하기</button>
+      <div class="center mt16">
+        <span class="sub">이미 계정이 있나요?</span>
+        <button class="link-btn" onclick="switchAuth('login')">로그인</button>
+      </div>
+      <div class="center mt8">
+        <button class="link-btn" style="font-size:13px; color:var(--gray);" onclick="switchAuth('cover')"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-arrow-left"/></svg> 처음으로</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 초대 링크 만료 (REQ-04) -->
+  <div class="screen no-tab" id="sc-expired">
+    <div class="card center" style="margin-top:30vh;">
+      <div class="logo warn"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg></div>
+      <div class="title mt8" style="font-size:18px;">초대 링크가 만료되었습니다</div>
+      <div class="sub mt8">방 호스트에게 새 초대 링크를 요청해주세요.</div>
+      <button class="btn btn-primary mt16" onclick="loadRooms()">확인</button>
+    </div>
+  </div>
+
+  <!-- 게스트 참여 (SCR-07, REQ-25) — 이벤트형 방 초대 링크로 접속했을 때 -->
+  <div class="screen no-tab" id="sc-guest-join">
+    <div class="auth-hero">
+      <div class="mark"><svg class="ic" aria-hidden="true"><use href="#i-sparkles"/></svg></div>
+      <div class="title" style="font-size:28px;" id="guest-room-name">모임</div>
+      <div class="sub">이름만 입력하면 바로 참여할 수 있어요.<br>회원가입은 필요 없어요.</div>
+    </div>
+    <div class="card">
+      <div class="field">
+        <label>이름 (2~10자)</label>
+        <input type="text" id="guest-name" maxlength="10" placeholder="예: 채유정"
+               onkeydown="if(event.key==='Enter'){doGuestJoin();}">
+        <div class="hint">주최자와 다른 참여자에게 이 이름이 보여요.</div>
+      </div>
+      <div class="form-error" id="guest-error"></div>
+      <button class="btn btn-primary" id="btn-guest-join" onclick="doGuestJoin()">참여하기</button>
+      <div class="hint mt8">
+        <svg class="ic ic-sm t-yellow" aria-hidden="true"><use href="#i-exclamation-triangle"/></svg> 참여 기록은 <b>이 브라우저에 저장</b>돼요. 다른 기기나 시크릿 모드로 접속하면
+        <b>다른 참여자로 새로 등록</b>되니 같은 브라우저로 다시 열어주세요.
+      </div>
+    </div>
+    <div class="card center">
+      <div class="sub">오늘점심 계정이 있으세요?</div>
+      <button class="btn btn-gray mt8" onclick="guestToLogin()">계정으로 로그인해서 참여</button>
+    </div>
+  </div>
+
+  <!-- 마감된 이벤트 링크로 접속했을 때 (REQ-25) -->
+  <div class="screen no-tab" id="sc-event-closed">
+    <div class="card center" style="margin-top:28vh;">
+      <div class="logo gray"><svg class="ic" aria-hidden="true"><use href="#i-flag"/></svg></div>
+      <div class="title mt8" style="font-size:18px;">이미 마감된 모임이에요</div>
+      <div class="sub mt8" id="event-closed-name"></div>
+      <div class="sub mt8">주최자에게 문의해주세요.</div>
+    </div>
+  </div>
+
+  <!-- 비밀번호 재설정 (REQ-15, 이메일 링크로 접속) -->
+  <div class="screen no-tab" id="sc-reset-password">
+    <div class="auth-hero">
+      <div class="mark"><svg class="ic" aria-hidden="true"><use href="#i-key"/></svg></div>
+      <div class="title" style="font-size:28px;">새 비밀번호 설정</div>
+    </div>
+    <div class="card">
+      <div class="field">
+        <label>새 비밀번호 (8자 이상, 영문+숫자)</label>
+        <input type="password" id="reset-pw" autocomplete="new-password">
+      </div>
+      <div class="field">
+        <label>새 비밀번호 확인</label>
+        <input type="password" id="reset-pw2" autocomplete="new-password">
+      </div>
+      <div class="form-error" id="reset-error"></div>
+      <button class="btn btn-primary" id="btn-reset" onclick="doResetPassword()">비밀번호 재설정</button>
+    </div>
+  </div>
+
+  <!-- 방 목록 (SCR-02) -->
+  <div class="screen no-tab" id="sc-rooms">
+    <div class="header hero">
+      <span class="brandmark"><svg class="ic" aria-hidden="true"><use href="#i-brand"/></svg></span>
+      <div class="grow">
+        <div class="title">오늘점심</div>
+        <div class="sub" id="rooms-greet"></div>
+      </div>
+      <button class="icon-btn" title="설정" aria-label="설정" onclick="openSettings(false)"><svg class="ic" aria-hidden="true"><use href="#i-cog-6-tooth"/></svg></button>
+    </div>
+    <!-- 이메일 등록 유도 — 미등록자에게만, 나중에 누르면 14일간 숨김 -->
+    <div class="nudge" id="email-nudge" style="display:none;">
+      <div class="t"><svg class="ic" aria-hidden="true"><use href="#i-envelope"/></svg>비밀번호를 잊었을 때를 대비해주세요</div>
+      <div class="d">알림 수신 이메일을 등록해두면 비밀번호를 잊어도 <b>직접 재설정</b>할 수 있어요.
+        등록 안 하면 운영자에게 따로 요청해야 해요. 이메일은 <b>알림·재설정 목적으로만</b> 쓰여요.</div>
+      <div class="acts">
+        <button class="go" onclick="goRegisterEmail()">이메일 등록하기</button>
+        <button class="later" onclick="dismissEmailNudge()">나중에</button>
+      </div>
+    </div>
+
+    <!-- 순서 편집 토글 (REQ-26) — 방이 2개 이상일 때만 노출 -->
+    <div id="rooms-order-bar" style="display:none; text-align:right; margin: 4px 2px -4px;">
+      <button class="mini-btn" id="btn-order-edit" onclick="toggleOrderEdit()"><svg class="ic" aria-hidden="true"><use href="#i-arrows-up-down"/></svg>순서 편집</button>
+    </div>
+    <div id="rooms-body"></div>
+    <button class="btn btn-outline mt8" id="btn-join-code" onclick="openJoinCode()"><svg class="ic" aria-hidden="true"><use href="#i-key"/></svg>방 코드로 참여</button>
+    <button class="fab" title="새 방 만들기" aria-label="새 방 만들기" onclick="openCreateRoom()"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></button>
+  </div>
+
+  <!-- 방 내부 (SCR-04·05·07) -->
+  <div class="screen" id="sc-room">
+    <div class="header hero">
+      <button class="icon-btn" id="btn-back-rooms" title="뒤로" aria-label="뒤로" onclick="backToRooms()"><svg class="ic" aria-hidden="true"><use href="#i-arrow-left"/></svg></button>
+      <div class="grow">
+        <div class="room-name" id="room-title">방</div>
+        <div class="sub" id="room-date"></div>
+      </div>
+      <button class="icon-btn" title="새로고침" aria-label="새로고침" onclick="refreshTab()"><svg class="ic" aria-hidden="true"><use href="#i-arrow-path"/></svg></button>
+      <button class="icon-btn" title="설정" aria-label="설정" onclick="openSettings(true)"><svg class="ic" aria-hidden="true"><use href="#i-cog-6-tooth"/></svg></button>
+    </div>
+
+    <!-- 오늘 탭 (REQ-05·06) -->
+    <div id="tab-today">
+      <!-- 이벤트 마감 결과 요약 (SCR-08, REQ-25) — 마감된 이벤트형 방에서만 노출 -->
+      <div class="card" id="event-summary" style="display:none;">
+        <div class="group-head"><svg class="ic t-mint" aria-hidden="true"><use href="#i-flag"/></svg><span id="evt-title">마감된 모임</span></div>
+        <div id="evt-body"></div>
+      </div>
+      <div class="card">
+        <div style="font-weight:800; margin-bottom:12px;">안녕하세요, <span id="today-my-name"></span>님 <svg class="ic ic-sm t-mint" aria-hidden="true"><use href="#i-face-smile"/></svg><br><span id="today-ask">오늘 점심, 어떻게 하세요?</span></div>
+        <button class="btn resp-btn going" id="btn-going" onclick="setResp('going')"><svg class="ic" aria-hidden="true"><use href="#i-check-circle"/></svg>오늘 같이 가요</button>
+        <button class="btn resp-btn notgoing" id="btn-notgoing" onclick="setResp('not-going')"><svg class="ic" aria-hidden="true"><use href="#i-x-circle"/></svg>오늘은 안 가요</button>
+        <!-- 장소·메뉴 기록 (REQ-17) — 장소·메뉴 기록을 쓰는 방에서만 노출 -->
+        <div class="meal-row" id="meal-log-row" style="display:none;">
+          <div class="lead"><svg class="ic" aria-hidden="true"><use href="#i-clipboard-document-list"/></svg>오늘 뭐 먹어요? <span style="color:var(--gray);font-family:var(--font-body);font-size:12px;">(선택)</span></div>
+          <div class="meal-inputs">
+            <input type="text" id="meal-place" maxlength="20" placeholder="장소 (예: 김밥천국)" list="dl-places" autocomplete="off">
+            <input type="text" id="meal-menu" maxlength="20" placeholder="메뉴 (예: 제육덮밥)" list="dl-menus" autocomplete="off">
+            <button type="button" class="mini-btn" title="최근 먹은 것 중에서 추천" aria-label="주사위로 메뉴 추천" onclick="suggestRandomMeal()"><svg class="ic" aria-hidden="true"><use href="#i-cube"/></svg></button>
+          </div>
+          <!-- 자동완성 후보 (REQ-20) — 내가 최근 30일간 입력한 값 -->
+          <datalist id="dl-places"></datalist>
+          <datalist id="dl-menus"></datalist>
+          <div class="hint">적어두면 <b>메뉴 랭킹</b>에 쌓여요. 주사위 버튼을 누르면 최근 먹은 것 중에서 골라줘요. 개인정보(실명·연락처 등)는 적지 말아주세요.</div>
+          <button class="btn btn-gray" style="margin-top:10px;" onclick="busy(this, saveMealLog())">기록 저장</button>
+        </div>
+        <div class="hint" id="meal-log-locked" style="display:none;"><svg class="ic ic-sm t-mint" aria-hidden="true"><use href="#i-clipboard-document-list"/></svg> <b>같이 가요</b>를 선택하면 오늘 먹을 장소·메뉴를 기록할 수 있어요.</div>
+      </div>
+      <!-- 메뉴 투표 (REQ-19) — 투표를 쓰는 방에서만 노출. 응답 바로 아래에 둬서 눈에 잘 띄게 함 -->
+      <div class="card" id="poll-card" style="display:none;">
+        <div class="group-head"><svg class="ic t-mint" aria-hidden="true"><use href="#i-clipboard-document-check"/></svg><span id="poll-title">오늘 메뉴 투표</span></div>
+        <div id="poll-body"></div>
+      </div>
+      <div class="card">
+        <div class="group">
+          <div class="group-head"><svg class="ic t-mint" aria-hidden="true"><use href="#i-check-circle"/></svg><span><span id="grp-going-label">같이 가요 (</span><span id="cnt-going">0</span>명)</span></div>
+          <div class="chips" id="chips-going"></div>
+        </div>
+        <div class="group">
+          <div class="group-head"><svg class="ic t-gray" aria-hidden="true"><use href="#i-x-circle"/></svg><span><span id="grp-notgoing-label">안 가요 (</span><span id="cnt-notgoing">0</span>명)</span></div>
+          <div class="chips" id="chips-notgoing"></div>
+        </div>
+        <div id="unresp-wrap">
+          <button class="btn btn-gray" id="btn-unresp" onclick="toggleUnresp()"></button>
+          <div class="chips mt8" id="chips-unresp" style="display:none;"></div>
+        </div>
+      </div>
+      <!-- 채팅 섹션 (REQ-13) — 현황 아래, 초대 링크 위 -->
+      <div class="card">
+        <div class="group-head"><svg class="ic t-mint" aria-hidden="true"><use href="#i-chat-bubble-left-right"/></svg>오늘의 채팅</div>
+        <div class="chat-list" id="chat-list"></div>
+        <div class="chat-input-bar">
+          <input type="text" id="chat-input" maxlength="300" placeholder="메시지 입력 (최대 300자)"
+                 onkeydown="if(event.key==='Enter'){sendMsg();}">
+          <button onclick="busy(this, sendMsg())">전송</button>
+        </div>
+      </div>
+      <button class="btn btn-outline" id="btn-invite" onclick="copyInvite()"><svg class="ic" aria-hidden="true"><use href="#i-link"/></svg>초대 링크 복사 (7일 유효)</button>
+      <button class="btn btn-outline" id="btn-roomcode" onclick="copyRoomCode()"><svg class="ic" aria-hidden="true"><use href="#i-key"/></svg>방 코드: ------</button>
+      <!-- 행사 마감 (이벤트형 방, 호스트·공동호스트 전용, REQ-25) -->
+      <button class="btn btn-outline" id="btn-close-event" style="display:none;" onclick="busy(this, closeEvent())"><svg class="ic" aria-hidden="true"><use href="#i-flag"/></svg>행사 마감하기</button>
+      <div class="refresh-line" id="today-updated"></div>
+    </div>
+
+    <!-- 히스토리 탭 (REQ-08) -->
+    <div id="tab-history" style="display:none;">
+      <!-- 메뉴 랭킹 (최근 30일, REQ-18) — 장소·메뉴 기록을 쓰는 방에서만 노출 -->
+      <div class="card" id="menu-ranking-card" style="display:none;">
+        <div class="group-head"><svg class="ic t-mint" aria-hidden="true"><use href="#i-trophy"/></svg><span id="rank-title">최근 30일 많이 먹은 메뉴</span></div>
+        <div id="rank-body"></div>
+      </div>
+      <div class="card">
+        <div class="cal-nav">
+          <button id="cal-prev" onclick="moveMonth(-1)"><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"/></svg>이전 달</button>
+          <div class="month" id="cal-month"></div>
+          <button id="cal-next" onclick="moveMonth(1)">다음 달<svg class="ic" aria-hidden="true"><use href="#i-chevron-right"/></svg></button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="sub center mt8">최근 30일 기록만 보관됩니다.</div>
+        <div class="day-detail" id="day-detail" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- 하단 탭 바 -->
+    <div class="tabbar">
+      <button id="tabbtn-today" onclick="setTab('today')"><span class="ico"><svg class="ic off-i" aria-hidden="true"><use href="#o-sun"/></svg><svg class="ic on-i" aria-hidden="true"><use href="#i-sun"/></svg></span>오늘</button>
+      <button id="tabbtn-history" onclick="setTab('history')"><span class="ico"><svg class="ic off-i" aria-hidden="true"><use href="#o-calendar-days"/></svg><svg class="ic on-i" aria-hidden="true"><use href="#i-calendar-days"/></svg></span>히스토리</button>
+    </div>
+  </div>
+
+  <!-- 설정 (SCR-06) -->
+  <div class="screen no-tab" id="sc-settings">
+    <div class="header hero">
+      <button class="icon-btn" title="뒤로" aria-label="뒤로" onclick="closeSettings()"><svg class="ic" aria-hidden="true"><use href="#i-arrow-left"/></svg></button>
+      <div class="grow"><div class="title" style="font-size:22px;">설정</div></div>
+    </div>
+
+    <!-- 이 방에서의 내 닉네임 (전 멤버 공통, 방마다 독립적으로 저장됨) -->
+    <div id="set-room-nickname-section" style="display:none;">
+      <div class="section-label">이 방에서의 내 닉네임</div>
+      <div class="card">
+        <div class="field">
+          <label>닉네임 (2~10자 한글/영문/숫자)</label>
+          <input type="text" id="set-room-nickname" maxlength="10">
+          <div class="hint">닉네임은 <b>방마다 따로 저장</b>돼요. 동료들이 명단·채팅에서 알아볼 수 있도록 <b>실명이나 알아보기 쉬운 이름</b>을 추천해요.</div>
+        </div>
+        <button class="btn btn-gray" onclick="busy(this, saveNickname())">닉네임 저장</button>
+      </div>
+    </div>
+
+    <!-- 방 관리 (호스트·공동 호스트 전용, REQ-10·11) -->
+    <div id="set-room-section" style="display:none;">
+      <div class="section-label">방 관리 · <span id="set-room-name"></span></div>
+      <div class="card">
+        <div class="set-row">
+          <div class="grow"><b>방 이름 변경</b></div>
+          <button class="mini-btn" onclick="busy(this, doRenameRoom())">변경</button>
+        </div>
+        <div class="set-row">
+          <div class="grow"><b>초대 링크 재생성</b><div class="sub">기존 링크는 즉시 무효화됩니다</div></div>
+          <button class="mini-btn" onclick="busy(this, doRegenInvite())">재생성</button>
+        </div>
+      </div>
+
+      <!-- 방 종류(프리셋) 변경 (REQ-16) -->
+      <div class="section-label">방 종류</div>
+      <div class="card">
+        <div class="preset-grid" id="set-presets"></div>
+        <div id="set-purpose-toggles" style="margin-top:6px;">
+          <div class="set-row">
+            <div class="grow"><b>장소·메뉴 기록</b><div class="sub">응답할 때 어디서 뭘 먹는지 함께 남겨요</div></div>
+            <label class="switch"><input type="checkbox" id="tg-meal-log"><span class="slider"></span></label>
+          </div>
+          <div class="set-row">
+            <div class="grow"><b>메뉴 투표</b><div class="sub">오늘 먹을 메뉴를 다수결로 정해요</div></div>
+            <label class="switch"><input type="checkbox" id="tg-menu-poll" onchange="renderPurposeUI()"><span class="slider"></span></label>
+          </div>
+        </div>
+        <button class="btn btn-gray" style="margin-top:12px;" onclick="busy(this, savePurpose())">방 종류 저장</button>
+        <div class="hint" id="set-purpose-hint" style="margin-top:10px;"></div>
+      </div>
+
+      <!-- 메뉴 투표 세부 설정 (REQ-19) — 투표를 쓰는 방에서만 노출 -->
+      <div id="set-poll-section" style="display:none;">
+        <div class="section-label">메뉴 투표 설정</div>
+        <div class="card">
+          <div class="set-row">
+            <div class="grow"><b>멤버도 후보 추가</b><div class="sub">끄면 호스트만 후보를 올릴 수 있어요</div></div>
+            <label class="switch"><input type="checkbox" id="poll-member-add"><span class="slider"></span></label>
+          </div>
+          <div class="set-row">
+            <div class="grow"><b>자동 마감 시각</b><div class="sub">비우면 호스트가 직접 마감할 때까지 열려 있어요</div></div>
+            <input type="time" id="poll-deadline" style="width:auto;padding:8px;border:1.5px solid var(--line);border-radius:10px;">
+          </div>
+          <button class="btn btn-gray" style="margin-top:12px;" onclick="busy(this, savePollConfig())">투표 설정 저장</button>
+          <div class="hint" style="margin-top:10px;">자동 마감 시각을 정하면 그 시각이 지난 뒤 5분 안에 결과가 확정돼요. 동점이면 룰렛으로 정해집니다.</div>
+        </div>
+      </div>
+
+      <div class="section-label">알림 설정 (이메일)</div>
+      <div class="card">
+        <div class="set-row">
+          <div class="grow"><b>점심 알림 메일 발송</b><div class="sub">멤버 중 이메일 등록자에게 발송</div></div>
+          <label class="switch"><input type="checkbox" id="notify-enabled" onchange="onNotifyToggle()"><span class="slider"></span></label>
+        </div>
+        <div id="notify-days-row" class="set-row" style="display:none; flex-direction:column; align-items:stretch; gap:10px;">
+          <div>
+            <b>발송 요일</b>
+            <div class="sub" style="margin-top:2px;">요일별로 직접 선택하세요. 아래 버튼으로 빠르게 채울 수 있어요.</div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="mini-btn" onclick="quickSelectDays('weekday')">평일 선택</button>
+            <button type="button" class="mini-btn" onclick="quickSelectDays('weekend')">주말 선택</button>
+            <button type="button" class="mini-btn" onclick="quickSelectDays('all')">매일 선택</button>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:10px;">
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;"><input type="checkbox" class="notify-day" id="notify-day-mon" checked> 월</label>
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;"><input type="checkbox" class="notify-day" id="notify-day-tue" checked> 화</label>
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;"><input type="checkbox" class="notify-day" id="notify-day-wed" checked> 수</label>
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;"><input type="checkbox" class="notify-day" id="notify-day-thu" checked> 목</label>
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;"><input type="checkbox" class="notify-day" id="notify-day-fri" checked> 금</label>
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;"><input type="checkbox" class="notify-day" id="notify-day-sat"> 토</label>
+            <label style="display:flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;"><input type="checkbox" class="notify-day" id="notify-day-sun"> 일</label>
+          </div>
+        </div>
+        <div id="notify-time-row" class="set-row" style="display:none;">
+          <div class="grow"><b>발송 시각</b><div class="sub" id="notify-recipients"></div></div>
+          <input type="time" id="notify-time" value="10:30" style="width:auto;padding:8px;border:1.5px solid var(--line);border-radius:10px;">
+        </div>
+        <button class="btn btn-gray" style="margin-top:12px;" onclick="busy(this, saveNotify())">알림 설정 저장</button>
+        <div class="hint" style="margin-top:10px;">선택한 요일에만, 설정한 시각 전후로 발송됩니다. 이메일은 알림 발송 목적으로만 사용됩니다.</div>
+      </div>
+      <div class="section-label">멤버 관리</div>
+      <div class="card" id="set-members">불러오는 중...</div>
+      <div id="set-danger" style="display:none;">
+        <div class="section-label">위험 구역</div>
+        <button class="btn btn-danger" onclick="busy(this, doDeleteRoom())"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg>방 삭제 (호스트 전용)</button>
+      </div>
+    </div>
+
+    <!-- 게스트 안내 (REQ-25) — 이름만 입력해 참여한 사람에게만 노출 -->
+    <div id="set-guest-note" style="display:none;">
+      <div class="section-label">참여 정보</div>
+      <div class="card">
+        <div class="sub">이 모임은 <b>가입 없이 이름만으로</b> 참여하셨어요. 계정이 없으므로 비밀번호·이메일 설정은 없습니다.</div>
+        <div class="hint mt8">
+          참여 기록은 <b>이 브라우저에만</b> 저장돼요. 아래 <b>이 브라우저에서 나가기</b>를 누르거나 브라우저 데이터를 지우면
+          <b>같은 사람으로 돌아올 수 없고</b>, 다시 참여하면 새 참여자로 등록돼요.
+        </div>
+      </div>
+    </div>
+
+    <!-- 개인 설정 (REQ-09) — 계정 사용자만 -->
+    <div id="set-account-section">
+    <div class="section-label">개인 설정</div>
+    <div class="card">
+      <div class="field"><label>현재 비밀번호</label><input type="password" id="pw-cur" autocomplete="current-password"></div>
+      <div class="field"><label>새 비밀번호 (8자 이상, 영문+숫자)</label><input type="password" id="pw-new" autocomplete="new-password"></div>
+      <div class="field"><label>새 비밀번호 확인</label><input type="password" id="pw-new2" autocomplete="new-password"></div>
+      <div class="form-error" id="pw-error"></div>
+      <button class="btn btn-gray" onclick="busy(this, changePw())">비밀번호 변경</button>
+    </div>
+    <div class="card">
+      <!-- REQ-14: 알림 수신 이메일 (선택) -->
+      <div class="field">
+        <label>알림 수신 이메일 <span style="color:var(--gray);font-weight:400;">(선택)</span></label>
+        <input type="email" id="set-email" autocomplete="email" placeholder="예: me@daekyo.co.kr (비우면 알림 안 받음)">
+        <div class="hint">점심 알림 메일을 받을 주소예요. <b>알림 발송 목적으로만 사용</b>하며, 비워서 저장하면 즉시 삭제됩니다.</div>
+      </div>
+      <button class="btn btn-gray" onclick="busy(this, saveEmail())">이메일 저장</button>
+    </div>
+    <div class="card">
+      <div class="set-row" style="cursor:pointer;" onclick="openOnboarding()">
+        <div class="grow"><b><svg class="ic ic-sm t-mint" aria-hidden="true"><use href="#i-book-open"/></svg> 사용 방법 보기</b><div class="sub">오늘점심 이용 안내를 다시 봅니다</div></div>
+        <span class="ic-go"><svg class="ic" aria-hidden="true"><use href="#i-chevron-right"/></svg></span>
+      </div>
+    </div>
+    <!-- 회원 탈퇴 (REQ-21) -->
+    <div class="section-label">계정 삭제</div>
+    <div class="card">
+      <div class="set-row" style="cursor:pointer;" onclick="openDeleteAccount()">
+        <div class="grow"><b style="color:var(--red);">회원 탈퇴</b><div class="sub">계정과 내 데이터를 삭제합니다</div></div>
+        <span class="ic-go"><svg class="ic" aria-hidden="true"><use href="#i-chevron-right"/></svg></span>
+      </div>
+    </div>
+    </div><!-- /set-account-section -->
+    <button class="btn btn-gray" id="btn-logout" onclick="doLogout(true)">로그아웃</button>
+  </div>
+
+</div>
+
+<!-- 회원 탈퇴 모달 (REQ-21) -->
+<div class="modal-back" id="modal-delete">
+  <div class="modal">
+    <div class="title" style="font-size:18px; margin-bottom:12px;">회원 탈퇴</div>
+    <div class="sub">탈퇴하면 계정과 참여 기록이 삭제되고 <b>되돌릴 수 없어요.</b></div>
+    <div id="del-rooms" style="margin-top:12px;"></div>
+    <div class="field" style="margin-top:12px;">
+      <label>비밀번호 확인</label>
+      <input type="password" id="del-pw" autocomplete="current-password" placeholder="본인 확인을 위해 입력해주세요"
+             onkeydown="if(event.key==='Enter'){doDeleteAccount();}">
+    </div>
+    <div class="form-error" id="del-error"></div>
+    <button class="btn btn-danger" id="btn-del" onclick="doDeleteAccount()">탈퇴하기</button>
+    <button class="btn btn-gray" onclick="closeDeleteAccount()">취소</button>
+  </div>
+</div>
+
+<!-- 비밀번호 찾기 요청 모달 (REQ-15) -->
+<div class="modal-back" id="modal-forgot">
+  <div class="modal">
+    <div class="title" style="font-size:20px; margin-bottom:12px;"><svg class="ic" aria-hidden="true"><use href="#i-key"/></svg>비밀번호 찾기</div>
+    <div class="field">
+      <label>아이디</label>
+      <input type="text" id="forgot-id" placeholder="가입한 아이디 입력" onkeydown="if(event.key==='Enter'){doRequestReset();}">
+      <div class="hint">가입 시 등록한 <b>이메일</b>이 있는 경우에만 재설정 링크가 발송돼요. 이메일을 등록하지 않았다면 운영자에게 문의해주세요.</div>
+    </div>
+    <div class="form-error" id="forgot-error"></div>
+    <button class="btn btn-primary" id="btn-forgot" onclick="doRequestReset()">재설정 링크 받기</button>
+    <button class="btn btn-gray" onclick="closeForgotPassword()">취소</button>
+  </div>
+</div>
+
+<!-- 방 코드 참여 모달 (REQ-04 방법 2) -->
+<div class="modal-back" id="modal-join">
+  <div class="modal">
+    <div class="title" style="font-size:20px; margin-bottom:12px;"><svg class="ic" aria-hidden="true"><use href="#i-key"/></svg>방 코드로 참여</div>
+    <div class="field">
+      <label>방 코드 (6자리)</label>
+      <input type="text" id="join-code" maxlength="6" placeholder="예: AB3D7K"
+             style="text-transform:uppercase; letter-spacing:4px; text-align:center; font-size:20px; font-weight:800;"
+             onkeydown="if(event.key==='Enter'){doJoinCode();}">
+      <div class="hint">방 멤버에게 코드를 받아 입력하세요. 방 코드는 만료되지 않아요.</div>
+    </div>
+    <div class="form-error" id="join-error"></div>
+    <button class="btn btn-primary" id="btn-join" onclick="doJoinCode()">참여하기</button>
+    <button class="btn btn-gray" onclick="closeJoinCode()">취소</button>
+  </div>
+</div>
+
+<!-- 방 만들기 모달 (REQ-03) -->
+<div class="modal-back" id="modal-create">
+  <div class="modal">
+    <div class="title" style="font-size:18px; margin-bottom:12px;">새 방 만들기</div>
+    <div class="field">
+      <label>방 이름 (2~20자)</label>
+      <input type="text" id="create-room-name" maxlength="20">
+    </div>
+    <div class="field">
+      <label>방 종류</label>
+      <div class="preset-grid" id="create-presets"></div>
+      <div class="hint" id="create-preset-hint"></div>
+    </div>
+    <div class="form-error" id="create-error"></div>
+    <button class="btn btn-primary" id="btn-create" onclick="doCreateRoom()">방 만들기</button>
+    <button class="btn btn-gray" onclick="closeCreateRoom()">취소</button>
+  </div>
+</div>
+
+<!-- 온보딩 (사용 방법 안내) -->
+<div class="modal-back" id="onboarding">
+  <div class="modal onb">
+    <div class="onb-icon" id="onb-icon"></div>
+    <div class="onb-title" id="onb-title"></div>
+    <div class="onb-body" id="onb-body"></div>
+    <div class="onb-dots" id="onb-dots"></div>
+    <div class="onb-nav">
+      <button class="btn btn-gray" id="onb-prev" onclick="onbPrev()">이전</button>
+      <button class="btn btn-primary" id="onb-next" onclick="onbNext()">다음</button>
+    </div>
+    <button class="onb-skip" id="onb-skip" onclick="closeOnboarding()">건너뛰기</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  /* ==================== 설정 ==================== */
+  // Supabase 프로젝트 정보 — Project Settings > API 에서 확인
+  var SUPABASE_URL = 'https://kwbtquatwsjhkhloixbz.supabase.co';
+  var SUPABASE_ANON_KEY = 'sb_publishable_cQHxS9EXqLyF09W__Vtdrg_XxrvNQzn';
+  var supabase = (SUPABASE_URL.indexOf('supabase.co') > -1)
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+
+  // 프론트 함수명(기존 앱스크립트 호출명) → Postgres RPC 함수명 + 파라미터 순서 매핑
+  // (프론트 나머지 코드는 그대로 두고 이 매핑만으로 백엔드를 앱스크립트→Supabase로 교체)
+  var RPC_MAP = {
+    api_signup:               { name: 'api_signup',                params: ['p_login_id', 'p_password', 'p_email'] },
+    api_login:                { name: 'api_login',                 params: ['p_login_id', 'p_password'] },
+    api_logout:               { name: 'api_logout',                params: ['p_token'] },
+    api_getMe:                { name: 'api_get_me',                params: ['p_token'] },
+    api_getMyRooms:           { name: 'api_get_my_rooms',          params: ['p_token'] },
+    api_createRoom:           { name: 'api_create_room',           params: ['p_token', 'p_room_name', 'p_purpose'] },
+    api_setRoomPurpose:       { name: 'api_set_room_purpose',      params: ['p_token', 'p_room_id', 'p_purpose', 'p_track_meal_log', 'p_enable_menu_poll'] },
+    api_setMenuPollConfig:    { name: 'api_set_menu_poll_config',  params: ['p_token', 'p_room_id', 'p_deadline', 'p_member_add'] },
+    api_joinByInvite:         { name: 'api_join_by_invite',        params: ['p_token', 'p_invite_token'] },
+    api_joinByCode:           { name: 'api_join_by_code',          params: ['p_token', 'p_code'] },
+    api_getRoomHome:          { name: 'api_get_room_home',         params: ['p_token', 'p_room_id'] },
+    api_setResponse:          { name: 'api_set_response',          params: ['p_token', 'p_room_id', 'p_status', 'p_place_name', 'p_menu_name'] },
+    api_sendMessage:          { name: 'api_send_message',          params: ['p_token', 'p_room_id', 'p_text'] },
+    api_getHistory:           { name: 'api_get_history',           params: ['p_token', 'p_room_id'] },
+    api_getMenuRanking:       { name: 'api_get_menu_ranking',      params: ['p_token', 'p_room_id'] },
+    api_startMenuPoll:        { name: 'api_start_menu_poll',       params: ['p_token', 'p_room_id', 'p_options'] },
+    api_addPollOption:        { name: 'api_add_poll_option',       params: ['p_token', 'p_room_id', 'p_label'] },
+    api_votePoll:             { name: 'api_vote_poll',             params: ['p_token', 'p_room_id', 'p_option_id'] },
+    api_closePoll:            { name: 'api_close_poll',            params: ['p_token', 'p_room_id'] },
+    api_peekInvite:           { name: 'api_peek_invite',           params: ['p_invite_token'] },
+    api_joinEventAsGuest:     { name: 'api_join_event_as_guest',   params: ['p_invite_token', 'p_name'] },
+    api_closeEvent:           { name: 'api_close_event',           params: ['p_token', 'p_room_id'] },
+    api_getMealSuggestions:   { name: 'api_get_my_meal_suggestions', params: ['p_token', 'p_room_id'] },
+    api_getDeletePreview:     { name: 'api_get_delete_preview',    params: ['p_token'] },
+    api_setRoomOrder:         { name: 'api_set_room_order',        params: ['p_token', 'p_room_ids'] },
+    api_deleteAccount:        { name: 'api_delete_account',        params: ['p_token', 'p_password', 'p_delete_my_rooms'] },
+    api_updateNickname:       { name: 'api_update_nickname',       params: ['p_token', 'p_room_id', 'p_nickname'] },
+    api_changePassword:       { name: 'api_change_password',       params: ['p_token', 'p_current_pw', 'p_new_pw'] },
+    api_updateEmail:          { name: 'api_update_email',          params: ['p_token', 'p_email'] },
+    api_requestPasswordReset: { name: 'api_request_password_reset', params: ['p_login_id'] },
+    api_resetPassword:        { name: 'api_reset_password',        params: ['p_reset_token', 'p_new_password'] },
+    api_getMembers:           { name: 'api_get_members',           params: ['p_token', 'p_room_id'] },
+    api_renameRoom:           { name: 'api_rename_room',           params: ['p_token', 'p_room_id', 'p_room_name'] },
+    api_getRoomSettings:      { name: 'api_get_room_settings',     params: ['p_token', 'p_room_id'] },
+    api_setNotify:            { name: 'api_set_notify',            params: ['p_token', 'p_room_id', 'p_enabled', 'p_time', 'p_mon', 'p_tue', 'p_wed', 'p_thu', 'p_fri', 'p_sat', 'p_sun'] },
+    api_regenerateInvite:     { name: 'api_regenerate_invite',     params: ['p_token', 'p_room_id'] },
+    api_setRole:              { name: 'api_set_role',              params: ['p_token', 'p_room_id', 'p_target_user_id', 'p_role'] },
+    api_kickMember:           { name: 'api_kick_member',           params: ['p_token', 'p_room_id', 'p_target_user_id'] },
+    api_deleteRoom:           { name: 'api_delete_room',           params: ['p_token', 'p_room_id'] },
+  };
+
+  /* ==================== 상태 ==================== */
+  var INVITE = new URLSearchParams(location.search).get('invite') || '';
+  var RESET_TOKEN = new URLSearchParams(location.search).get('reset') || '';
+  var state = {
+    token: localStorage.getItem('lb_token') || '',
+    me: null,
+    roomId: null,
+    myRole: '',
+    myNickname: '',   // 현재 방에서의 내 닉네임 (방마다 다를 수 있음)
+    tab: 'today',
+    pendingInvite: INVITE || '',
+    inviteUrl: '',
+    roomCode: '',
+    unrespOpen: true,         // 미응답 펼침 — 기본 펼침, 세션 내 유지 (REQ-06)
+    histEntries: {},
+    histToday: '',
+    histCutoff: '',
+    histMonth: null,          // 표시 중인 달 (Date, 1일 기준)
+    histSelected: null,
+    timer: null,
+    onbIndex: 0,              // 온보딩 현재 단계
+    purpose: 'cafeteria',     // 현재 방의 목적 프리셋 (REQ-16)
+    trackMealLog: false,      // 장소·메뉴 기록 사용 여부 (REQ-17)
+    enableMenuPoll: false,    // 메뉴 투표 사용 여부 (REQ-19)
+    eventStatus: 'open',      // 이벤트형 방 진행 상태 (REQ-25)
+    createPurpose: 'cafeteria',   // 방 만들기 모달에서 고른 프리셋
+    setPurpose: 'cafeteria',      // 설정 화면에서 고른 프리셋
+    rouletteShown: {},            // 동점 룰렛을 이미 돌린 투표 id (폴링마다 재생되지 않도록)
+    rouletteSpinning: false,      // 룰렛 연출 중 — 폴링이 화면을 덮어쓰지 않게 함
+    suggestMenus: [],             // 내가 최근 입력한 메뉴 (자동완성·랜덤 추천용, REQ-20)
+    suggestPlaces: [],
+    suggestLoadedFor: '',         // 자동완성을 불러온 방 id (방마다 1회만 조회)
+    orderEdit: false,             // 방 목록 순서 편집 모드 (REQ-26)
+    roomLists: { hostRooms: [], otherRooms: [] },   // 현재 화면에 그려진 방 목록 (순서 조작 대상)
+  };
+
+  /* ==================== 방 목적 프리셋 (REQ-16) ====================
+     프리셋은 화면 문구와 기본 기능 on/off만 결정한다. 데이터 구조는 모든 방이 동일하다.
+     ask/go/no = 방 종류에 따라 달라지는 응답 카드 문구 (페르소나 확장 — 사내식당 전용 표현 제거) */
+  var PRESETS = [
+    { key: 'cafeteria', icon: 'building-office', name: '사내식당형', desc: '구내식당에 같이 갈 사람만 확인해요 (기존 방식)',
+      ask: '오늘 점심, 어떻게 하세요?', go: '오늘 같이 가요', no: '오늘은 안 가요' },
+    { key: 'outside', icon: 'building-storefront', name: '외부 점심형', desc: '어디서 뭘 먹었는지 메뉴까지 기록하고 통계로 봐요',
+      ask: '오늘 점심, 같이 드실 분?', go: '오늘 같이 먹어요', no: '오늘은 안 먹어요' },
+    { key: 'poll', icon: 'clipboard-document-check', name: '메뉴 투표형', desc: '참석 여부를 받고, 오늘 메뉴는 투표로 정해요',
+      ask: '오늘 점심, 어떻게 하세요?', go: '오늘 같이 가요', no: '오늘은 안 가요' },
+    { key: 'event', icon: 'sparkles', name: '이벤트형 (1회용)', desc: '가입 없이 이름만 입력해 참여해요 · 초대 링크 전용, 행사 끝나면 마감',
+      ask: '이 모임에 참석하시나요?', go: '참석해요', no: '참석 못해요' },
+    { key: 'custom', icon: 'cog-6-tooth', name: '자유 설정', desc: '필요한 기능만 직접 켜서 써요',
+      ask: '오늘 점심, 어떻게 하세요?', go: '오늘 같이 가요', no: '오늘은 안 가요' },
+  ];
+  function preset(key) {
+    for (var i = 0; i < PRESETS.length; i++) if (PRESETS[i].key === key) return PRESETS[i];
+    return PRESETS[0];
+  }
+  // 프리셋 카드 목록을 그려준다. onPick은 전역 함수 이름(문자열) — 인라인 onclick으로 연결
+  function presetCards(containerId, selectedKey, onPick) {
+    document.getElementById(containerId).innerHTML = PRESETS.map(function (p) {
+      return '<button type="button" class="preset-card' + (p.key === selectedKey ? ' on' : '') + '"' +
+        ' onclick="' + onPick + '(\'' + p.key + '\')">' +
+        '<span class="pi">' + ic(p.icon) + '</span>' +
+        '<span class="grow"><span class="pn">' + esc(p.name) + '</span>' +
+        '<span class="pd">' + esc(p.desc) + '</span></span></button>';
+    }).join('');
+  }
+
+  /* ==================== 공통 ==================== */
+  // 모든 서버 호출 중 상단 로딩 바 표시 — 어떤 버튼을 눌러도 "실행 중" 상태가 보이도록 함
+  var pendingCalls = 0;
+  function beginBusy() { pendingCalls++; document.getElementById('loading-bar').classList.add('on'); }
+  function endBusy() { pendingCalls = Math.max(0, pendingCalls - 1); if (pendingCalls === 0) document.getElementById('loading-bar').classList.remove('on'); }
+  // 클릭한 버튼 자체를 처리 중에는 비활성화 — onclick="busy(this, someFn())" 형태로 사용
+  function busy(btn, maybePromise) {
+    if (maybePromise && typeof maybePromise.finally === 'function') {
+      btn.disabled = true;
+      maybePromise.finally(function () { btn.disabled = false; });
+    }
+  }
+
+  function call(fn) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    var map = RPC_MAP[fn];
+    if (!map) return Promise.resolve({ ok: false, error: '알 수 없는 요청입니다: ' + fn });
+    var params = {};
+    map.params.forEach(function (p, i) { if (args[i] !== undefined) params[p] = args[i]; });
+
+    // Supabase Postgres 함수(RPC) 호출. 일시적 연결 실패에 대비해 최대 3회(0.8초 → 1.6초 간격) 자동 재시도
+    function attempt(n) {
+      return supabase.rpc(map.name, params).then(function (res) {
+        if (res.error) throw res.error;
+        return res.data; // 함수가 { ok, data|error } 형태의 jsonb를 그대로 반환
+      }).catch(function (e) {
+        if (n < 2) {
+          return new Promise(function (res) { setTimeout(res, 800 * (n + 1)); })
+            .then(function () { return attempt(n + 1); });
+        }
+        return { ok: false, error: '서버 연결이 원활하지 않습니다. 잠시 후 다시 시도해주세요.' };
+      });
+    }
+    beginBusy();
+    return attempt(0).finally(endBusy);
+  }
+  function api(fn) {
+    var args = Array.prototype.slice.call(arguments);
+    return call.apply(null, args).then(function (r) {
+      if (!r.ok && r.error === 'AUTH') {
+        toast('세션이 만료되었습니다. 다시 로그인해주세요.');
+        doLogout(false);
+      }
+      return r;
+    });
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  /** Heroicons 스프라이트 아이콘 마크업 — 문자열 HTML에 이어 붙여 쓴다 */
+  function ic(name, cls) {
+    return '<svg class="ic' + (cls ? ' ' + cls : '') + '" aria-hidden="true"><use href="#i-' + name + '"/></svg>';
+  }
+  var toastTimer = null;
+  function toast(msg, icon) {
+    var el = document.getElementById('toast');
+    el.innerHTML = (icon ? ic(icon) : '') + '<span>' + esc(msg) + '</span>';
+    el.style.display = 'block';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.style.display = 'none'; }, 2600);
+  }
+  function show(id) {
+    stopPolling();
+    var screens = document.querySelectorAll('.screen');
+    for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+  function stopPolling() { if (state.timer) { clearInterval(state.timer); state.timer = null; } }
+  function nowHM() {
+    var d = new Date();
+    return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+  }
+  function copyText(t) {
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = t; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); toast('초대 링크가 복사되었습니다', 'link'); }
+      catch (e) { prompt('아래 링크를 직접 복사해주세요', t); }
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t)
+        .then(function () { toast('초대 링크가 복사되었습니다', 'link'); })
+        .catch(fallback);
+    } else fallback();
+  }
+
+  /* ==================== 초기화 ==================== */
+  function init() {
+    if (!supabase) {
+      document.querySelector('#sc-loading .sub').textContent =
+        '설정 필요: docs/index-supabase.html의 SUPABASE_URL / SUPABASE_ANON_KEY를 입력해주세요.';
+      return;
+    }
+    if (RESET_TOKEN) { showResetPassword(); return; }
+    if (state.token) {
+      call('api_getMe', state.token).then(function (r) {
+        if (r.ok) { state.me = r.data.user; afterLogin(); }
+        else { localStorage.removeItem('lb_token'); state.token = ''; showAuth(); }
+      });
+    } else showAuth();
+  }
+  function showAuth() {
+    // 이벤트형 방 초대 링크라면 로그인 화면 대신 "이름만 입력" 화면으로 보낸다 (REQ-25)
+    if (state.pendingInvite) {
+      call('api_peekInvite', state.pendingInvite).then(function (r) {
+        if (r.ok && r.data.isEvent) {
+          if (r.data.closed) {
+            document.getElementById('event-closed-name').textContent = r.data.roomName || '';
+            show('sc-event-closed');
+          } else {
+            document.getElementById('guest-room-name').textContent = r.data.roomName || '모임';
+            document.getElementById('guest-error').textContent = '';
+            document.getElementById('guest-name').value = '';
+            show('sc-guest-join');
+          }
+          return;
+        }
+        showLoginScreen();
+      });
+      return;
+    }
+    showLoginScreen();
+  }
+  function showLoginScreen() {
+    document.getElementById('invite-notice').style.display = state.pendingInvite ? 'block' : 'none';
+    switchAuth('cover');
+    show('sc-auth');
+  }
+  /* 게스트 참여 (REQ-25) */
+  function doGuestJoin() {
+    var name = document.getElementById('guest-name').value.trim();
+    var errEl = document.getElementById('guest-error');
+    if (name.length < 2 || name.length > 10) { errEl.textContent = '이름은 2~10자로 입력해주세요.'; return; }
+    var btn = document.getElementById('btn-guest-join');
+    btn.disabled = true; errEl.textContent = '';
+    call('api_joinEventAsGuest', state.pendingInvite, name).then(function (r) {
+      btn.disabled = false;
+      if (!r.ok) {
+        if (r.error === 'EXPIRED') { show('sc-expired'); return; }
+        errEl.textContent = r.error; return;
+      }
+      // 일반 로그인과 동일하게 세션 토큰을 저장한다
+      state.token = r.data.token;
+      localStorage.setItem('lb_token', state.token);
+      state.me = r.data.user;
+      state.pendingInvite = '';
+      toast('참여했어요! 반가워요 ' + name + '님', 'sparkles');
+      enterRoom(r.data.roomId);
+    });
+  }
+  /** 게스트 화면에서 "계정으로 로그인" 선택 — 기존 초대 흐름으로 넘긴다 */
+  function guestToLogin() { showLoginScreen(); }
+  function afterLogin() {
+    // 게스트는 방 목록·온보딩 없이 참여한 그 방으로 바로 들어간다 (REQ-25)
+    if (state.me && state.me.isGuest) {
+      state.pendingInvite = '';
+      if (state.me.guestRoomId) { enterRoom(state.me.guestRoomId); return; }
+      // 방이 이미 삭제(자동 정리)된 게스트 세션 — 토큰을 버리고 처음 화면으로
+      localStorage.removeItem('lb_token'); state.token = ''; state.me = null;
+      show('sc-event-closed');
+      return;
+    }
+    if (state.pendingInvite) {
+      var inv = state.pendingInvite;
+      state.pendingInvite = '';
+      api('api_joinByInvite', state.token, inv).then(function (r) {
+        if (r.ok) {
+          toast(r.data.already ? '이미 참여 중인 방이에요!' : '방에 참여했습니다', 'sparkles');
+          enterRoom(r.data.roomId);
+        } else if (r.error === 'EXPIRED') {
+          show('sc-expired');
+        } else {
+          toast(r.error); loadRooms();
+        }
+      });
+    } else loadRooms();
+    maybeShowOnboarding();
+  }
+
+  /* ==================== 온보딩 (사용 방법 안내) ==================== */
+  var ONB_STEPS = [
+    {
+      icon: 'brand',
+      title: '오늘점심에 오신 걸 환영해요!',
+      body: '오늘 <b>누구랑</b> 먹을지, <b>뭘</b> 먹을지 한 화면에서 정하는 서비스예요.' +
+        '<br>구내식당·외부 식당·회식 모임까지 모두 쓸 수 있어요.',
+    },
+    {
+      icon: 'hand-raised',
+      title: '먼저 내 이름을 설정해요',
+      body: '방에 참여하면 <b>닉네임이 아이디로 자동 설정</b>돼요. 참여 명단과 채팅에서 동료들이 나를 알아볼 수 있도록 ' +
+        '<b>실명이나 알아보기 쉬운 이름</b>으로 바꾸는 걸 추천해요.' +
+        '<span class="ex">' + ic('cog-6-tooth', 'ic-inline') + ' 방 안 <b>설정 > 이 방에서의 내 닉네임</b>에서 변경할 수 있어요. <b>닉네임은 방마다 따로 저장</b>돼요</span>',
+    },
+    {
+      icon: 'building-office',
+      title: '방을 만들 때 종류를 골라요',
+      body: '방 목록의 <b>' + ic('plus', 'ic-inline') + ' 버튼</b>으로 방을 만들면 내가 호스트가 돼요. 이때 <b>방 종류</b>를 고르면 화면과 기능이 맞춰져요.' +
+        '<span class="ex">' + ic('building-office', 'ic-inline') + ' <b>사내식당형</b> 구내식당 같이 갈 사람만 확인 · ' + ic('building-storefront', 'ic-inline') + ' <b>외부 점심형</b> 먹은 메뉴까지 기록</span>' +
+        '<span class="ex">' + ic('clipboard-document-check', 'ic-inline') + ' <b>메뉴 투표형</b> 참석 + 메뉴 투표 · ' + ic('sparkles', 'ic-inline') + ' <b>이벤트형</b> 가입 없이 이름만으로 참여 (1회용)</span>' +
+        '<span class="ex">' + ic('cog-6-tooth', 'ic-inline') + ' <b>자유 설정</b>으로 기능을 직접 켜고 끌 수도 있어요. 종류는 나중에 바꿀 수 있어요 (이벤트형만 예외)</span>',
+    },
+    {
+      icon: 'link',
+      title: '초대 링크 · 방 코드로 참여',
+      body: '동료에게 받은 방법으로 방에 들어갈 수 있어요.' +
+        '<span class="ex">' + ic('link', 'ic-inline') + ' <b>초대 링크</b>를 누르면 로그인 후 자동으로 방에 참여돼요 (링크는 7일간 유효)</span>' +
+        '<span class="ex">' + ic('key', 'ic-inline') + ' <b>방 코드</b>는 방 목록의 “방 코드로 참여”에 6자리 코드를 입력하면 돼요 (만료 없음)</span>' +
+        '<span class="ex">' + ic('sparkles', 'ic-inline') + ' <b>이벤트형 방</b>은 방 코드 없이 <b>링크로만</b> 참여하고, 받은 사람은 가입 없이 이름만 입력하면 돼요</span>',
+    },
+    {
+      icon: 'check-circle',
+      title: '오늘 참여 / 불참 선택',
+      body: '매일 <b>“오늘 같이 가요”</b> 또는 <b>“오늘은 안 가요”</b>를 눌러 의사를 알려주세요.' +
+        '<span class="ex">마음이 바뀌면 명단에서 <b>내 이름(' + ic('x-mark', 'ic-inline') + ')을 탭</b>하거나 같은 버튼을 다시 눌러 취소할 수 있어요 (미응답으로 돌아감)</span>',
+    },
+    {
+      icon: 'clipboard-document-list',
+      title: '먹은 메뉴 기록하고 통계 보기',
+      body: '장소·메뉴 기록을 쓰는 방이라면, 참여를 누른 뒤 <b>어디서 뭘 먹는지</b> 남길 수 있어요 (선택).' +
+        '<span class="ex">' + ic('trophy', 'ic-inline') + ' 히스토리 탭에서 <b>최근 30일 많이 먹은 메뉴</b>와 내 순위, 많이 간 곳을 볼 수 있어요</span>' +
+        '<span class="ex">' + ic('cube', 'ic-inline') + ' <b>주사위 버튼</b>을 누르면 최근 먹은 것 중에서 골라줘요. 자주 쓰는 값은 자동완성으로 떠요</span>',
+    },
+    {
+      icon: 'clipboard-document-check',
+      title: '오늘 메뉴는 투표로',
+      body: '메뉴 투표를 쓰는 방이면 호스트가 후보를 2~6개 올리고 다 같이 투표해 오늘 메뉴를 정해요.' +
+        '<span class="ex">1인 1표이고 마감 전까지 <b>다시 투표</b>할 수 있어요. 멤버가 후보를 추가하는 것도 허용할 수 있어요</span>' +
+        '<span class="ex">' + ic('cube', 'ic-inline') + ' 동점이면 <b>룰렛</b>으로 자동 선택돼요. 참여/불참 응답과는 <b>따로</b> 돌아가요</span>',
+    },
+    {
+      icon: 'chat-bubble-left-right',
+      title: '방 채팅과 알림 메일',
+      body: '방 화면의 <b>“오늘의 채팅”</b>에서 메뉴나 약속을 가볍게 나눠보세요.' +
+        '<span class="ex">채팅은 <b>매일 자정에 초기화</b>돼서 그날의 대화만 남아요</span>' +
+        '<span class="ex">' + ic('bell', 'ic-inline') + ' <b>설정 > 알림 수신 이메일</b>에 주소를 등록하면 호스트가 정한 시각에 알림 메일을 받아요. ' +
+        '이메일은 <b>선택</b>이며 알림 목적으로만 쓰이고, 비워서 저장하면 즉시 삭제돼요</span>',
+    },
+    {
+      icon: 'sparkles',
+      title: '준비 끝났어요!',
+      body: '이제 방을 만들거나 초대받은 방에 참여해보세요.' +
+        '<span class="ex">' + ic('arrows-up-down', 'ic-inline') + ' 방이 여러 개면 방 목록의 <b>순서 편집</b>으로 자주 쓰는 방을 위로 올릴 수 있어요</span>' +
+        '<span class="ex">이 안내는 언제든 <b>설정 > ' + ic('book-open', 'ic-inline') + ' 사용 방법 보기</b>에서 다시 볼 수 있어요</span>',
+    },
+  ];
+  function maybeShowOnboarding() {
+    // 게스트는 1회용 참여라 온보딩을 띄우지 않는다 (안내는 게스트 참여 화면에 이미 있음)
+    if (state.me && state.me.isGuest) return;
+    if (!localStorage.getItem('lb_onboarded_v2')) openOnboarding();
+  }
+  function openOnboarding() {
+    state.onbIndex = 0;
+    renderOnb();
+    document.getElementById('onboarding').classList.add('open');
+  }
+  function closeOnboarding() {
+    localStorage.setItem('lb_onboarded_v2', '1');
+    document.getElementById('onboarding').classList.remove('open');
+  }
+  function onbPrev() { if (state.onbIndex > 0) { state.onbIndex--; renderOnb(); } }
+  function onbNext() {
+    if (state.onbIndex < ONB_STEPS.length - 1) { state.onbIndex++; renderOnb(); }
+    else closeOnboarding();
+  }
+  function renderOnb() {
+    var i = state.onbIndex, s = ONB_STEPS[i], last = i === ONB_STEPS.length - 1;
+    document.getElementById('onb-icon').innerHTML = ic(s.icon);
+    document.getElementById('onb-title').textContent = s.title;
+    document.getElementById('onb-body').innerHTML = s.body;
+    document.getElementById('onb-dots').innerHTML =
+      ONB_STEPS.map(function (_, k) { return '<i class="' + (k === i ? 'on' : '') + '"></i>'; }).join('');
+    document.getElementById('onb-prev').style.display = i === 0 ? 'none' : 'block';
+    document.getElementById('onb-next').textContent = last ? '시작하기' : '다음';
+    document.getElementById('onb-skip').style.display = last ? 'none' : 'block';
+  }
+
+  /* ==================== 로그인 / 회원가입 ==================== */
+  function switchAuth(mode) {
+    document.getElementById('auth-cover').style.display = mode === 'cover' ? 'block' : 'none';
+    document.getElementById('login-form').style.display = mode === 'login' ? 'block' : 'none';
+    document.getElementById('signup-form').style.display = mode === 'signup' ? 'block' : 'none';
+    document.getElementById('login-error').textContent = '';
+    document.getElementById('signup-error').textContent = '';
+  }
+  function doLogin() {
+    var id = document.getElementById('login-id').value.trim();
+    var pw = document.getElementById('login-pw').value;
+    var errEl = document.getElementById('login-error');
+    if (!id || !pw) { errEl.textContent = '아이디와 비밀번호를 입력해주세요.'; return; }
+    var btn = document.getElementById('btn-login');
+    btn.disabled = true; errEl.textContent = '';
+    call('api_login', id, pw).then(function (r) {
+      btn.disabled = false;
+      if (!r.ok) { errEl.textContent = r.error; return; }
+      state.token = r.data.token; state.me = r.data.user;
+      localStorage.setItem('lb_token', state.token);
+      afterLogin();
+    });
+  }
+  function doSignup() {
+    var id = document.getElementById('signup-id').value.trim();
+    var pw = document.getElementById('signup-pw').value;
+    var pw2 = document.getElementById('signup-pw2').value;
+    var email = document.getElementById('signup-email').value.trim();
+    var errEl = document.getElementById('signup-error');
+    errEl.textContent = '';
+    if (!/^[a-z0-9]{4,20}$/.test(id)) { errEl.textContent = '아이디는 4~20자의 영문 소문자와 숫자만 사용할 수 있습니다.'; return; }
+    if (!/^(?=.*[A-Za-z])(?=.*[0-9]).{8,}$/.test(pw)) { errEl.textContent = '비밀번호는 8자 이상이며 영문과 숫자를 모두 포함해야 합니다.'; return; }
+    if (pw !== pw2) { errEl.textContent = '비밀번호가 일치하지 않습니다.'; return; }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = '이메일 형식이 올바르지 않습니다. (선택 항목이므로 비워둘 수 있습니다)'; return; }
+    var btn = document.getElementById('btn-signup');
+    btn.disabled = true;
+    call('api_signup', id, pw, email).then(function (r) {
+      btn.disabled = false;
+      if (!r.ok) { errEl.textContent = r.error; return; }
+      state.token = r.data.token; state.me = r.data.user;
+      localStorage.setItem('lb_token', state.token);
+      toast('가입 완료! 환영합니다', 'sparkles');
+      afterLogin();
+    });
+  }
+  function doLogout(callServer) {
+    // 게스트는 세션 토큰이 유일한 신원이라, 나가면 같은 참여자로 돌아올 수 없다 (REQ-25 / NFR-14)
+    if (state.me && state.me.isGuest) {
+      if (!confirm('이 브라우저에서 나가시겠어요?\n\n· 이름만 입력해 참여했기 때문에 같은 참여자로 다시 돌아올 수 없어요.\n· 다시 참여하면 새 참여자로 등록됩니다.')) return;
+    }
+    if (callServer && state.token) call('api_logout', state.token);
+    localStorage.removeItem('lb_token');
+    state.token = ''; state.me = null; state.roomId = null; state.pendingInvite = '';
+    showAuth();
+  }
+
+  /* ==================== 비밀번호 찾기 (REQ-15) ==================== */
+  function openForgotPassword() {
+    document.getElementById('forgot-id').value = document.getElementById('login-id').value.trim();
+    document.getElementById('forgot-error').textContent = '';
+    document.getElementById('modal-forgot').classList.add('open');
+  }
+  function closeForgotPassword() { document.getElementById('modal-forgot').classList.remove('open'); }
+  function doRequestReset() {
+    var id = document.getElementById('forgot-id').value.trim();
+    var errEl = document.getElementById('forgot-error');
+    if (!id) { errEl.textContent = '아이디를 입력해주세요.'; return; }
+    var btn = document.getElementById('btn-forgot');
+    btn.disabled = true; errEl.textContent = '';
+    call('api_requestPasswordReset', id).then(function (r) {
+      btn.disabled = false;
+      if (!r.ok) { errEl.textContent = r.error; return; }
+      closeForgotPassword();
+      toast('등록된 이메일이 있다면 재설정 링크를 보냈어요. 메일함을 확인해주세요', 'envelope');
+    });
+  }
+  function showResetPassword() {
+    document.getElementById('reset-pw').value = '';
+    document.getElementById('reset-pw2').value = '';
+    document.getElementById('reset-error').textContent = '';
+    show('sc-reset-password');
+  }
+  function doResetPassword() {
+    var pw = document.getElementById('reset-pw').value;
+    var pw2 = document.getElementById('reset-pw2').value;
+    var errEl = document.getElementById('reset-error');
+    errEl.textContent = '';
+    if (!/^(?=.*[A-Za-z])(?=.*[0-9]).{8,}$/.test(pw)) { errEl.textContent = '비밀번호는 8자 이상이며 영문과 숫자를 모두 포함해야 합니다.'; return; }
+    if (pw !== pw2) { errEl.textContent = '비밀번호가 일치하지 않습니다.'; return; }
+    var btn = document.getElementById('btn-reset');
+    btn.disabled = true;
+    call('api_resetPassword', RESET_TOKEN, pw).then(function (r) {
+      btn.disabled = false;
+      if (!r.ok) { errEl.textContent = r.error; return; }
+      toast('비밀번호가 재설정되었습니다. 로그인해주세요', 'check-circle');
+      history.replaceState(null, '', location.pathname); // ?reset= 쿼리 제거
+      RESET_TOKEN = '';
+      showAuth();
+    });
+  }
+
+  /* ==================== 방 목록 (REQ-03) ==================== */
+  function loadRooms() {
+    show('sc-rooms');
+    state.orderEdit = false;   // 목록에 새로 들어올 때는 항상 보기 모드로 시작
+    renderEmailNudge();        // 목록 로딩 중에도 먼저 판단 (renderRooms에서 한 번 더 갱신)
+    document.getElementById('rooms-greet').textContent = state.me ? state.me.nickname + '님, 오늘 점심 어때요?' : '';
+    document.getElementById('rooms-body').innerHTML = '<div class="sub center mt16">불러오는 중...</div>';
+    api('api_getMyRooms', state.token).then(function (r) {
+      if (!r.ok) { document.getElementById('rooms-body').innerHTML = '<div class="sub center">' + esc(r.error) + '</div>'; return; }
+      renderRooms(r.data);
+    });
+  }
+  function renderRooms(data) {
+    state.roomLists = { hostRooms: data.hostRooms || [], otherRooms: data.otherRooms || [] };
+    var html = '';
+    // listKey = 'hostRooms' | 'otherRooms' — 순서 조작은 섹션 안에서만 이뤄진다
+    function cards(list, listKey) {
+      return list.map(function (rm, i) {
+        var badge = rm.role === 'host' ? '<span class="badge host">호스트</span>'
+                  : rm.role === 'co-host' ? '<span class="badge cohost">공동호스트</span>' : '';
+        // 이벤트형처럼 성격이 다른 방은 목록에서 바로 구분되도록 배지를 덧붙임 (REQ-16)
+        var p = preset(rm.purpose || 'cafeteria');
+        var pBadge = (rm.purpose && rm.purpose !== 'cafeteria')
+          ? '<span class="badge purpose">' + ic(p.icon, 'ic-sm') + '</span>' : '';
+        if (rm.purpose === 'event' && rm.eventStatus === 'closed') pBadge = '<span class="badge closed">마감</span>';
+
+        var info = '<span class="av">' + ic(rm.purpose === 'event' ? 'sparkles' : 'brand') + '</span>' +
+          '<div class="info"><div class="name">' + esc(rm.roomName) + '</div>' +
+          '<div class="sub">오늘 ' + rm.goingCount + '명 참여 · 멤버 ' + rm.memberCount + '명</div></div>';
+
+        // 순서 편집 모드에서는 카드를 눌러 입장하지 않고 위·아래 버튼으로 위치만 바꾼다 (REQ-26)
+        if (state.orderEdit) {
+          return '<div class="card room-card reorder">' + info +
+            '<div class="ord-btns">' +
+            '<button onclick="moveRoom(\'' + listKey + '\',' + i + ',-1)"' + (i === 0 ? ' disabled' : '') + ' aria-label="위로">' + ic('chevron-up') + '</button>' +
+            '<button onclick="moveRoom(\'' + listKey + '\',' + i + ',1)"' + (i === list.length - 1 ? ' disabled' : '') + ' aria-label="아래로">' + ic('chevron-down') + '</button>' +
+            '</div></div>';
+        }
+        return '<div class="card room-card" onclick="enterRoom(\'' + esc(rm.roomId) + '\')">' + info +
+          pBadge + badge + '<span class="go">' + ic('chevron-right') + '</span></div>';
+      }).join('');
+    }
+    if (data.hostRooms.length) html += '<div class="section-label">내가 만든 방</div>' + cards(data.hostRooms, 'hostRooms');
+    if (data.otherRooms.length) html += '<div class="section-label">참여 중인 방</div>' + cards(data.otherRooms, 'otherRooms');
+    if (!data.hostRooms.length && !data.otherRooms.length) {
+      html = '<div class="card center" style="padding:36px 18px;">' +
+        '<div class="logo soft">' + ic('user-group') + '</div>' +
+        '<b class="mt8" style="display:block;">아직 참여 중인 방이 없어요</b>' +
+        '<div class="sub mt8">오른쪽 아래 + 버튼으로 점심방을 만들거나,<br>동료에게 받은 초대 링크 또는 방 코드로 참여해보세요.</div></div>';
+    }
+    if (state.orderEdit) {
+      html += '<div class="hint center" style="margin-top:10px;">위·아래 화살표로 순서를 바꾸면 바로 저장돼요. 순서는 <b>나에게만</b> 적용됩니다.</div>';
+    }
+    document.getElementById('rooms-body').innerHTML = html;
+
+    // 방이 2개 이상일 때만 순서 편집 버튼을 보여준다
+    var total = data.hostRooms.length + data.otherRooms.length;
+    document.getElementById('rooms-order-bar').style.display = total >= 2 ? 'block' : 'none';
+    document.getElementById('btn-order-edit').innerHTML = state.orderEdit ? ic('check') + '완료' : ic('arrows-up-down') + '순서 편집';
+    // 편집 중에는 방 참여·생성 동작을 잠시 감춰 실수 클릭을 막는다
+    document.getElementById('btn-join-code').style.display = state.orderEdit ? 'none' : 'block';
+    document.querySelector('#sc-rooms .fab').style.display = state.orderEdit ? 'none' : '';
+    renderEmailNudge();
+  }
+
+  /* 이메일 등록 유도 배너 — 미등록 계정 사용자에게만 노출
+     이메일이 없으면 비밀번호 분실 시 셀프 재설정이 불가능해 운영자 수작업이 필요하다.
+     계속 뜨면 성가시므로 '나중에'를 누르면 14일간 숨긴다. */
+  var EMAIL_NUDGE_KEY = 'lb_email_nudge_until';
+  function renderEmailNudge() {
+    var el = document.getElementById('email-nudge');
+    var until = Number(localStorage.getItem(EMAIL_NUDGE_KEY) || 0);
+    // 순서 편집 중에는 화면을 단순하게 유지하려고 함께 숨긴다
+    var show = state.me && !state.me.isGuest && !state.me.email
+      && !state.orderEdit && Date.now() > until;
+    el.style.display = show ? 'block' : 'none';
+  }
+  function goRegisterEmail() {
+    openSettings(false);
+    var el = document.getElementById('set-email');
+    if (el) { el.focus(); el.scrollIntoView({ block: 'center' }); }
+  }
+  function dismissEmailNudge() {
+    localStorage.setItem(EMAIL_NUDGE_KEY, String(Date.now() + 14 * 24 * 60 * 60 * 1000));
+    document.getElementById('email-nudge').style.display = 'none';
+  }
+
+  /* 방 목록 순서 편집 (REQ-26) */
+  function toggleOrderEdit() {
+    state.orderEdit = !state.orderEdit;
+    renderRooms(state.roomLists);
+  }
+  /** 섹션 안에서 방을 한 칸 이동하고 즉시 저장 (별도 저장 버튼 없이 유실 방지) */
+  function moveRoom(listKey, index, delta) {
+    var list = state.roomLists[listKey];
+    var to = index + delta;
+    if (!list || to < 0 || to >= list.length) return;
+    var moved = list.splice(index, 1)[0];
+    list.splice(to, 0, moved);
+    renderRooms(state.roomLists);
+
+    // 두 섹션을 합쳐 전체 순서를 보낸다 (서버는 내가 멤버인 방만 갱신)
+    var ids = state.roomLists.hostRooms.concat(state.roomLists.otherRooms)
+      .map(function (rm) { return rm.roomId; });
+    api('api_setRoomOrder', state.token, ids).then(function (r) {
+      if (!r.ok) { toast(r.error); loadRooms(); }
+    });
+  }
+  function openCreateRoom() {
+    document.getElementById('create-room-name').value = (state.me ? state.me.nickname : '') + '의 점심방';
+    document.getElementById('create-error').textContent = '';
+    pickCreatePreset('cafeteria');
+    document.getElementById('modal-create').classList.add('open');
+  }
+  function closeCreateRoom() { document.getElementById('modal-create').classList.remove('open'); }
+  // 방 만들기 모달에서 프리셋 선택 (REQ-16)
+  function pickCreatePreset(key) {
+    state.createPurpose = key;
+    presetCards('create-presets', key, 'pickCreatePreset');
+    document.getElementById('create-preset-hint').innerHTML = key === 'event'
+      ? '초대 링크를 받은 사람은 <b>회원가입 없이 이름만 입력</b>하고 참여해요. 방 코드는 발급되지 않고, 행사가 끝나면 마감해주세요.'
+      : '방 종류는 나중에 설정에서 바꿀 수 있어요. <b>이벤트형만 나중에 바꿀 수 없어요.</b>';
+  }
+  function doCreateRoom() {
+    var name = document.getElementById('create-room-name').value.trim();
+    var errEl = document.getElementById('create-error');
+    if (name.length < 2 || name.length > 20) { errEl.textContent = '방 이름은 2~20자로 입력해주세요.'; return; }
+    var btn = document.getElementById('btn-create');
+    btn.disabled = true;
+    api('api_createRoom', state.token, name, state.createPurpose).then(function (r) {
+      btn.disabled = false;
+      if (!r.ok) { errEl.textContent = r.error; return; }
+      closeCreateRoom();
+      toast(state.createPurpose === 'event'
+        ? '이벤트 방이 만들어졌어요! 초대 링크를 공유해보세요'
+        : '방이 만들어졌어요! 초대 링크를 공유해보세요', 'sparkles');
+      enterRoom(r.data.roomId);
+    });
+  }
+
+  /* ==================== 방 코드 참여 (REQ-04 방법 2) ==================== */
+  function openJoinCode() {
+    document.getElementById('join-code').value = '';
+    document.getElementById('join-error').textContent = '';
+    document.getElementById('modal-join').classList.add('open');
+    document.getElementById('join-code').focus();
+  }
+  function closeJoinCode() { document.getElementById('modal-join').classList.remove('open'); }
+  function doJoinCode() {
+    var code = document.getElementById('join-code').value.trim().toUpperCase();
+    var errEl = document.getElementById('join-error');
+    if (!/^[A-Z0-9]{6}$/.test(code)) { errEl.textContent = '방 코드는 6자리 영문·숫자입니다.'; return; }
+    var btn = document.getElementById('btn-join');
+    btn.disabled = true; errEl.textContent = '';
+    api('api_joinByCode', state.token, code).then(function (r) {
+      btn.disabled = false;
+      if (!r.ok) { errEl.textContent = r.error; return; }
+      closeJoinCode();
+      toast(r.data.already ? '이미 참여 중인 방이에요!' : '방에 참여했습니다', 'sparkles');
+      enterRoom(r.data.roomId);
+    });
+  }
+
+  /* ==================== 방 내부 ==================== */
+  function enterRoom(roomId) {
+    state.roomId = roomId;
+    state.unrespOpen = true;
+    state.histMonth = null;
+    state.histSelected = null;
+    show('sc-room');
+    setTab('today');
+  }
+  function backToRooms() {
+    // 게스트는 참여한 방이 전부라 돌아갈 목록이 없다 (버튼도 숨겨두지만 방어적으로)
+    if (state.me && state.me.isGuest) return;
+    state.roomId = null; loadRooms();
+  }
+
+  function setTab(tab) {
+    state.tab = tab;
+    stopPolling();
+    ['today', 'history'].forEach(function (t) {
+      document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
+      document.getElementById('tabbtn-' + t).classList.toggle('on', t === tab);
+    });
+    if (tab === 'today') {
+      loadHome(true);
+      // 통합 폴링: 현황+채팅을 API 1회로 함께 갱신 — 15초 간격 (REQ-06·13, 성능 최적화)
+      state.timer = setInterval(function () {
+        if (document.hidden) return;
+        loadHome(false, true);
+      }, 15000);
+    } else {
+      loadHistory();
+    }
+  }
+  function refreshTab() {
+    if (state.tab === 'today') loadHome(true);
+    else loadHistory();
+    toast('새로고침했어요', 'arrow-path');
+  }
+
+  /* ==================== 오늘 탭 (REQ-05·06·13) ==================== */
+  var DOW = ['일', '월', '화', '수', '목', '금', '토'];
+  /** 현황 + 채팅 통합 조회 (api_getRoomHome 1회 호출) */
+  function loadHome(scrollChat, silent) {
+    api('api_getRoomHome', state.token, state.roomId).then(function (r) {
+      if (!r.ok) {
+        if (r.error === 'NOT_MEMBER') { toast('더 이상 이 방의 멤버가 아닙니다.'); loadRooms(); }
+        else if (!silent) toast(r.error);
+        return;
+      }
+      renderToday(r.data);
+      renderChat({ messages: r.data.messages, myUserId: r.data.myUserId }, scrollChat);
+    });
+  }
+  function renderToday(d) {
+    state.myRole = d.myRole;
+    state.myStatus = d.myStatus;
+    state.myNickname = d.myNickname; // 이 방에서의 내 닉네임 (계정 닉네임과 다를 수 있음)
+    // 백엔드는 초대 토큰만 반환 — 서비스 주소는 프론트가 알고 있으므로 여기서 조립
+    state.inviteUrl = d.inviteToken ? (location.origin + location.pathname + '?invite=' + d.inviteToken) : '';
+    state.roomCode = d.roomCode || '';
+    // v2 방 목적 — 서버가 아직 안 내려주는 경우에도 안전하게 기본값으로 동작 (하위 호환)
+    state.purpose = d.purpose || 'cafeteria';
+    state.trackMealLog = !!d.trackMealLog;
+    state.enableMenuPoll = !!d.enableMenuPoll;
+    state.eventStatus = d.eventStatus || 'open';
+    var pp = preset(state.purpose);
+    var isEvent = state.purpose === 'event';
+
+    var isClosed = isEvent && state.eventStatus === 'closed';
+    var isManager = d.myRole === 'host' || d.myRole === 'co-host';
+
+    // 이벤트형 방은 방 코드로 참여할 수 없으므로 코드 버튼 자체를 숨긴다 (REQ-25)
+    var codeBtn = document.getElementById('btn-roomcode');
+    codeBtn.style.display = isEvent ? 'none' : 'block';
+    codeBtn.innerHTML = ic('key') + '방 코드: ' + esc(state.roomCode || '------') + ' (탭하여 복사)';
+
+    // 이벤트형 방 초대 링크는 마감할 때까지 유효하고, 가입 없이 참여할 수 있다
+    var inviteBtn = document.getElementById('btn-invite');
+    inviteBtn.innerHTML = ic('link') + (isEvent ? '초대 링크 복사 (가입 없이 참여)' : '초대 링크 복사 (7일 유효)');
+    inviteBtn.style.display = isClosed ? 'none' : 'block';
+
+    // 히스토리 탭은 반복 운영 전제 기능이라 이벤트형 방에서는 숨긴다 (REQ-25)
+    document.getElementById('tabbtn-history').style.display = isEvent ? 'none' : '';
+    if (isEvent && state.tab === 'history') setTab('today');
+
+    // 호스트에게만 행사 마감 버튼 (마감 전에만)
+    document.getElementById('btn-close-event').style.display = (isEvent && !isClosed && isManager) ? 'block' : 'none';
+
+    // 게스트는 방 목록이 없으므로 뒤로 가기 버튼을 숨긴다
+    document.getElementById('btn-back-rooms').style.display = (state.me && state.me.isGuest) ? 'none' : '';
+
+    // 마감되면 응답·기록을 잠그고 결과 요약을 보여준다 (SCR-08)
+    renderEventSummary(d, isClosed);
+    document.getElementById('btn-going').disabled = isClosed;
+    document.getElementById('btn-notgoing').disabled = isClosed;
+
+    document.getElementById('room-title').innerHTML = ic(isEvent ? 'sparkles' : 'brand') + esc(d.roomName);
+    var dt = new Date(d.date + 'T00:00:00');
+    document.getElementById('room-date').textContent =
+      dt.getFullYear() + '년 ' + (dt.getMonth() + 1) + '월 ' + dt.getDate() + '일 (' + DOW[dt.getDay()] + ')';
+    document.getElementById('today-my-name').textContent = state.myNickname;
+
+    // 방 종류에 맞는 문구로 교체 (REQ-16 카피 일반화)
+    document.getElementById('today-ask').textContent = pp.ask;
+    document.getElementById('btn-going').innerHTML = ic('check-circle') + esc(pp.go);
+    document.getElementById('btn-notgoing').innerHTML = ic('x-circle') + esc(pp.no);
+    document.getElementById('grp-going-label').textContent = isEvent ? '참석 (' : '같이 가요 (';
+    document.getElementById('grp-notgoing-label').textContent = isEvent ? '불참 (' : '안 가요 (';
+
+    document.getElementById('btn-going').classList.toggle('on', d.myStatus === 'going');
+    document.getElementById('btn-notgoing').classList.toggle('on', d.myStatus === 'not-going');
+
+    // 장소·메뉴 기록 (REQ-17) — 기록을 쓰는 방에서 '가요'를 선택한 사람에게만 입력란을 보여준다
+    // (마감된 이벤트형 방은 읽기 전용이므로 입력란을 내린다)
+    var mealOn = state.trackMealLog && d.myStatus === 'going' && !isClosed;
+    document.getElementById('meal-log-row').style.display = mealOn ? 'block' : 'none';
+    document.getElementById('meal-log-locked').style.display =
+      (state.trackMealLog && d.myStatus !== 'going') ? 'block' : 'none';
+    var placeEl = document.getElementById('meal-place');
+    var menuEl = document.getElementById('meal-menu');
+    if (mealOn) {
+      // 입력 중인 값을 폴링이 덮어쓰지 않도록, 포커스가 없을 때만 서버 값으로 채운다
+      if (document.activeElement !== placeEl) placeEl.value = d.myPlace || '';
+      if (document.activeElement !== menuEl) menuEl.value = d.myMenu || '';
+      loadMealSuggestions();
+    } else {
+      // 입력란이 숨겨질 때는 값을 비운다. 안 비우면 '안 가요' → '가요'로 되돌릴 때
+      // 서버에서 이미 지워진 기록이 숨은 입력값 때문에 되살아난다.
+      placeEl.value = '';
+      menuEl.value = '';
+    }
+
+    function chips(list, cls, removable) {
+      if (!list.length) return '<span class="empty-note">아직 없어요</span>';
+      return list.map(function (m) {
+        // 메뉴를 적었으면 칩에 "닉네임 · 메뉴"로 함께 보여준다 (장소는 title 툴팁으로 — REQ-17)
+        var meal = m.menu ? '<span class="meal"> · ' + esc(m.menu) + '</span>' : '';
+        var tip = m.place ? ' title="' + esc(m.place) + '"' : '';
+        if (removable && m.userId === d.myUserId) {
+          // 내 이름 탭 → 선택 취소(미응답 복귀) (REQ-05)
+          return '<span class="chip ' + cls + ' me removable" onclick="clearResp()" title="선택 취소">' +
+            esc(m.nickname) + meal + '<span class="x">' + ic('x-mark') + '</span></span>';
+        }
+        var me = m.userId === d.myUserId ? ' me' : '';
+        return '<span class="chip ' + cls + me + '"' + tip + '>' + esc(m.nickname) + meal + '</span>';
+      }).join('');
+    }
+    document.getElementById('cnt-going').textContent = d.going.length;
+    document.getElementById('cnt-notgoing').textContent = d.notGoing.length;
+    document.getElementById('chips-going').innerHTML = chips(d.going, 'g', true);
+    document.getElementById('chips-notgoing').innerHTML = chips(d.notGoing, 'n', true);
+
+    // 미응답: 기본 숨김, 0명이면 버튼 자체 숨김 (REQ-06)
+    var wrap = document.getElementById('unresp-wrap');
+    if (!d.noResponse.length) {
+      wrap.style.display = 'none';
+    } else {
+      wrap.style.display = 'block';
+      document.getElementById('btn-unresp').innerHTML =
+        ic(state.unrespOpen ? 'chevron-up' : 'chevron-down') +
+        (state.unrespOpen ? '미응답자 접기' : '미응답자 확인하기') + ' (' + d.noResponse.length + '명)';
+      var box = document.getElementById('chips-unresp');
+      box.style.display = state.unrespOpen ? 'flex' : 'none';
+      box.innerHTML = chips(d.noResponse, 'y');
+    }
+    renderPoll(d.menuPoll);
+    document.getElementById('today-updated').textContent = '마지막 갱신: ' + nowHM();
+  }
+  function toggleUnresp() { state.unrespOpen = !state.unrespOpen; loadHome(false, true); }
+
+  /* ==================== 이벤트형 방 (REQ-25) ==================== */
+  /** 마감된 이벤트의 결과 요약 (SCR-08) — 참석 인원 + 확정 메뉴 */
+  function renderEventSummary(d, isClosed) {
+    var card = document.getElementById('event-summary');
+    if (!isClosed) { card.style.display = 'none'; return; }
+    card.style.display = 'block';
+    document.getElementById('evt-title').textContent = '마감된 모임 · 결과';
+
+    var mp = d.menuPoll;
+    var menu = (mp && mp.exists && mp.confirmedLabel) ? mp.confirmedLabel : null;
+    var html = '<div class="poll-win"><div class="t">' + ic('hand-raised') + '참석</div>' +
+      '<div class="m">' + d.going.length + '명</div></div>';
+    if (menu) {
+      html += '<div class="poll-win" style="background:var(--mint-ink);"><div class="t">' +
+        (mp.wasTie ? ic('cube') + '동점이라 룰렛으로 정해진 메뉴' : ic('clipboard-document-check') + '투표로 정해진 메뉴') +
+        '</div><div class="m">' + esc(menu) + '</div></div>';
+    }
+    html += '<div class="rank-sub">' + ic('hand-raised', 'ic-sm') + '참석 (' + d.going.length + '명)</div>' +
+      '<div class="chips">' + (d.going.length
+        ? d.going.map(function (m) { return '<span class="chip g">' + esc(m.nickname) + '</span>'; }).join('')
+        : '<span class="empty-note">없음</span>') + '</div>';
+    html += '<div class="rank-sub">' + ic('x-circle', 'ic-sm') + '불참 (' + d.notGoing.length + '명)</div>' +
+      '<div class="chips">' + (d.notGoing.length
+        ? d.notGoing.map(function (m) { return '<span class="chip n">' + esc(m.nickname) + '</span>'; }).join('')
+        : '<span class="empty-note">없음</span>') + '</div>';
+    if (d.noResponse.length) {
+      html += '<div class="rank-sub">' + ic('clock', 'ic-sm') + '미응답 (' + d.noResponse.length + '명)</div>' +
+        '<div class="chips">' +
+        d.noResponse.map(function (m) { return '<span class="chip y">' + esc(m.nickname) + '</span>'; }).join('') +
+        '</div>';
+    }
+    html += '<div class="hint" style="margin-top:12px;">마감된 모임이라 응답과 투표를 바꿀 수 없어요. ' +
+      '이 모임 기록은 마감 후 일정 기간이 지나면 자동으로 삭제돼요.</div>';
+    document.getElementById('evt-body').innerHTML = html;
+  }
+  function closeEvent() {
+    if (!confirm('행사를 마감할까요?\n\n· 참석 응답과 메뉴 투표가 잠기고 결과가 확정됩니다.\n· 초대 링크로 새로 참여할 수 없게 됩니다.\n· 되돌릴 수 없어요.')) return;
+    return api('api_closeEvent', state.token, state.roomId).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      toast('행사를 마감했어요', 'flag');
+      loadHome(false, true);
+    });
+  }
+
+  /* ==================== 메뉴 투표 (REQ-19) ==================== */
+  function renderPoll(p) {
+    var card = document.getElementById('poll-card');
+    // 투표를 쓰지 않는 방이면 서버가 null을 준다
+    if (!p || p.exists === undefined) { card.style.display = 'none'; return; }
+    // 룰렛 연출 중에는 폴링이 화면을 덮어쓰지 않게 한다
+    if (state.rouletteSpinning) return;
+    card.style.display = 'block';
+    var body = document.getElementById('poll-body');
+    var title = document.getElementById('poll-title');
+
+    // ① 아직 오늘 투표가 없음
+    if (!p.exists) {
+      title.textContent = '오늘 메뉴 투표';
+      body.innerHTML = p.canStart
+        ? '<div class="sub">후보를 2~6개 적으면 멤버들이 투표해서 오늘 메뉴를 정할 수 있어요.</div>' +
+          '<div class="meal-inputs" style="margin-top:10px;">' +
+          '<input type="text" id="poll-new-1" maxlength="20" placeholder="후보 1 (예: 김치찌개)">' +
+          '<input type="text" id="poll-new-2" maxlength="20" placeholder="후보 2 (예: 돈까스)">' +
+          '</div>' +
+          '<div class="meal-inputs" style="margin-top:7px;">' +
+          '<input type="text" id="poll-new-3" maxlength="20" placeholder="후보 3 (선택)">' +
+          '<input type="text" id="poll-new-4" maxlength="20" placeholder="후보 4 (선택)">' +
+          '</div>' +
+          '<button class="btn btn-primary" style="margin-top:10px;" onclick="busy(this, startPoll())">투표 시작하기</button>' +
+          (p.deadline ? '<div class="hint">' + esc(p.deadline) + '에 자동 마감돼요.</div>' : '')
+        : '<div class="empty-note">아직 오늘 메뉴 투표가 없어요. 호스트가 투표를 시작할 수 있어요.</div>';
+      return;
+    }
+
+    // ② 마감된 투표 — 결과 표시 (동점이었으면 룰렛 연출을 한 번 보여준다)
+    if (p.status === 'closed') {
+      title.textContent = '오늘의 메뉴 (마감)';
+      if (p.confirmedLabel && p.wasTie && !state.rouletteShown[p.pollId]) {
+        state.rouletteShown[p.pollId] = true;
+        spinRoulette(p);
+        return;
+      }
+      body.innerHTML = pollResultHtml(p) + pollOptionsHtml(p, false);
+      return;
+    }
+
+    // ③ 진행 중 — 투표 + 후보 추가 + 마감
+    title.textContent = '오늘 메뉴 투표 (' + p.totalVotes + '표)';
+    var html = pollOptionsHtml(p, p.canVote);
+    if (p.canVote && p.myVote) {
+      html += '<button class="btn btn-gray" onclick="busy(this, votePoll(null))">투표 취소</button>';
+    }
+    if (p.canAddOption && p.options.length < 6) {
+      html += '<div class="meal-inputs" style="margin-top:10px;">' +
+        '<input type="text" id="poll-add" maxlength="20" placeholder="후보 추가 (선택)"' +
+        ' onkeydown="if(event.key===\'Enter\'){addPollOption();}">' +
+        '<button class="mini-btn" onclick="busy(this, addPollOption())">추가</button></div>';
+    }
+    if (p.canClose) {
+      html += '<button class="btn btn-outline" style="margin-top:10px;" onclick="busy(this, closePoll())">투표 마감하고 메뉴 정하기</button>';
+    }
+    if (p.deadlineAt) {
+      html += '<div class="hint">' + esc(String(p.deadlineAt).slice(11, 16)) + '에 자동 마감돼요.</div>';
+    }
+    body.innerHTML = html;
+  }
+  /** 확정 결과 배너 */
+  function pollResultHtml(p) {
+    if (!p.confirmedLabel) {
+      return '<div class="empty-note">투표한 사람이 없어서 메뉴가 정해지지 않았어요.</div>';
+    }
+    return '<div class="poll-win"><div class="t">' +
+      (p.wasTie ? ic('cube') + '동점이라 룰렛으로 뽑았어요' : ic('clipboard-document-check') + '투표로 정해진 오늘의 메뉴') +
+      '</div><div class="m">' + esc(p.confirmedLabel) + '</div></div>';
+  }
+  /** 후보 목록 — clickable이면 투표 버튼으로 동작 */
+  function pollOptionsHtml(p, clickable) {
+    var max = 0;
+    p.options.forEach(function (o) { if (o.count > max) max = o.count; });
+    return p.options.map(function (o) {
+      var mine = o.optionId === p.myVote;
+      var isWin = o.optionId === p.confirmedOptionId;
+      var pct = max ? Math.round(o.count / max * 100) : 0;
+      return '<button type="button" class="poll-opt' + (mine || isWin ? ' on' : '') + '"' +
+        (clickable ? ' onclick="busy(this, votePoll(\'' + esc(o.optionId) + '\'))"' : ' disabled') + '>' +
+        '<span class="fill" style="width:' + pct + '%"></span>' +
+        '<span class="lbl">' + (isWin ? ic('star') : '') + esc(o.label) + '</span>' +
+        '<span class="cnt">' + o.count + '표</span>' +
+        '<span class="tick">' + (mine ? ic('check') : '') + '</span></button>';
+    }).join('');
+  }
+  /** 동점 룰렛 연출 — 후보 이름을 빠르게 돌린 뒤 서버가 이미 정한 결과를 공개한다 */
+  function spinRoulette(p) {
+    var body = document.getElementById('poll-body');
+    var labels = p.options.map(function (o) { return o.label; });
+    if (!labels.length) { body.innerHTML = pollResultHtml(p); return; }
+    state.rouletteSpinning = true;
+    body.innerHTML = '<div class="roulette"><div class="tie">동점입니다! 룰렛으로 정할게요 ' + ic('cube', 'ic-sm') + '</div>' +
+      '<div class="spin" id="roulette-spin">' + esc(labels[0]) + '</div></div>';
+    var i = 0, ticks = 0;
+    var timer = setInterval(function () {
+      i = (i + 1) % labels.length;
+      var el = document.getElementById('roulette-spin');
+      if (el) el.textContent = labels[i];
+      ticks++;
+      if (ticks >= 18) {   // 약 1.6초
+        clearInterval(timer);
+        state.rouletteSpinning = false;
+        body.innerHTML = pollResultHtml(p) + pollOptionsHtml(p, false);
+      }
+    }, 90);
+  }
+  function startPoll() {
+    var opts = [];
+    [1, 2, 3, 4].forEach(function (n) {
+      var el = document.getElementById('poll-new-' + n);
+      if (el && el.value.trim()) opts.push(el.value.trim());
+    });
+    if (opts.length < 2) { toast('후보를 2개 이상 입력해주세요.'); return; }
+    return api('api_startMenuPoll', state.token, state.roomId, opts).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      toast('메뉴 투표를 시작했어요', 'clipboard-document-check');
+      loadHome(false, true);
+    });
+  }
+  function addPollOption() {
+    var el = document.getElementById('poll-add');
+    var label = el ? el.value.trim() : '';
+    if (!label) { toast('후보 이름을 입력해주세요.'); return; }
+    return api('api_addPollOption', state.token, state.roomId, label).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      toast('후보를 추가했어요.');
+      loadHome(false, true);
+    });
+  }
+  function votePoll(optionId) {
+    return api('api_votePoll', state.token, state.roomId, optionId).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      toast(optionId ? '투표했어요' : '투표를 취소했어요.', optionId ? 'clipboard-document-check' : null);
+      loadHome(false, true);
+    });
+  }
+  function closePoll() {
+    if (!confirm('투표를 마감하고 오늘 메뉴를 정할까요?\n동점이면 룰렛으로 자동 선택됩니다.')) return;
+    return api('api_closePoll', state.token, state.roomId).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      loadHome(false, true);
+    });
+  }
+  function clearResp() {
+    api('api_setResponse', state.token, state.roomId, 'clear').then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      toast('선택을 취소했어요. 아직 선택 안 한 상태예요.');
+      loadHome(false, true);
+    });
+  }
+  function setResp(status) {
+    if (state.myStatus === status) { clearResp(); return; } // 같은 버튼 재탭 → 선택 취소
+    document.getElementById('btn-going').disabled = true;
+    document.getElementById('btn-notgoing').disabled = true;
+    // '가요'로 바꿀 때는 이미 적어둔 장소·메뉴를 함께 보내 유지한다 (REQ-17)
+    var place = status === 'going' ? document.getElementById('meal-place').value.trim() : null;
+    var menu = status === 'going' ? document.getElementById('meal-menu').value.trim() : null;
+    api('api_setResponse', state.token, state.roomId, status, place, menu).then(function (r) {
+      document.getElementById('btn-going').disabled = false;
+      document.getElementById('btn-notgoing').disabled = false;
+      if (!r.ok) { toast(r.error); return; }
+      var isEvent = state.purpose === 'event';
+      toast(status === 'going'
+        ? (isEvent ? '참석으로 등록했어요!' : '오늘 같이 가요!')
+        : (isEvent ? '불참으로 등록했어요.' : '오늘은 패스!'), status === 'going' ? 'check-circle' : 'x-circle');
+      loadHome(false, true);
+    });
+  }
+  /* 자동완성·랜덤 추천 (REQ-20) — 내가 최근 30일간 입력한 값만 사용 */
+  function loadMealSuggestions() {
+    if (!state.trackMealLog) return;
+    if (state.suggestLoadedFor === state.roomId) return;   // 방마다 1회만 조회
+    state.suggestLoadedFor = state.roomId;
+    api('api_getMealSuggestions', state.token, state.roomId).then(function (r) {
+      if (!r.ok) return;
+      state.suggestMenus = r.data.menus || [];
+      state.suggestPlaces = r.data.places || [];
+      fillDatalist('dl-menus', state.suggestMenus);
+      fillDatalist('dl-places', state.suggestPlaces);
+    });
+  }
+  function fillDatalist(id, values) {
+    document.getElementById(id).innerHTML =
+      values.map(function (v) { return '<option value="' + esc(v) + '"></option>'; }).join('');
+  }
+  /** 주사위 버튼 — 최근 먹은 것 중에서 무작위 추천 — 강제 입력이 아니라 입력란을 채워주는 정도 */
+  function suggestRandomMeal() {
+    if (!state.suggestMenus.length) {
+      toast('추천할 기록이 아직 없어요. 몇 번 기록하면 여기서 골라드릴게요', 'clipboard-document-list');
+      return;
+    }
+    var cur = document.getElementById('meal-menu').value.trim();
+    var pool = state.suggestMenus.filter(function (m) { return m !== cur; });
+    if (!pool.length) pool = state.suggestMenus;
+    var pick = pool[Math.floor(Math.random() * pool.length)];
+    document.getElementById('meal-menu').value = pick;
+    toast('오늘은 ' + pick + ' 어때요?', 'cube');
+  }
+
+  /** 장소·메뉴 기록 저장 (REQ-17) — 응답 상태는 '가요' 그대로 두고 기록만 갱신 */
+  function saveMealLog() {
+    var place = document.getElementById('meal-place').value.trim();
+    var menu = document.getElementById('meal-menu').value.trim();
+    if (place.length > 20 || menu.length > 20) { toast('장소·메뉴는 각각 20자 이내로 입력해주세요.'); return; }
+    return api('api_setResponse', state.token, state.roomId, 'going', place, menu).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      toast(menu || place ? '오늘의 기록을 저장했어요' : '기록을 비웠어요.', menu || place ? 'clipboard-document-list' : null);
+      state.suggestLoadedFor = '';   // 새로 적은 값이 자동완성에 반영되도록 다시 불러온다
+      loadHome(false, true);
+    });
+  }
+  function copyInvite() {
+    if (state.inviteUrl) copyText(state.inviteUrl);
+    else toast('초대 링크를 불러오는 중이에요. 잠시 후 다시 시도해주세요.');
+  }
+  function copyRoomCode() {
+    if (state.roomCode) copyText(state.roomCode);
+    else toast('방 코드를 불러오는 중이에요. 잠시 후 다시 시도해주세요.');
+  }
+
+  /* ==================== 채팅 (REQ-13) — 조회는 loadHome에 통합 ==================== */
+  function fmtMsgTime(iso) {
+    var today = new Date();
+    var tStr = today.getFullYear() + '-' + ('0' + (today.getMonth() + 1)).slice(-2) + '-' + ('0' + today.getDate()).slice(-2);
+    var datePart = String(iso).slice(0, 10);
+    var timePart = String(iso).slice(11, 16);
+    if (datePart === tStr) return timePart;
+    return (Number(datePart.slice(5, 7))) + '/' + (Number(datePart.slice(8, 10))) + ' ' + timePart;
+  }
+  function renderChat(d, scrollBottom) {
+    var list = document.getElementById('chat-list');
+    if (!d.messages.length) {
+      list.innerHTML = '<div class="center sub" style="padding:14px 0;">' + ic('chat-bubble-left-right', 'ic-sm') + ' 아직 메시지가 없어요. 첫 메시지를 보내보세요!</div>';
+      return;
+    }
+    list.innerHTML = d.messages.map(function (m) {
+      var mine = m.userId === d.myUserId;
+      var meta = mine ? fmtMsgTime(m.sentAt) : esc(m.nickname) + ' · ' + fmtMsgTime(m.sentAt);
+      // 카카오톡처럼: 아직 안 읽은 인원 수를 작은 숫자로 표시, 모두 읽으면 숫자 사라짐
+      var badge = (m.unreadCount > 0) ? '<span class="unread-count">' + m.unreadCount + '</span>' : '';
+      var bubble = '<div class="bubble">' + esc(m.text) + '</div>';
+      var row = '<div class="bubble-row">' + (mine ? badge + bubble : bubble + badge) + '</div>';
+      return '<div class="msg ' + (mine ? 'mine' : 'other') + '">' +
+        '<div class="meta">' + meta + '</div>' + row + '</div>';
+    }).join('');
+    if (scrollBottom) list.scrollTop = list.scrollHeight;
+  }
+  var sending = false;
+  function sendMsg() {
+    if (sending) return;
+    var input = document.getElementById('chat-input');
+    var text = input.value.trim();
+    if (!text) return;
+    if (text.length > 300) { toast('메시지는 300자 이내로 입력해주세요.'); return; }
+    sending = true;
+    return api('api_sendMessage', state.token, state.roomId, text).then(function (r) {
+      sending = false;
+      if (!r.ok) { toast(r.error); return; }
+      input.value = '';
+      loadHome(true, true);
+    });
+  }
+
+  /* ==================== 히스토리 탭 (REQ-08) ==================== */
+  function loadHistory() {
+    document.getElementById('cal-grid').innerHTML = '<div class="sub" style="grid-column:1/-1; text-align:center; padding:20px 0;">불러오는 중...</div>';
+    api('api_getHistory', state.token, state.roomId).then(function (r) {
+      if (!r.ok) { if (r.error === 'NOT_MEMBER') { toast('더 이상 이 방의 멤버가 아닙니다.'); loadRooms(); } return; }
+      state.histEntries = r.data.entries;
+      state.histToday = r.data.today;
+      state.histCutoff = r.data.cutoff;
+      if (!state.histMonth) {
+        var t = new Date(r.data.today + 'T00:00:00');
+        state.histMonth = new Date(t.getFullYear(), t.getMonth(), 1);
+      }
+      renderCalendar();
+    });
+    loadMenuRanking();
+  }
+
+  /* 메뉴 랭킹 (최근 30일, REQ-18) */
+  function loadMenuRanking() {
+    var card = document.getElementById('menu-ranking-card');
+    // 장소·메뉴 기록도, 메뉴 투표도 안 쓰는 방(사내식당형 등)에서는 섹션 자체를 노출하지 않는다.
+    // 투표만 쓰는 방도 "투표로 확정된 메뉴"가 랭킹에 쌓이므로 보여준다 (REQ-18·19 연결).
+    if (!state.trackMealLog && !state.enableMenuPoll) { card.style.display = 'none'; return; }
+    api('api_getMenuRanking', state.token, state.roomId).then(function (r) {
+      if (!r.ok) { card.style.display = 'none'; return; }
+      card.style.display = 'block';
+      renderMenuRanking(r.data);
+    });
+  }
+  function renderMenuRanking(d) {
+    document.getElementById('rank-title').textContent = '최근 ' + (d.days || 30) + '일 많이 먹은 메뉴';
+    if (!d.totalCount) {
+      document.getElementById('rank-body').innerHTML =
+        '<div class="empty-note">아직 메뉴 기록이 없어요. 오늘 탭에서 <b>장소·메뉴</b>를 남기면 통계가 쌓여요.</div>';
+      return;
+    }
+    // 1등 대비 비율로 막대 길이를 정한다
+    function rows(list, key, max) {
+      return list.map(function (it, i) {
+        var pct = max ? Math.round(it.count / max * 100) : 0;
+        return '<div class="rank-row">' +
+          '<span class="rank-no">' + (i + 1) + '</span>' +
+          '<span class="rank-name">' + esc(it[key]) + '</span>' +
+          '<span class="rank-bar"><i style="width:' + pct + '%"></i></span>' +
+          '<span class="rank-cnt">' + it.count + '회</span></div>';
+      }).join('');
+    }
+    var html = rows(d.roomTop, 'menu', d.roomTop.length ? d.roomTop[0].count : 0);
+    html += '<div class="hint" style="margin-top:8px;">방 전체 기준 · 최근 ' + (d.days || 30) + '일 기록 ' + d.totalCount + '건</div>';
+
+    if (d.myTop && d.myTop.length) {
+      html += '<div class="rank-sub">' + ic('hand-raised', 'ic-sm') + '내가 많이 먹은 메뉴 (' + d.myCount + '건)</div>' +
+        rows(d.myTop, 'menu', d.myTop[0].count);
+    }
+    if (d.placeTop && d.placeTop.length) {
+      html += '<div class="rank-sub">' + ic('map-pin', 'ic-sm') + '많이 간 곳</div>' + rows(d.placeTop, 'place', d.placeTop[0].count);
+    }
+    document.getElementById('rank-body').innerHTML = html;
+  }
+  function ymd(d) {
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+  }
+  function moveMonth(delta) {
+    state.histMonth = new Date(state.histMonth.getFullYear(), state.histMonth.getMonth() + delta, 1);
+    state.histSelected = null;
+    renderCalendar();
+  }
+  function renderCalendar() {
+    var m = state.histMonth;
+    document.getElementById('cal-month').textContent = m.getFullYear() + '년 ' + (m.getMonth() + 1) + '월';
+
+    // 이동 범위: 30일 보관 구간이 걸친 달까지만
+    var cutoffD = new Date(state.histCutoff + 'T00:00:00');
+    var todayD = new Date(state.histToday + 'T00:00:00');
+    document.getElementById('cal-prev').disabled =
+      (m.getFullYear() === cutoffD.getFullYear() && m.getMonth() === cutoffD.getMonth()) || m <= cutoffD;
+    document.getElementById('cal-next').disabled =
+      (m.getFullYear() === todayD.getFullYear() && m.getMonth() === todayD.getMonth());
+
+    var html = DOW.map(function (d) { return '<div class="cal-dow">' + d + '</div>'; }).join('');
+    var first = new Date(m.getFullYear(), m.getMonth(), 1);
+    var last = new Date(m.getFullYear(), m.getMonth() + 1, 0);
+    for (var i = 0; i < first.getDay(); i++) html += '<div class="cal-cell"></div>';
+    for (var day = 1; day <= last.getDate(); day++) {
+      var d = new Date(m.getFullYear(), m.getMonth(), day);
+      var key = ymd(d);
+      var entry = state.histEntries[key];
+      var inRange = key >= state.histCutoff && key <= state.histToday;
+      var cls = 'cal-cell';
+      if (!inRange) cls += ' dim';
+      if (entry) cls += ' has';
+      if (key === state.histToday) cls += ' today';
+      if (key === state.histSelected) cls += ' sel';
+      var cnt = entry ? '<span class="cnt">' + ic('check-circle') + entry.going.length + '</span>' : '';
+      var onclick = entry ? ' onclick="selectDay(\'' + key + '\')"' : '';
+      html += '<div class="' + cls + '"' + onclick + '>' + day + cnt + '</div>';
+    }
+    document.getElementById('cal-grid').innerHTML = html;
+    renderDayDetail();
+  }
+  function selectDay(key) {
+    state.histSelected = state.histSelected === key ? null : key;
+    renderCalendar();
+  }
+  function renderDayDetail() {
+    var box = document.getElementById('day-detail');
+    var key = state.histSelected;
+    if (!key || !state.histEntries[key]) { box.style.display = 'none'; return; }
+    var e = state.histEntries[key];
+    var d = new Date(key + 'T00:00:00');
+    box.style.display = 'block';
+    box.innerHTML =
+      '<b>' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일 (' + DOW[d.getDay()] + ')' +
+      (key === state.histToday ? ' · 오늘' : '') + '</b>' +
+      '<div class="mt8"><span class="sub">' + ic('check-circle', 'ic-sm t-mint') + ' 같이 가요 (' + e.going.length + '명)</span><div class="chips mt8">' +
+      (e.going.length ? e.going.map(function (n) { return '<span class="chip g">' + esc(n) + '</span>'; }).join('') : '<span class="empty-note">없음</span>') +
+      '</div></div>' +
+      '<div class="mt8"><span class="sub">' + ic('x-circle', 'ic-sm') + ' 안 가요 (' + e.notGoing.length + '명)</span><div class="chips mt8">' +
+      (e.notGoing.length ? e.notGoing.map(function (n) { return '<span class="chip n">' + esc(n) + '</span>'; }).join('') : '<span class="empty-note">없음</span>') +
+      '</div></div>' +
+      // 그 날 남긴 장소·메뉴 기록 (REQ-17) — 기록이 있을 때만 표시
+      dayMeals(e.meals);
+  }
+  /** 날짜 상세의 장소·메뉴 목록 HTML */
+  function dayMeals(meals) {
+    if (!meals || !meals.length) return '';
+    return '<div class="mt8"><span class="sub">' + ic('clipboard-document-list', 'ic-sm t-mint') + ' 그날의 메뉴 (' + meals.length + '건)</span><div class="chips mt8">' +
+      meals.map(function (m) {
+        var label = esc(m.nickname);
+        if (m.menu) label += '<span class="meal"> · ' + esc(m.menu) + '</span>';
+        var tip = m.place ? ' title="' + esc(m.place) + '"' : '';
+        return '<span class="chip g"' + tip + '>' + label + '</span>';
+      }).join('') + '</div></div>';
+  }
+
+  /* ==================== 설정 (REQ-09·10·11·12) ==================== */
+  var settingsFromRoom = false;
+  function openSettings(fromRoom) {
+    settingsFromRoom = fromRoom;
+    show('sc-settings');
+
+    // 게스트는 계정이 없으므로 비밀번호·이메일·회원 관련 항목을 감춘다 (REQ-25)
+    var isGuest = !!(state.me && state.me.isGuest);
+    document.getElementById('set-account-section').style.display = isGuest ? 'none' : 'block';
+    document.getElementById('set-guest-note').style.display = isGuest ? 'block' : 'none';
+    document.getElementById('btn-logout').textContent = isGuest
+      ? '이 브라우저에서 나가기' : '로그아웃';
+
+    document.getElementById('set-email').value = state.me.email || '';
+    document.getElementById('pw-cur').value = '';
+    document.getElementById('pw-new').value = '';
+    document.getElementById('pw-new2').value = '';
+    document.getElementById('pw-error').textContent = '';
+
+    // 닉네임은 방마다 저장되므로, 방 안에서 설정을 열었을 때만 편집란을 보여줌
+    var nickSection = document.getElementById('set-room-nickname-section');
+    nickSection.style.display = fromRoom ? 'block' : 'none';
+    if (fromRoom) document.getElementById('set-room-nickname').value = state.myNickname || '';
+
+    var roomSection = document.getElementById('set-room-section');
+    var isManager = fromRoom && (state.myRole === 'host' || state.myRole === 'co-host');
+    roomSection.style.display = isManager ? 'block' : 'none';
+    if (isManager) {
+      document.getElementById('set-room-name').textContent = document.getElementById('room-title').textContent.trim();
+      document.getElementById('set-danger').style.display = state.myRole === 'host' ? 'block' : 'none';
+      loadMembersUI();
+      loadNotifyUI();
+      loadPurposeUI();
+    }
+  }
+
+  /* 방 종류(프리셋) 설정 (REQ-16) */
+  function loadPurposeUI() {
+    state.setPurpose = state.purpose || 'cafeteria';
+    document.getElementById('tg-meal-log').checked = !!state.trackMealLog;
+    document.getElementById('tg-menu-poll').checked = !!state.enableMenuPoll;
+    renderPurposeUI();
+    // 메뉴 투표 세부 설정은 서버에 저장된 값을 따로 받아온다 (REQ-19)
+    api('api_getRoomSettings', state.token, state.roomId).then(function (r) {
+      if (!r.ok) return;
+      document.getElementById('poll-member-add').checked = r.data.menuPollMemberAdd !== false;
+      document.getElementById('poll-deadline').value = r.data.menuPollDeadline || '';
+    });
+  }
+  function savePollConfig() {
+    var deadline = document.getElementById('poll-deadline').value || null;
+    var memberAdd = document.getElementById('poll-member-add').checked;
+    return api('api_setMenuPollConfig', state.token, state.roomId, deadline, memberAdd).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      toast('메뉴 투표 설정을 저장했어요', 'check-circle');
+    });
+  }
+  function renderPurposeUI() {
+    var isEvent = state.purpose === 'event';
+    // 투표를 켠 방에서만 투표 세부 설정을 노출 (화면에서 토글을 켠 직후에도 바로 반영)
+    document.getElementById('set-poll-section').style.display =
+      document.getElementById('tg-menu-poll').checked ? 'block' : 'none';
+    // 이벤트형 방은 목적을 바꿀 수 없다 (게스트 참여 구조가 계정 기반 방과 다른 별도 트랙 — 명세서 3.1.1)
+    document.getElementById('set-presets').style.display = isEvent ? 'none' : 'block';
+    if (!isEvent) presetCards('set-presets', state.setPurpose, 'pickSetPreset');
+    document.getElementById('set-purpose-hint').innerHTML = isEvent
+      ? '이 방은 <b>이벤트형(1회용)</b>이에요. 종류는 바꿀 수 없지만 아래 기능은 켜고 끌 수 있어요.'
+      : '프리셋을 고르면 아래 기능이 자동으로 맞춰져요. 기능을 직접 바꾸면 <b>자유 설정</b>으로 전환됩니다.';
+  }
+  function pickSetPreset(key) {
+    state.setPurpose = key;
+    // 프리셋을 고르면 그 프리셋의 기본 토글 값으로 화면을 맞춰준다 (서버 fn_preset_toggles와 같은 규칙)
+    document.getElementById('tg-meal-log').checked = (key === 'outside');
+    document.getElementById('tg-menu-poll').checked = (key === 'poll' || key === 'event');
+    renderPurposeUI();
+  }
+  function savePurpose() {
+    var track = document.getElementById('tg-meal-log').checked;
+    var poll = document.getElementById('tg-menu-poll').checked;
+    return api('api_setRoomPurpose', state.token, state.roomId, state.setPurpose, track, poll).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      state.purpose = r.data.purpose;
+      state.trackMealLog = r.data.trackMealLog;
+      state.enableMenuPoll = r.data.enableMenuPoll;
+      state.setPurpose = r.data.purpose;
+      renderPurposeUI();
+      // 프리셋을 벗어나 custom으로 넘어간 경우 그 사실을 알려준다 (명세서 3.1.1)
+      toast(r.data.switchedToCustom
+        ? '기능을 직접 바꿔서 방 설정이 자유 설정으로 전환되었습니다'
+        : '방 종류가 저장되었습니다', r.data.switchedToCustom ? 'cog-6-tooth' : 'check-circle');
+    });
+  }
+  function closeSettings() {
+    if (settingsFromRoom && state.roomId) { show('sc-room'); setTab(state.tab); }
+    else if (state.me && state.me.isGuest && state.roomId) { show('sc-room'); setTab('today'); }
+    else loadRooms();
+  }
+
+  function saveNickname() {
+    var nick = document.getElementById('set-room-nickname').value.trim();
+    return api('api_updateNickname', state.token, state.roomId, nick).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      state.myNickname = r.data.nickname;
+      document.getElementById('today-my-name').textContent = state.myNickname;
+      toast('이 방에서의 닉네임이 변경되었습니다', 'check-circle');
+    });
+  }
+  function saveEmail() {
+    var email = document.getElementById('set-email').value.trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast('이메일 형식이 올바르지 않습니다.'); return; }
+    return api('api_updateEmail', state.token, email).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      state.me.email = r.data.email;
+      toast(r.data.email ? '알림 이메일이 저장되었습니다' : '이메일이 삭제되었습니다.', r.data.email ? 'check-circle' : null);
+    });
+  }
+
+  /* ==================== 회원 탈퇴 (REQ-21) ==================== */
+  var delConfirmedRooms = false;   // "호스트인 방까지 함께 삭제"에 동의했는지
+  function openDeleteAccount() {
+    delConfirmedRooms = false;
+    document.getElementById('del-pw').value = '';
+    document.getElementById('del-error').textContent = '';
+    document.getElementById('del-rooms').innerHTML = '<div class="sub">확인 중...</div>';
+    document.getElementById('modal-delete').classList.add('open');
+
+    api('api_getDeletePreview', state.token).then(function (r) {
+      if (!r.ok) { document.getElementById('del-rooms').innerHTML = '<div class="form-error">' + esc(r.error) + '</div>'; return; }
+      var rooms = r.data.hostRooms || [];
+      if (!rooms.length) {
+        document.getElementById('del-rooms').innerHTML =
+          '<div class="hint">내가 호스트인 방은 없어요. 참여 중인 방에서는 자동으로 빠집니다.</div>';
+        return;
+      }
+      // 내가 호스트인 방은 탈퇴 시 함께 삭제된다 — 남은 멤버가 있으면 특히 분명히 알린다
+      var shared = rooms.filter(function (rm) { return rm.otherMembers > 0; });
+      var html = '<div class="hint"><b>내가 호스트인 방 ' + rooms.length + '개가 함께 삭제돼요.</b></div>' +
+        '<div class="chips mt8">' + rooms.map(function (rm) {
+          return '<span class="chip ' + (rm.otherMembers > 0 ? 'y' : '') + '">' + esc(rm.roomName) +
+            (rm.otherMembers > 0 ? ' · 멤버 ' + rm.otherMembers + '명' : '') + '</span>';
+        }).join('') + '</div>';
+      if (shared.length) {
+        html += '<label style="display:flex; gap:8px; align-items:flex-start; margin-top:12px; cursor:pointer; font-size:13px;">' +
+          '<input type="checkbox" id="del-agree" onchange="delConfirmedRooms = this.checked" style="margin-top:2px;">' +
+          '<span>다른 멤버가 있는 방 <b>' + shared.length + '개</b>도 함께 삭제되는 것에 동의합니다. ' +
+          '멤버들의 참여 기록·채팅도 사라져요.</span></label>';
+      } else {
+        delConfirmedRooms = true;   // 나 혼자인 방만 있으면 추가 동의를 받지 않는다
+      }
+      document.getElementById('del-rooms').innerHTML = html;
+    });
+  }
+  function closeDeleteAccount() { document.getElementById('modal-delete').classList.remove('open'); }
+  function doDeleteAccount() {
+    var pw = document.getElementById('del-pw').value;
+    var errEl = document.getElementById('del-error');
+    if (!pw) { errEl.textContent = '비밀번호를 입력해주세요.'; return; }
+    if (!confirm('정말 탈퇴하시겠어요?\n\n계정과 참여 기록이 삭제되고 되돌릴 수 없어요.')) return;
+    var btn = document.getElementById('btn-del');
+    btn.disabled = true; errEl.textContent = '';
+    api('api_deleteAccount', state.token, pw, delConfirmedRooms).then(function (r) {
+      btn.disabled = false;
+      if (!r.ok) {
+        errEl.textContent = (r.error === 'HOST_ROOMS')
+          ? '다른 멤버가 있는 방이 함께 삭제되는 것에 동의해주세요.'
+          : r.error;
+        return;
+      }
+      closeDeleteAccount();
+      localStorage.removeItem('lb_token');
+      state.token = ''; state.me = null; state.roomId = null; state.pendingInvite = '';
+      alert('탈퇴가 완료되었습니다. 그동안 이용해주셔서 감사합니다.');
+      showAuth();
+    });
+  }
+
+  /* 호스트 알림 설정 (REQ-14) — 평일/주말 중복 선택 가능 */
+  var NOTIFY_DAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+  function loadNotifyUI() {
+    api('api_getRoomSettings', state.token, state.roomId).then(function (r) {
+      if (!r.ok) return;
+      document.getElementById('notify-enabled').checked = r.data.notifyEnabled;
+      document.getElementById('notify-time').value = r.data.notifyTime || '10:30';
+      var days = r.data.notifyDays || {};
+      NOTIFY_DAY_KEYS.forEach(function (k) {
+        document.getElementById('notify-day-' + k).checked = !!days[k];
+      });
+      document.getElementById('notify-recipients').textContent = '현재 이메일 등록 멤버 ' + r.data.recipientCount + '명';
+      onNotifyToggle();
+    });
+  }
+  function onNotifyToggle() {
+    var on = document.getElementById('notify-enabled').checked;
+    document.getElementById('notify-days-row').style.display = on ? 'flex' : 'none';
+    document.getElementById('notify-time-row').style.display = on ? 'flex' : 'none';
+  }
+  // 빠른 선택 — 요일 체크박스를 일괄로 채워줌 (저장 전까지는 화면에서만 반영)
+  function quickSelectDays(mode) {
+    var weekday = ['mon', 'tue', 'wed', 'thu', 'fri'];
+    var weekend = ['sat', 'sun'];
+    if (mode === 'weekday') weekday.forEach(function (k) { document.getElementById('notify-day-' + k).checked = true; });
+    else if (mode === 'weekend') weekend.forEach(function (k) { document.getElementById('notify-day-' + k).checked = true; });
+    else if (mode === 'all') NOTIFY_DAY_KEYS.forEach(function (k) { document.getElementById('notify-day-' + k).checked = true; });
+  }
+  function saveNotify() {
+    var enabled = document.getElementById('notify-enabled').checked;
+    var time = document.getElementById('notify-time').value;
+    var dayVals = NOTIFY_DAY_KEYS.map(function (k) { return document.getElementById('notify-day-' + k).checked; });
+    if (enabled && dayVals.every(function (v) { return !v; })) { toast('요일을 최소 하나는 선택해주세요.'); return; }
+    return api.apply(null, ['api_setNotify', state.token, state.roomId, enabled, time].concat(dayVals)).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      var names = ['월', '화', '수', '목', '금', '토', '일'];
+      var picked = names.filter(function (_, i) { return dayVals[i]; }).join('');
+      toast(enabled ? '알림이 설정되었습니다 (' + picked + ' ' + r.data.notifyTime + ')' : '알림 발송을 껐습니다.', enabled ? 'check-circle' : null);
+    });
+  }
+  function changePw() {
+    var cur = document.getElementById('pw-cur').value;
+    var nw = document.getElementById('pw-new').value;
+    var nw2 = document.getElementById('pw-new2').value;
+    var errEl = document.getElementById('pw-error');
+    errEl.textContent = '';
+    if (!cur || !nw) { errEl.textContent = '현재 비밀번호와 새 비밀번호를 입력해주세요.'; return; }
+    if (nw !== nw2) { errEl.textContent = '새 비밀번호가 일치하지 않습니다.'; return; }
+    return api('api_changePassword', state.token, cur, nw).then(function (r) {
+      if (!r.ok) { errEl.textContent = r.error; return; }
+      document.getElementById('pw-cur').value = '';
+      document.getElementById('pw-new').value = '';
+      document.getElementById('pw-new2').value = '';
+      toast('비밀번호가 변경되었습니다', 'check-circle');
+    });
+  }
+
+  function loadMembersUI() {
+    var box = document.getElementById('set-members');
+    box.innerHTML = '<span class="sub">불러오는 중...</span>';
+    api('api_getMembers', state.token, state.roomId).then(function (r) {
+      if (!r.ok) { box.innerHTML = '<span class="sub">' + esc(r.error) + '</span>'; return; }
+      var myRole = r.data.myRole;
+      box.innerHTML = r.data.members.map(function (m) {
+        var badge = m.role === 'host' ? '<span class="badge host">호스트</span>'
+                  : m.role === 'co-host' ? '<span class="badge cohost">공동호스트</span>' : '';
+        var actions = '';
+        if (m.userId !== r.data.myUserId && m.role !== 'host') {
+          if (myRole === 'host') {
+            actions += m.role === 'co-host'
+              ? '<button class="mini-btn" onclick="busy(this, doSetRole(\'' + esc(m.userId) + '\',\'member\'))">공동호스트 해제</button>'
+              : '<button class="mini-btn blue" onclick="busy(this, doSetRole(\'' + esc(m.userId) + '\',\'co-host\'))">공동호스트 지정</button>';
+          }
+          if (myRole === 'host' || (myRole === 'co-host' && m.role === 'member')) {
+            actions += '<button class="mini-btn danger" onclick="busy(this, doKick(\'' + esc(m.userId) + '\',\'' + esc(m.nickname) + '\'))">내보내기</button>';
+          }
+        }
+        return '<div class="member-row"><span class="nm">' + esc(m.nickname) + '</span>' + badge + actions + '</div>';
+      }).join('');
+    });
+  }
+  function doSetRole(userId, role) {
+    return api('api_setRole', state.token, state.roomId, userId, role).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      toast(role === 'co-host' ? '공동 호스트로 지정했습니다' : '공동 호스트를 해제했습니다.', role === 'co-host' ? 'check-circle' : null);
+      loadMembersUI();
+    });
+  }
+  function doKick(userId, nickname) {
+    if (!confirm(nickname + '님을 방에서 내보낼까요?\n(초대 링크로 다시 참여할 수 있습니다)')) return;
+    return api('api_kickMember', state.token, state.roomId, userId).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      toast(nickname + '님을 내보냈습니다.');
+      loadMembersUI();
+    });
+  }
+  function doRenameRoom() {
+    var cur = document.getElementById('set-room-name').textContent;
+    var name = prompt('새 방 이름을 입력해주세요 (2~20자)', cur);
+    if (name === null) return;
+    return api('api_renameRoom', state.token, state.roomId, name.trim()).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      document.getElementById('set-room-name').textContent = r.data.roomName;
+      document.getElementById('room-title').innerHTML = ic(state.purpose === 'event' ? 'sparkles' : 'brand') + esc(r.data.roomName);
+      toast('방 이름이 변경되었습니다', 'check-circle');
+    });
+  }
+  function doRegenInvite() {
+    if (!confirm('초대 링크를 재생성할까요?\n기존 링크는 즉시 사용할 수 없게 됩니다.')) return;
+    return api('api_regenerateInvite', state.token, state.roomId).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      var url = location.origin + location.pathname + '?invite=' + r.data.inviteToken;
+      state.inviteUrl = url;
+      copyText(url);
+    });
+  }
+  function doDeleteRoom() {
+    var roomName = document.getElementById('set-room-name').textContent;
+    if (!confirm('정말 "' + roomName + '" 방을 삭제할까요?\n멤버·참여기록·채팅이 모두 삭제되며 되돌릴 수 없습니다.')) return;
+    return api('api_deleteRoom', state.token, state.roomId).then(function (r) {
+      if (!r.ok) { toast(r.error); return; }
+      toast('방이 삭제되었습니다.');
+      state.roomId = null;
+      loadRooms();
+    });
+  }
+
+  /* ==================== 하단 Footer (필수 법적 페이지 링크) ====================
+     모든 화면 콘텐츠 맨 아래에 동일한 Footer를 삽입.
+     sc-room은 탭(오늘/히스토리)마다 각각 삽입 — 고정 탭바는 화면 자체의
+     padding-bottom(90px)이 이미 가려주므로 겹치지 않음. */
+  var FOOTER_HTML =
+    '<footer class="site-footer">' +
+      '<div class="site-footer__links">' +
+        '<a href="privacy.html">개인정보처리방침</a>' +
+        '<span>·</span>' +
+        '<a href="terms.html">이용약관</a>' +
+        '<span>·</span>' +
+        '<a href="contact.html">문의하기</a>' +
+      '</div>' +
+      '<div class="site-footer__copy">© 오늘점심</div>' +
+    '</footer>';
+  ['sc-auth', 'sc-rooms', 'sc-settings', 'sc-expired', 'sc-reset-password'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.insertAdjacentHTML('beforeend', FOOTER_HTML);
+  });
+  ['tab-today', 'tab-history'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.insertAdjacentHTML('beforeend', FOOTER_HTML);
+  });
+
+  init();
+</script>
+</body>
+</html>

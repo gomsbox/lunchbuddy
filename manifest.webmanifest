@@ -1,0 +1,16 @@
+{
+  "name": "오늘점심",
+  "short_name": "오늘점심",
+  "description": "오늘 같이 점심 먹어요 — 점심 멤버 확인 · 메뉴 투표 서비스",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#2AC1BC",
+  "theme_color": "#2AC1BC",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
